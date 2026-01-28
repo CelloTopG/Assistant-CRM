@@ -1,0 +1,197 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:name",
+ "creation": "2024-07-30 07:45:00.000000",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "name",
+  "enabled",
+  "section_break_3",
+  "gdpr_compliance_enabled",
+  "data_protection_enabled",
+  "audit_logging_enabled",
+  "accessibility_compliance_enabled",
+  "security_compliance_enabled",
+  "section_break_9",
+  "automated_remediation_enabled",
+  "compliance_reporting_enabled",
+  "real_time_monitoring_enabled",
+  "section_break_13",
+  "data_retention_days",
+  "audit_retention_days",
+  "compliance_check_interval_hours",
+  "section_break_17",
+  "created_by",
+  "created_on",
+  "modified_by",
+  "modified_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "name",
+   "fieldtype": "Data",
+   "label": "Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "section_break_3",
+   "fieldtype": "Section Break",
+   "label": "Compliance Standards"
+  },
+  {
+   "default": "1",
+   "fieldname": "gdpr_compliance_enabled",
+   "fieldtype": "Check",
+   "label": "GDPR Compliance Enabled"
+  },
+  {
+   "default": "1",
+   "fieldname": "data_protection_enabled",
+   "fieldtype": "Check",
+   "label": "Data Protection Enabled"
+  },
+  {
+   "default": "1",
+   "fieldname": "audit_logging_enabled",
+   "fieldtype": "Check",
+   "label": "Audit Logging Enabled"
+  },
+  {
+   "default": "1",
+   "fieldname": "accessibility_compliance_enabled",
+   "fieldtype": "Check",
+   "label": "Accessibility Compliance Enabled"
+  },
+  {
+   "default": "1",
+   "fieldname": "security_compliance_enabled",
+   "fieldtype": "Check",
+   "label": "Security Compliance Enabled"
+  },
+  {
+   "fieldname": "section_break_9",
+   "fieldtype": "Section Break",
+   "label": "Monitoring Features"
+  },
+  {
+   "default": "1",
+   "fieldname": "automated_remediation_enabled",
+   "fieldtype": "Check",
+   "label": "Automated Remediation Enabled"
+  },
+  {
+   "default": "1",
+   "fieldname": "compliance_reporting_enabled",
+   "fieldtype": "Check",
+   "label": "Compliance Reporting Enabled"
+  },
+  {
+   "default": "1",
+   "fieldname": "real_time_monitoring_enabled",
+   "fieldtype": "Check",
+   "label": "Real-time Monitoring Enabled"
+  },
+  {
+   "fieldname": "section_break_13",
+   "fieldtype": "Section Break",
+   "label": "Data Retention"
+  },
+  {
+   "default": "2555",
+   "fieldname": "data_retention_days",
+   "fieldtype": "Int",
+   "label": "Data Retention (Days)"
+  },
+  {
+   "default": "3650",
+   "fieldname": "audit_retention_days",
+   "fieldtype": "Int",
+   "label": "Audit Retention (Days)"
+  },
+  {
+   "default": "24",
+   "fieldname": "compliance_check_interval_hours",
+   "fieldtype": "Int",
+   "label": "Compliance Check Interval (Hours)"
+  },
+  {
+   "fieldname": "section_break_17",
+   "fieldtype": "Section Break",
+   "label": "System Information"
+  },
+  {
+   "fieldname": "created_by",
+   "fieldtype": "Data",
+   "label": "Created By",
+   "read_only": 1
+  },
+  {
+   "fieldname": "created_on",
+   "fieldtype": "Datetime",
+   "label": "Created On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "modified_by",
+   "fieldtype": "Data",
+   "label": "Modified By",
+   "read_only": 1
+  },
+  {
+   "fieldname": "modified_on",
+   "fieldtype": "Datetime",
+   "label": "Modified On",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-07-30 07:45:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Regulatory Compliance Settings",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

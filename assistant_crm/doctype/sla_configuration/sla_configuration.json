@@ -1,0 +1,119 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:sla_name",
+ "creation": "2025-01-28 10:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "sla_name",
+  "priority",
+  "channel",
+  "first_response_time",
+  "resolution_time",
+  "escalation_time",
+  "business_hours_only",
+  "is_active"
+ ],
+ "fields": [
+  {
+   "fieldname": "sla_name",
+   "fieldtype": "Data",
+   "label": "SLA Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "label": "Priority",
+   "options": "All\nLow\nMedium\nHigh\nUrgent",
+   "default": "All"
+  },
+  {
+   "fieldname": "channel",
+   "fieldtype": "Select",
+   "label": "Channel",
+   "options": "All\nWhatsApp\nFacebook\nInstagram\nEmail\nChat\nTelegram\nLinkedIn\nTwitter",
+   "default": "All"
+  },
+  {
+   "fieldname": "first_response_time",
+   "fieldtype": "Int",
+   "label": "First Response Time (minutes)",
+   "description": "Maximum time allowed for first response"
+  },
+  {
+   "fieldname": "resolution_time",
+   "fieldtype": "Int",
+   "label": "Resolution Time (hours)",
+   "description": "Maximum time allowed for issue resolution"
+  },
+  {
+   "fieldname": "escalation_time",
+   "fieldtype": "Int",
+   "label": "Escalation Time (minutes)",
+   "description": "Time after which conversation should be escalated"
+  },
+  {
+   "fieldname": "business_hours_only",
+   "fieldtype": "Check",
+   "label": "Business Hours Only",
+   "default": "1",
+   "description": "Apply SLA only during business hours"
+  },
+  {
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active",
+   "default": "1"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-01-28 10:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "SLA Configuration",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "CRM Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "CRM Agent",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

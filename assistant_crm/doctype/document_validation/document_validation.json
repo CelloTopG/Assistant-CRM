@@ -1,0 +1,202 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:title",
+ "creation": "2025-02-02 10:30:00.000000",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "validation_id",
+  "file_id",
+  "document_category",
+  "column_break_5",
+  "validation_status",
+  "validation_date",
+  "validated_by",
+  "completion_time",
+  "section_break_10",
+  "checks_performed",
+  "passed_checks",
+  "failed_checks",
+  "column_break_14",
+  "warnings",
+  "recommendations",
+  "compliance_score",
+  "section_break_18",
+  "validation_results",
+  "section_break_20",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "validation_id",
+   "fieldtype": "Data",
+   "label": "Validation ID",
+   "reqd": 1
+  },
+  {
+   "fieldname": "file_id",
+   "fieldtype": "Data",
+   "label": "File ID",
+   "reqd": 1
+  },
+  {
+   "fieldname": "document_category",
+   "fieldtype": "Select",
+   "label": "Document Category",
+   "options": "Medical\nIncident\nEmployment\nIdentification\nLegal\nFinancial\nOther",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "validation_status",
+   "fieldtype": "Select",
+   "label": "Validation Status",
+   "options": "Pending\nPassed\nFailed\nPassed with Warnings",
+   "reqd": 1
+  },
+  {
+   "fieldname": "validation_date",
+   "fieldtype": "Datetime",
+   "label": "Validation Date"
+  },
+  {
+   "fieldname": "validated_by",
+   "fieldtype": "Data",
+   "label": "Validated By"
+  },
+  {
+   "fieldname": "completion_time",
+   "fieldtype": "Data",
+   "label": "Completion Time"
+  },
+  {
+   "fieldname": "section_break_10",
+   "fieldtype": "Section Break",
+   "label": "Validation Results"
+  },
+  {
+   "fieldname": "checks_performed",
+   "fieldtype": "Text",
+   "label": "Checks Performed"
+  },
+  {
+   "fieldname": "passed_checks",
+   "fieldtype": "Text",
+   "label": "Passed Checks"
+  },
+  {
+   "fieldname": "failed_checks",
+   "fieldtype": "Text",
+   "label": "Failed Checks"
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "warnings",
+   "fieldtype": "Text",
+   "label": "Warnings"
+  },
+  {
+   "fieldname": "recommendations",
+   "fieldtype": "Text",
+   "label": "Recommendations"
+  },
+  {
+   "fieldname": "compliance_score",
+   "fieldtype": "Percent",
+   "label": "Compliance Score"
+  },
+  {
+   "fieldname": "section_break_18",
+   "fieldtype": "Section Break",
+   "label": "Detailed Results"
+  },
+  {
+   "fieldname": "validation_results",
+   "fieldtype": "Text Editor",
+   "label": "Validation Results"
+  },
+  {
+   "fieldname": "section_break_20",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Text Editor",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-02-02 10:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant Crm",
+ "name": "Document Validation",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "WCFCB Staff",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Beneficiary",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Employer",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

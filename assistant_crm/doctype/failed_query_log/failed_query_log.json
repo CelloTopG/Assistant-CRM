@@ -1,0 +1,168 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-01-31 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "user_id",
+  "session_id",
+  "query_text",
+  "attempted_response",
+  "failure_reason",
+  "confidence_score",
+  "query_complexity",
+  "query_category",
+  "user_type",
+  "context_data",
+  "similar_queries_count",
+  "priority_score",
+  "knowledge_gap_identified",
+  "resolution_status",
+  "assigned_to",
+  "resolution_notes",
+  "knowledge_article_created"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "FAILED-.YYYY.-.#####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "user_id",
+   "fieldtype": "Data",
+   "label": "User ID"
+  },
+  {
+   "fieldname": "session_id",
+   "fieldtype": "Data",
+   "label": "Session ID"
+  },
+  {
+   "fieldname": "query_text",
+   "fieldtype": "Long Text",
+   "label": "Query Text"
+  },
+  {
+   "fieldname": "attempted_response",
+   "fieldtype": "Long Text",
+   "label": "Attempted Response"
+  },
+  {
+   "fieldname": "failure_reason",
+   "fieldtype": "Select",
+   "label": "Failure Reason",
+   "options": "insufficient_knowledge\nlow_confidence\nambiguous_query\ntechnical_error\nout_of_scope"
+  },
+  {
+   "fieldname": "confidence_score",
+   "fieldtype": "Float",
+   "label": "Confidence Score",
+   "precision": "3"
+  },
+  {
+   "fieldname": "query_complexity",
+   "fieldtype": "Select",
+   "label": "Query Complexity",
+   "options": "low\nmedium\nhigh"
+  },
+  {
+   "fieldname": "query_category",
+   "fieldtype": "Select",
+   "label": "Query Category",
+   "options": "claims\ncontributions\nregistration\ntechnical\npolicy\nbeneficiary\ngeneral"
+  },
+  {
+   "fieldname": "user_type",
+   "fieldtype": "Select",
+   "label": "User Type",
+   "options": "employer\nbeneficiary\nagent\nunknown"
+  },
+  {
+   "fieldname": "context_data",
+   "fieldtype": "Long Text",
+   "label": "Context Data"
+  },
+  {
+   "fieldname": "similar_queries_count",
+   "fieldtype": "Int",
+   "label": "Similar Queries Count"
+  },
+  {
+   "fieldname": "priority_score",
+   "fieldtype": "Float",
+   "label": "Priority Score",
+   "precision": "2"
+  },
+  {
+   "fieldname": "knowledge_gap_identified",
+   "fieldtype": "Check",
+   "label": "Knowledge Gap Identified"
+  },
+  {
+   "fieldname": "resolution_status",
+   "fieldtype": "Select",
+   "label": "Resolution Status",
+   "options": "unresolved\nin_progress\nresolved"
+  },
+  {
+   "fieldname": "assigned_to",
+   "fieldtype": "Link",
+   "label": "Assigned To",
+   "options": "User"
+  },
+  {
+   "fieldname": "resolution_notes",
+   "fieldtype": "Long Text",
+   "label": "Resolution Notes"
+  },
+  {
+   "fieldname": "knowledge_article_created",
+   "fieldtype": "Data",
+   "label": "Knowledge Article Created"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-01-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Failed Query Log",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

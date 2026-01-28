@@ -1,0 +1,16 @@
+{
+ "doctype": "DocType",
+ "name": "Payout Dependant Summary Row",
+ "module": "Assistant CRM",
+ "istable": 1,
+ "editable_grid": 1,
+ "track_changes": 1,
+ "fields": [
+  {"fieldname": "dependant_relation", "label": "Dependant Relation", "fieldtype": "Select", "options": "Son\nDaughter\nHusband\nWife"},
+  {"fieldname": "payroll_month", "label": "Payroll Month", "fieldtype": "Data"},
+  {"fieldname": "total_amount", "label": "Total Amount (ZMW)", "fieldtype": "Currency"},
+  {"fieldname": "total_count", "label": "Total Count", "fieldtype": "Int"}
+ ],
+ "permissions": []
+}
+

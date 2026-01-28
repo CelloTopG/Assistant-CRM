@@ -1,0 +1,105 @@
+{
+ "actions": [],
+ "autoname": "field:claim_number",
+ "creation": "2025-11-03 20:32:57.285576",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "claim_number",
+  "status",
+  "claim_type",
+  "incident_date",
+  "claimant",
+  "employer",
+  "amount",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "claim_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Claim Number",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Submitted\nUnder Review\nPending Documentation\nMedical Review\nValidated\nApproved\nRejected\nClosed\nAppealed\nSettled\nReopened\nEscalated",
+   "read_only": 1
+  },
+  {
+   "fieldname": "claim_type",
+   "fieldtype": "Select",
+   "label": "Claim Type",
+   "options": "Injury\nIllness\nMedical\nDisability\nDeath\nRehabilitation\nReimbursement",
+   "reqd": 1
+  },
+  {
+   "fieldname": "incident_date",
+   "fieldtype": "Date",
+   "label": "Incident Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "claimant",
+   "fieldtype": "Link",
+   "label": "Claimant",
+   "options": "Customer",
+   "reqd": 1
+  },
+  {
+   "fieldname": "employer",
+   "fieldtype": "Link",
+   "label": "Employer",
+   "options": "Employer",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Amount"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Claim",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  }
+ ],
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-01-11 16:17:42.542792",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Claim",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "role": "WCFCB Manager",
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

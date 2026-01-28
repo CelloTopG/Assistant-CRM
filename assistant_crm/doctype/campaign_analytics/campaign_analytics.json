@@ -1,0 +1,267 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-07-28 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "campaign",
+  "analytics_date",
+  "campaign_metrics_section",
+  "total_recipients",
+  "messages_sent",
+  "messages_delivered",
+  "messages_failed",
+  "messages_read",
+  "messages_clicked",
+  "delivery_rate",
+  "read_rate",
+  "click_rate",
+  "channel_performance_section",
+  "channel_metrics",
+  "engagement_metrics_section",
+  "responses_received",
+  "positive_responses",
+  "negative_responses",
+  "escalations_triggered",
+  "engagement_score",
+  "timing_analysis_section",
+  "best_send_time",
+  "peak_engagement_hour",
+  "response_time_avg",
+  "geographic_analysis_section",
+  "regional_performance",
+  "cost_analysis_section",
+  "total_cost",
+  "cost_per_message",
+  "cost_per_engagement",
+  "roi_estimate"
+ ],
+ "fields": [
+  {
+   "default": "CA-.YYYY.-.#####",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "CA-.YYYY.-.#####"
+  },
+  {
+   "fieldname": "campaign",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Campaign",
+   "options": "Bulk Message Campaign",
+   "reqd": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "analytics_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Analytics Date"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "campaign_metrics_section",
+   "fieldtype": "Section Break",
+   "label": "Campaign Metrics"
+  },
+  {
+   "fieldname": "total_recipients",
+   "fieldtype": "Int",
+   "label": "Total Recipients"
+  },
+  {
+   "fieldname": "messages_sent",
+   "fieldtype": "Int",
+   "label": "Messages Sent"
+  },
+  {
+   "fieldname": "messages_delivered",
+   "fieldtype": "Int",
+   "label": "Messages Delivered"
+  },
+  {
+   "fieldname": "messages_failed",
+   "fieldtype": "Int",
+   "label": "Messages Failed"
+  },
+  {
+   "fieldname": "messages_read",
+   "fieldtype": "Int",
+   "label": "Messages Read"
+  },
+  {
+   "fieldname": "messages_clicked",
+   "fieldtype": "Int",
+   "label": "Messages Clicked"
+  },
+  {
+   "fieldname": "delivery_rate",
+   "fieldtype": "Percent",
+   "label": "Delivery Rate",
+   "precision": "2"
+  },
+  {
+   "fieldname": "read_rate",
+   "fieldtype": "Percent",
+   "label": "Read Rate",
+   "precision": "2"
+  },
+  {
+   "fieldname": "click_rate",
+   "fieldtype": "Percent",
+   "label": "Click Rate",
+   "precision": "2"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "channel_performance_section",
+   "fieldtype": "Section Break",
+   "label": "Channel Performance"
+  },
+  {
+   "fieldname": "channel_metrics",
+   "fieldtype": "Table",
+   "label": "Channel Metrics",
+   "options": "Channel Performance Metric"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "engagement_metrics_section",
+   "fieldtype": "Section Break",
+   "label": "Engagement Metrics"
+  },
+  {
+   "fieldname": "responses_received",
+   "fieldtype": "Int",
+   "label": "Responses Received"
+  },
+  {
+   "fieldname": "positive_responses",
+   "fieldtype": "Int",
+   "label": "Positive Responses"
+  },
+  {
+   "fieldname": "negative_responses",
+   "fieldtype": "Int",
+   "label": "Negative Responses"
+  },
+  {
+   "fieldname": "escalations_triggered",
+   "fieldtype": "Int",
+   "label": "Escalations Triggered"
+  },
+  {
+   "fieldname": "engagement_score",
+   "fieldtype": "Float",
+   "label": "Engagement Score",
+   "precision": "2"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "timing_analysis_section",
+   "fieldtype": "Section Break",
+   "label": "Timing Analysis"
+  },
+  {
+   "fieldname": "best_send_time",
+   "fieldtype": "Time",
+   "label": "Best Send Time"
+  },
+  {
+   "fieldname": "peak_engagement_hour",
+   "fieldtype": "Time",
+   "label": "Peak Engagement Hour"
+  },
+  {
+   "fieldname": "response_time_avg",
+   "fieldtype": "Float",
+   "label": "Average Response Time (minutes)",
+   "precision": "2"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "geographic_analysis_section",
+   "fieldtype": "Section Break",
+   "label": "Geographic Analysis"
+  },
+  {
+   "fieldname": "regional_performance",
+   "fieldtype": "Table",
+   "label": "Regional Performance",
+   "options": "Regional Performance Metric"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "cost_analysis_section",
+   "fieldtype": "Section Break",
+   "label": "Cost Analysis"
+  },
+  {
+   "fieldname": "total_cost",
+   "fieldtype": "Currency",
+   "label": "Total Cost"
+  },
+  {
+   "fieldname": "cost_per_message",
+   "fieldtype": "Currency",
+   "label": "Cost per Message"
+  },
+  {
+   "fieldname": "cost_per_engagement",
+   "fieldtype": "Currency",
+   "label": "Cost per Engagement"
+  },
+  {
+   "fieldname": "roi_estimate",
+   "fieldtype": "Percent",
+   "label": "ROI Estimate",
+   "precision": "2"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-07-28 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Campaign Analytics",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Assistant CRM User"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

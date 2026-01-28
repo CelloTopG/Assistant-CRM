@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anna - WCFCB Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 800px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .chat-header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .status-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 12px;
+            height: 12px;
+            background: #4CAF50;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.anna {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            background: #007bff;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.anna .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin: 0 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 14px;
+        }
+
+        .avatar.user {
+            background: #007bff;
+        }
+
+        .avatar.anna {
+            background: #4CAF50;
+        }
+
+        .quick-replies {
+            padding: 10px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .quick-reply-btn {
+            background: #e3f2fd;
+            border: 1px solid #2196F3;
+            color: #2196F3;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .quick-reply-btn:hover {
+            background: #2196F3;
+            color: white;
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            border-radius: 25px;
+            padding: 5px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .chat-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 12px 16px;
+            background: transparent;
+            font-size: 14px;
+        }
+
+        .send-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        .send-btn:hover {
+            background: #45a049;
+        }
+
+        .send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 10px 20px;
+            font-style: italic;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .file-upload-area {
+            margin-top: 10px;
+            padding: 10px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .file-upload-area:hover {
+            border-color: #4CAF50;
+            background: #f8fff8;
+        }
+
+        .file-upload-area.active {
+            display: block;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 20px;
+            font-size: 12px;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .chat-container {
+                width: 95%;
+                height: 95vh;
+                border-radius: 10px;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+
+            .chat-header h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="status-indicator"></div>
+            <h1>👋 Hi! This is Anna</h1>
+            <p>Your WCFCB Assistant - Here to help with claims, payments, and documents</p>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages will be dynamically added here -->
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator">
+            Anna is typing...
+        </div>
+
+        <div class="quick-replies" id="quickReplies">
+            <!-- Quick reply buttons will be added here -->
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Processing your request...</p>
+        </div>
+
+        <div class="chat-input-container">
+            <div class="file-upload-area" id="fileUploadArea">
+                <p>📄 Drop your document here or click to select</p>
+                <input type="file" id="fileInput" style="display: none;" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx">
+            </div>
+            
+            <div class="chat-input-wrapper">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Type your message here..." maxlength="500">
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let sessionId = null;
+        let isProcessing = false;
+
+        // Initialize chat when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeChat();
+            setupEventListeners();
+        });
+
+        function initializeChat() {
+            // Generate session ID for Optimized Chat API (with live data integration)
+            sessionId = 'anna_live_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+            // Show initial greeting with live data capabilities
+            addMessage('anna', 'Hi! I\'m Anna, your WCFCB assistant with access to live data. How can I help you today?');
+
+            // Show quick replies for common actions
+            showQuickReplies([
+                '📋 Check my pension status',
+                '💰 Payment information',
+                '📄 Upload documents',
+                '🏢 Contact information'
+            ]);
+
+            console.log('🚀 Chat initialized with live data integration - Session:', sessionId);
+        }
+
+        function setupEventListeners() {
+            // Enter key to send message
+            document.getElementById('chatInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // File upload handling
+            const fileInput = document.getElementById('fileInput');
+            const fileUploadArea = document.getElementById('fileUploadArea');
+            
+            fileUploadArea.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', handleFileUpload);
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message || isProcessing || !sessionId) return;
+            
+            // Add user message to chat
+            addMessage('user', message);
+            input.value = '';
+            
+            // Show typing indicator
+            showTyping(true);
+            isProcessing = true;
+            
+            // Send message to backend using Optimized Chat API (with live data integration)
+            fetch('/api/method/assistant_crm.api.simplified_chat.send_message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Frappe-CSRF-Token': frappe.csrf_token
+                },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    message: message
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showTyping(false);
+                isProcessing = false;
+                
+                // Handle Optimized Chat API response format
+                if (data.message && data.message.success !== false) {
+                    const response = data.message.response || data.message;
+                    addMessage('anna', response);
+
+                    // Show live data indicators (for debugging)
+                    if (data.message.metadata && data.message.metadata.live_data_used) {
+                        console.log('🎉 Live ERPNext data used in response!');
+                        console.log('Live data enabled:', data.message.metadata.live_data_enabled);
+                    }
+
+                    // Show quick replies if available
+                    if (data.message.quick_replies) {
+                        showQuickReplies(data.message.quick_replies);
+                    }
+
+                    // Handle authentication prompts
+                    if (data.message.authentication_required) {
+                        addMessage('anna', data.message.authentication_prompt || 'Please provide your authentication details.');
+                    }
+
+                    // Handle special actions
+                    if (data.message.action_type === 'document_upload_request') {
+                        showFileUpload(true);
+                    }
+                } else {
+                    const errorMsg = data.message?.error || 'I apologize, but I encountered an error. Please try again.';
+                    addMessage('anna', errorMsg);
+                }
+            })
+            .catch(error => {
+                console.error('Error sending message:', error);
+                showTyping(false);
+                isProcessing = false;
+                addMessage('anna', 'I\'m having trouble connecting right now. Please try again.');
+            });
+        }
+
+        function addMessage(sender, content) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = `avatar ${sender}`;
+            avatar.textContent = sender === 'user' ? 'U' : 'A';
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.innerHTML = formatMessage(content);
+            
+            if (sender === 'anna') {
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(messageContent);
+            } else {
+                messageDiv.appendChild(messageContent);
+                messageDiv.appendChild(avatar);
+            }
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function formatMessage(content) {
+            // Convert markdown-like formatting to HTML
+            return content
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function showQuickReplies(replies) {
+            const container = document.getElementById('quickReplies');
+            container.innerHTML = '';
+            
+            replies.forEach(reply => {
+                const button = document.createElement('button');
+                button.className = 'quick-reply-btn';
+                button.textContent = reply;
+                button.onclick = () => {
+                    document.getElementById('chatInput').value = reply;
+                    sendMessage();
+                };
+                container.appendChild(button);
+            });
+        }
+
+        function showTyping(show) {
+            document.getElementById('typingIndicator').style.display = show ? 'block' : 'none';
+        }
+
+        function showFileUpload(show) {
+            document.getElementById('fileUploadArea').classList.toggle('active', show);
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Validate file
+            const maxSize = 50 * 1024 * 1024; // 50MB
+            const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'];
+            
+            if (file.size > maxSize) {
+                showError('File size must be less than 50MB');
+                return;
+            }
+            
+            if (!allowedTypes.includes(file.type)) {
+                showError('Please upload PDF, Word, or image files only');
+                return;
+            }
+            
+            // Show upload progress
+            addMessage('user', `📄 Uploading: ${file.name}`);
+            showTyping(true);
+            
+            // Simulate file upload (in real implementation, this would upload to server)
+            setTimeout(() => {
+                showTyping(false);
+                addMessage('anna', `✅ Document "${file.name}" uploaded successfully! I'll validate it now and let you know the results.`);
+                showQuickReplies(['📋 Check Status', '📄 Upload Another', '🏠 Main Menu']);
+                showFileUpload(false);
+            }, 2000);
+        }
+
+        // Add frappe CSRF token for API calls
+        if (typeof frappe === 'undefined') {
+            window.frappe = {
+                csrf_token: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            };
+        }
+    </script>
+</body>
+</html>

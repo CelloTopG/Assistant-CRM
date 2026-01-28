@@ -1,0 +1,157 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-01-28 10:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "agent",
+  "metric_date",
+  "conversations_handled",
+  "average_response_time",
+  "average_resolution_time",
+  "first_response_time",
+  "sla_compliance_rate",
+  "customer_satisfaction_score",
+  "escalations_received",
+  "escalations_resolved",
+  "active_hours",
+  "utilization_rate",
+  "quality_score"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "APM-.YYYY.-.MM.-.DD.-",
+   "reqd": 1
+  },
+  {
+   "fieldname": "agent",
+   "fieldtype": "Link",
+   "label": "Agent",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "metric_date",
+   "fieldtype": "Date",
+   "label": "Metric Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "conversations_handled",
+   "fieldtype": "Int",
+   "label": "Conversations Handled",
+   "default": "0"
+  },
+  {
+   "fieldname": "average_response_time",
+   "fieldtype": "Float",
+   "label": "Average Response Time (minutes)",
+   "precision": "2"
+  },
+  {
+   "fieldname": "average_resolution_time",
+   "fieldtype": "Float",
+   "label": "Average Resolution Time (hours)",
+   "precision": "2"
+  },
+  {
+   "fieldname": "first_response_time",
+   "fieldtype": "Float",
+   "label": "First Response Time (minutes)",
+   "precision": "2"
+  },
+  {
+   "fieldname": "sla_compliance_rate",
+   "fieldtype": "Percent",
+   "label": "SLA Compliance Rate"
+  },
+  {
+   "fieldname": "customer_satisfaction_score",
+   "fieldtype": "Float",
+   "label": "Customer Satisfaction Score",
+   "precision": "2"
+  },
+  {
+   "fieldname": "escalations_received",
+   "fieldtype": "Int",
+   "label": "Escalations Received",
+   "default": "0"
+  },
+  {
+   "fieldname": "escalations_resolved",
+   "fieldtype": "Int",
+   "label": "Escalations Resolved",
+   "default": "0"
+  },
+  {
+   "fieldname": "active_hours",
+   "fieldtype": "Float",
+   "label": "Active Hours",
+   "precision": "2"
+  },
+  {
+   "fieldname": "utilization_rate",
+   "fieldtype": "Percent",
+   "label": "Utilization Rate"
+  },
+  {
+   "fieldname": "quality_score",
+   "fieldtype": "Float",
+   "label": "Quality Score",
+   "precision": "2"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-01-28 10:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Agent Performance Metric",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "CRM Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "CRM Agent",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,1 @@
+# Knowledge Gap Analysis DocType

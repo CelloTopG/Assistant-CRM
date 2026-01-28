@@ -1,0 +1,392 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-08-27 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "conversation_id",
+  "platform",
+  "platform_specific_id",
+  "customer_section",
+  "customer_id",
+  "customer_name",
+  "customer_phone",
+  "customer_email",
+  "customer_platform_id",
+  "conversation_details_section",
+  "status",
+  "priority",
+  "subject",
+  "last_message_preview",
+  "column_break_15",
+  "creation_time",
+  "first_response_time",
+  "last_message_time",
+  "response_time_sla",
+  "ai_processing_section",
+  "ai_mode",
+  "ai_handled",
+  "ai_confidence_score",
+  "ai_last_response",
+  "requires_human_intervention",
+  "column_break_25",
+  "escalation_triggers",
+  "escalation_reason",
+  "escalated_at",
+  "escalated_by",
+  "agent_assignment_section",
+  "assigned_to",
+  "assigned_agent",
+  "agent_assigned_at",
+  "agent_status",
+  "column_break_35",
+  "agent_notes",
+  "internal_notes",
+  "tawk_to_integration_section",
+  "tawk_to_session_id",
+  "tawk_to_visitor_id",
+  "tawk_to_chat_id",
+  "column_break_42",
+  "has_active_call",
+  "call_status",
+  "call_duration",
+  "platform_metadata_section",
+  "platform_metadata",
+  "conversation_context",
+  "tags"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "UINB-.YYYY.-.MM.-.#####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "conversation_id",
+   "fieldtype": "Data",
+   "label": "Conversation ID",
+   "unique": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "platform",
+   "fieldtype": "Select",
+   "label": "Platform",
+   "options": "WhatsApp\nFacebook\nInstagram\nTelegram\nTwitter\nTawk.to\nWebsite Chat\nEmail\nPhone\nLinkedIn\nUSSD\nYouTube",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "platform_specific_id",
+   "fieldtype": "Data",
+   "label": "Platform Specific ID"
+  },
+  {
+   "fieldname": "customer_section",
+   "fieldtype": "Section Break",
+   "label": "Customer Information"
+  },
+  {
+   "fieldname": "customer_id",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer Name",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "customer_phone",
+   "fieldtype": "Data",
+   "label": "Customer Phone"
+  },
+  {
+   "fieldname": "customer_email",
+   "fieldtype": "Data",
+   "label": "Customer Email"
+  },
+  {
+   "fieldname": "customer_platform_id",
+   "fieldtype": "Data",
+   "label": "Customer Platform ID"
+  },
+  {
+   "fieldname": "conversation_details_section",
+   "fieldtype": "Section Break",
+   "label": "Conversation Details"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "New\nAI Processing\nAgent Assigned\nIn Progress\nPending Customer\nResolved\nClosed",
+   "default": "New",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "label": "Priority",
+   "options": "Low\nMedium\nHigh\nUrgent",
+   "default": "Medium"
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "label": "Subject"
+  },
+  {
+   "fieldname": "last_message_preview",
+   "fieldtype": "Text",
+   "label": "Last Message Preview"
+  },
+  {
+   "fieldname": "column_break_15",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "creation_time",
+   "fieldtype": "Datetime",
+   "label": "Creation Time",
+   "default": "now",
+   "reqd": 1
+  },
+  {
+   "fieldname": "first_response_time",
+   "fieldtype": "Datetime",
+   "label": "First Response Time"
+  },
+  {
+   "fieldname": "last_message_time",
+   "fieldtype": "Datetime",
+   "label": "Last Message Time"
+  },
+  {
+   "fieldname": "response_time_sla",
+   "fieldtype": "Float",
+   "label": "Response Time SLA (minutes)",
+   "precision": "2"
+  },
+  {
+   "fieldname": "ai_processing_section",
+   "fieldtype": "Section Break",
+   "label": "AI Processing"
+  },
+  {
+   "fieldname": "ai_mode",
+   "fieldtype": "Select",
+   "label": "AI Mode",
+   "options": "Auto\nOn\nOff",
+   "default": "Auto",
+   "description": "Control AI responses for this conversation: Auto (default logic), On (force AI), Off (disable AI)"
+  },
+  {
+   "default": "0",
+   "fieldname": "ai_handled",
+   "fieldtype": "Check",
+   "label": "AI Handled"
+  },
+  {
+   "fieldname": "ai_confidence_score",
+   "fieldtype": "Float",
+   "label": "AI Confidence Score",
+   "precision": "3"
+  },
+  {
+   "fieldname": "ai_last_response",
+   "fieldtype": "Long Text",
+   "label": "AI Last Response"
+  },
+  {
+   "default": "0",
+   "fieldname": "requires_human_intervention",
+   "fieldtype": "Check",
+   "label": "Requires Human Intervention"
+  },
+  {
+   "fieldname": "column_break_25",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "escalation_triggers",
+   "fieldtype": "JSON",
+   "label": "Escalation Triggers"
+  },
+  {
+   "fieldname": "escalation_reason",
+   "fieldtype": "Data",
+   "label": "Escalation Reason"
+  },
+  {
+   "fieldname": "escalated_at",
+   "fieldtype": "Datetime",
+   "label": "Escalated At"
+  },
+  {
+   "fieldname": "escalated_by",
+   "fieldtype": "Link",
+   "label": "Escalated By",
+   "options": "User"
+  },
+  {
+   "fieldname": "agent_assignment_section",
+   "fieldtype": "Section Break",
+   "label": "Agent Assignment"
+  },
+  {
+   "fieldname": "assigned_to",
+   "fieldtype": "Link",
+   "label": "Assigned To",
+   "options": "User"
+  },
+  {
+   "fieldname": "assigned_agent",
+   "fieldtype": "Link",
+   "label": "Assigned Agent",
+   "options": "User"
+  },
+  {
+   "fieldname": "agent_assigned_at",
+   "fieldtype": "Datetime",
+   "label": "Agent Assigned At"
+  },
+  {
+   "fieldname": "agent_status",
+   "fieldtype": "Select",
+   "label": "Agent Status",
+   "options": "Available\nBusy\nAway\nOffline"
+  },
+  {
+   "fieldname": "column_break_35",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "agent_notes",
+   "fieldtype": "Long Text",
+   "label": "Agent Notes"
+  },
+  {
+   "fieldname": "internal_notes",
+   "fieldtype": "Long Text",
+   "label": "Internal Notes"
+  },
+  {
+   "fieldname": "tawk_to_integration_section",
+   "fieldtype": "Section Break",
+   "label": "Tawk.to Integration"
+  },
+  {
+   "fieldname": "tawk_to_session_id",
+   "fieldtype": "Data",
+   "label": "Tawk.to Session ID"
+  },
+  {
+   "fieldname": "tawk_to_visitor_id",
+   "fieldtype": "Data",
+   "label": "Tawk.to Visitor ID"
+  },
+  {
+   "fieldname": "tawk_to_chat_id",
+   "fieldtype": "Data",
+   "label": "Tawk.to Chat ID"
+  },
+  {
+   "fieldname": "column_break_42",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "has_active_call",
+   "fieldtype": "Check",
+   "label": "Has Active Call"
+  },
+  {
+   "fieldname": "call_status",
+   "fieldtype": "Select",
+   "label": "Call Status",
+   "options": "No Call\nRinging\nConnected\nOn Hold\nEnded\nMissed"
+  },
+  {
+   "fieldname": "call_duration",
+   "fieldtype": "Int",
+   "label": "Call Duration (seconds)"
+  },
+  {
+   "fieldname": "platform_metadata_section",
+   "fieldtype": "Section Break",
+   "label": "Platform Metadata"
+  },
+  {
+   "fieldname": "platform_metadata",
+   "fieldtype": "JSON",
+   "label": "Platform Metadata"
+  },
+  {
+   "fieldname": "conversation_context",
+   "fieldtype": "JSON",
+   "label": "Conversation Context"
+  },
+  {
+   "fieldname": "tags",
+   "fieldtype": "Data",
+   "label": "Tags"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-08-27 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Unified Inbox Conversation",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM Agent",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

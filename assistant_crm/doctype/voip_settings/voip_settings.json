@@ -1,0 +1,203 @@
+{
+ "actions": [],
+ "creation": "2025-07-29 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "sip_configuration_section",
+  "sip_server",
+  "sip_port",
+  "sip_domain",
+  "column_break_5",
+  "websocket_url",
+  "stun_server",
+  "turn_server",
+  "webrtc_configuration_section",
+  "ice_servers",
+  "audio_codecs",
+  "video_enabled",
+  "column_break_12",
+  "recording_enabled",
+  "recording_storage_path",
+  "max_call_duration",
+  "security_section",
+  "encryption_enabled",
+  "tls_enabled",
+  "srtp_enabled",
+  "column_break_18",
+  "authentication_required",
+  "allowed_domains",
+  "blocked_numbers"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enable VoIP"
+  },
+  {
+   "fieldname": "sip_configuration_section",
+   "fieldtype": "Section Break",
+   "label": "SIP Configuration"
+  },
+  {
+   "default": "sip.wcfcb.gov.zm",
+   "fieldname": "sip_server",
+   "fieldtype": "Data",
+   "label": "SIP Server"
+  },
+  {
+   "default": "5060",
+   "fieldname": "sip_port",
+   "fieldtype": "Int",
+   "label": "SIP Port"
+  },
+  {
+   "default": "wcfcb.gov.zm",
+   "fieldname": "sip_domain",
+   "fieldtype": "Data",
+   "label": "SIP Domain"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "wss://sip.wcfcb.gov.zm:8089/ws",
+   "fieldname": "websocket_url",
+   "fieldtype": "Data",
+   "label": "WebSocket URL"
+  },
+  {
+   "default": "stun:stun.l.google.com:19302",
+   "fieldname": "stun_server",
+   "fieldtype": "Data",
+   "label": "STUN Server"
+  },
+  {
+   "fieldname": "turn_server",
+   "fieldtype": "Data",
+   "label": "TURN Server"
+  },
+  {
+   "fieldname": "webrtc_configuration_section",
+   "fieldtype": "Section Break",
+   "label": "WebRTC Configuration"
+  },
+  {
+   "default": "[{\"urls\": \"stun:stun.l.google.com:19302\"}]",
+   "fieldname": "ice_servers",
+   "fieldtype": "Long Text",
+   "label": "ICE Servers (JSON)"
+  },
+  {
+   "default": "[\"PCMU\", \"PCMA\", \"G722\", \"opus\"]",
+   "fieldname": "audio_codecs",
+   "fieldtype": "Data",
+   "label": "Audio Codecs"
+  },
+  {
+   "default": "0",
+   "fieldname": "video_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Video Calls"
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "recording_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Call Recording"
+  },
+  {
+   "default": "/var/recordings/",
+   "fieldname": "recording_storage_path",
+   "fieldtype": "Data",
+   "label": "Recording Storage Path"
+  },
+  {
+   "default": "3600",
+   "fieldname": "max_call_duration",
+   "fieldtype": "Int",
+   "label": "Max Call Duration (seconds)"
+  },
+  {
+   "fieldname": "security_section",
+   "fieldtype": "Section Break",
+   "label": "Security Settings"
+  },
+  {
+   "default": "1",
+   "fieldname": "encryption_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Encryption"
+  },
+  {
+   "default": "1",
+   "fieldname": "tls_enabled",
+   "fieldtype": "Check",
+   "label": "Enable TLS"
+  },
+  {
+   "default": "1",
+   "fieldname": "srtp_enabled",
+   "fieldtype": "Check",
+   "label": "Enable SRTP"
+  },
+  {
+   "fieldname": "column_break_18",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "authentication_required",
+   "fieldtype": "Check",
+   "label": "Require Authentication"
+  },
+  {
+   "fieldname": "allowed_domains",
+   "fieldtype": "Long Text",
+   "label": "Allowed Domains (one per line)"
+  },
+  {
+   "fieldname": "blocked_numbers",
+   "fieldtype": "Long Text",
+   "label": "Blocked Numbers (one per line)"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-07-29 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "VoIP Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Assistant CRM Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

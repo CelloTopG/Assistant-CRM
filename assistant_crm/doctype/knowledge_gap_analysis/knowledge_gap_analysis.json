@@ -1,0 +1,195 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-01-31 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "gap_title",
+  "gap_description",
+  "gap_category",
+  "identified_date",
+  "priority_level",
+  "impact_score",
+  "frequency_score",
+  "urgency_score",
+  "overall_priority_score",
+  "affected_user_types",
+  "related_queries",
+  "failed_query_count",
+  "business_process_impact",
+  "recommended_solution",
+  "assigned_to",
+  "target_resolution_date",
+  "status",
+  "resolution_notes",
+  "knowledge_article_created",
+  "validation_status",
+  "effectiveness_rating"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "KGAP-.YYYY.-.#####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "gap_title",
+   "fieldtype": "Data",
+   "label": "Gap Title",
+   "reqd": 1
+  },
+  {
+   "fieldname": "gap_description",
+   "fieldtype": "Long Text",
+   "label": "Gap Description"
+  },
+  {
+   "fieldname": "gap_category",
+   "fieldtype": "Select",
+   "label": "Gap Category",
+   "options": "claims\ncontributions\nregistration\ntechnical\npolicy\nbeneficiary\ngeneral"
+  },
+  {
+   "fieldname": "identified_date",
+   "fieldtype": "Datetime",
+   "label": "Identified Date"
+  },
+  {
+   "fieldname": "priority_level",
+   "fieldtype": "Select",
+   "label": "Priority Level",
+   "options": "low\nmedium\nhigh\ncritical"
+  },
+  {
+   "fieldname": "impact_score",
+   "fieldtype": "Float",
+   "label": "Impact Score",
+   "precision": "2"
+  },
+  {
+   "fieldname": "frequency_score",
+   "fieldtype": "Float",
+   "label": "Frequency Score",
+   "precision": "2"
+  },
+  {
+   "fieldname": "urgency_score",
+   "fieldtype": "Float",
+   "label": "Urgency Score",
+   "precision": "2"
+  },
+  {
+   "fieldname": "overall_priority_score",
+   "fieldtype": "Float",
+   "label": "Overall Priority Score",
+   "precision": "2"
+  },
+  {
+   "fieldname": "affected_user_types",
+   "fieldtype": "Long Text",
+   "label": "Affected User Types"
+  },
+  {
+   "fieldname": "related_queries",
+   "fieldtype": "Long Text",
+   "label": "Related Queries"
+  },
+  {
+   "fieldname": "failed_query_count",
+   "fieldtype": "Int",
+   "label": "Failed Query Count"
+  },
+  {
+   "fieldname": "business_process_impact",
+   "fieldtype": "Data",
+   "label": "Business Process Impact"
+  },
+  {
+   "fieldname": "recommended_solution",
+   "fieldtype": "Long Text",
+   "label": "Recommended Solution"
+  },
+  {
+   "fieldname": "assigned_to",
+   "fieldtype": "Link",
+   "label": "Assigned To",
+   "options": "User"
+  },
+  {
+   "fieldname": "target_resolution_date",
+   "fieldtype": "Date",
+   "label": "Target Resolution Date"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "identified\nin_progress\nresolved\ncancelled"
+  },
+  {
+   "fieldname": "resolution_notes",
+   "fieldtype": "Long Text",
+   "label": "Resolution Notes"
+  },
+  {
+   "fieldname": "knowledge_article_created",
+   "fieldtype": "Data",
+   "label": "Knowledge Article Created"
+  },
+  {
+   "fieldname": "validation_status",
+   "fieldtype": "Select",
+   "label": "Validation Status",
+   "options": "pending\nvalidated\nrejected"
+  },
+  {
+   "fieldname": "effectiveness_rating",
+   "fieldtype": "Float",
+   "label": "Effectiveness Rating",
+   "precision": "2"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-01-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Knowledge Gap Analysis",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

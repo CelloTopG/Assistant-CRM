@@ -1,0 +1,1 @@
+# Document Storage DocType

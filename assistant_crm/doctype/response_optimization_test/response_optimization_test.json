@@ -1,0 +1,204 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-01-31 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "test_name",
+  "start_date",
+  "end_date",
+  "status",
+  "target_metric",
+  "test_type",
+  "description",
+  "test_config",
+  "variant_a_config",
+  "variant_b_config",
+  "split_ratio",
+  "min_sample_size",
+  "current_winner",
+  "confidence_level",
+  "statistical_significance",
+  "total_impressions",
+  "total_conversions",
+  "test_results",
+  "recommendations",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "OPT-TEST-.YYYY.-.MM.-.#####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "test_name",
+   "fieldtype": "Data",
+   "label": "Test Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Datetime",
+   "label": "Start Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Datetime",
+   "label": "End Date"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "active\npaused\ncompleted\ncancelled",
+   "reqd": 1,
+   "default": "active"
+  },
+  {
+   "fieldname": "target_metric",
+   "fieldtype": "Select",
+   "label": "Target Metric",
+   "options": "user_satisfaction\nresponse_quality\nconversion_rate\nengagement",
+   "reqd": 1
+  },
+  {
+   "fieldname": "test_type",
+   "fieldtype": "Select",
+   "label": "Test Type",
+   "options": "response_template\nresponse_length\nresponse_tone\nresponse_structure",
+   "reqd": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Long Text",
+   "label": "Test Description"
+  },
+  {
+   "fieldname": "test_config",
+   "fieldtype": "Long Text",
+   "label": "Test Configuration (JSON)"
+  },
+  {
+   "fieldname": "variant_a_config",
+   "fieldtype": "Long Text",
+   "label": "Variant A Configuration"
+  },
+  {
+   "fieldname": "variant_b_config",
+   "fieldtype": "Long Text",
+   "label": "Variant B Configuration"
+  },
+  {
+   "fieldname": "split_ratio",
+   "fieldtype": "Float",
+   "label": "Split Ratio (A/B)",
+   "precision": 2,
+   "default": 0.5
+  },
+  {
+   "fieldname": "min_sample_size",
+   "fieldtype": "Int",
+   "label": "Minimum Sample Size",
+   "default": 50
+  },
+  {
+   "fieldname": "current_winner",
+   "fieldtype": "Select",
+   "label": "Current Winner",
+   "options": "A\nB\ninconclusive\ninsufficient_data"
+  },
+  {
+   "fieldname": "confidence_level",
+   "fieldtype": "Float",
+   "label": "Confidence Level (%)",
+   "precision": 2
+  },
+  {
+   "fieldname": "statistical_significance",
+   "fieldtype": "Check",
+   "label": "Statistically Significant",
+   "default": 0
+  },
+  {
+   "fieldname": "total_impressions",
+   "fieldtype": "Int",
+   "label": "Total Impressions",
+   "default": 0
+  },
+  {
+   "fieldname": "total_conversions",
+   "fieldtype": "Int",
+   "label": "Total Conversions",
+   "default": 0
+  },
+  {
+   "fieldname": "test_results",
+   "fieldtype": "Long Text",
+   "label": "Test Results (JSON)"
+  },
+  {
+   "fieldname": "recommendations",
+   "fieldtype": "Long Text",
+   "label": "Recommendations"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Long Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-01-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Response Optimization Test",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM User",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

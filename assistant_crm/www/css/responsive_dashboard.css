@@ -1,0 +1,441 @@
+/* WCFCB Responsive Dashboard CSS */
+/* Mobile-First Responsive Design for Field Operations */
+
+/* Base Mobile Styles (320px and up) */
+@media screen and (max-width: 767px) {
+    /* Container Adjustments */
+    .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    /* Header Responsiveness */
+    .wcfcb-header {
+        padding: 15px 10px;
+    }
+    
+    .wcfcb-header h1 {
+        font-size: 1.2rem;
+        margin-bottom: 5px;
+    }
+    
+    .wcfcb-header p {
+        font-size: 0.8rem;
+    }
+    
+    .anna-avatar {
+        width: 30px;
+        height: 30px;
+        font-size: 0.7rem;
+    }
+    
+    /* KPI Cards Mobile Layout */
+    .kpi-card {
+        margin-bottom: 15px;
+        padding: 15px;
+        min-height: 80px;
+    }
+    
+    .kpi-value {
+        font-size: 1.8rem;
+    }
+    
+    .kpi-label {
+        font-size: 0.75rem;
+    }
+    
+    /* Chart Container Mobile */
+    .chart-container {
+        margin-bottom: 15px;
+        padding: 15px;
+    }
+    
+    .chart-container h5 {
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+    }
+    
+    .chart-container canvas {
+        max-height: 200px !important;
+    }
+    
+    /* Dashboard Card Mobile */
+    .dashboard-card {
+        margin-bottom: 15px;
+        padding: 15px;
+    }
+    
+    .dashboard-card h5 {
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+    }
+    
+    /* Mobile Grid Adjustments */
+    .row {
+        margin-left: -5px;
+        margin-right: -5px;
+    }
+    
+    .row > * {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    
+    /* Mobile Status Indicators */
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+    }
+    
+    /* Mobile Refresh Indicator */
+    .refresh-indicator {
+        top: 15px;
+        right: 15px;
+        padding: 8px 12px;
+        font-size: 0.7rem;
+        border-radius: 15px;
+    }
+    
+    /* Touch-Friendly Interactions */
+    .kpi-card,
+    .chart-container,
+    .dashboard-card {
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .kpi-card:active,
+    .chart-container:active,
+    .dashboard-card:active {
+        transform: scale(0.98);
+        box-shadow: 0 1px 5px rgba(0,0,0,0.15);
+    }
+}
+
+/* Small Mobile Devices (320px - 480px) */
+@media screen and (max-width: 480px) {
+    .wcfcb-header h1 {
+        font-size: 1rem;
+    }
+    
+    .kpi-value {
+        font-size: 1.5rem;
+    }
+    
+    .chart-container canvas {
+        max-height: 180px !important;
+    }
+    
+    /* Single column layout for very small screens */
+    .col-lg-6 {
+        margin-bottom: 10px;
+    }
+}
+
+/* Tablet Portrait (768px - 1023px) */
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+    .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .wcfcb-header {
+        padding: 20px 15px;
+    }
+    
+    .wcfcb-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .kpi-card {
+        padding: 20px;
+        min-height: 100px;
+    }
+    
+    .kpi-value {
+        font-size: 2.2rem;
+    }
+    
+    .chart-container {
+        padding: 20px;
+    }
+    
+    .chart-container canvas {
+        max-height: 250px !important;
+    }
+    
+    .dashboard-card {
+        padding: 20px;
+    }
+    
+    /* Tablet grid adjustments */
+    .row {
+        margin-left: -10px;
+        margin-right: -10px;
+    }
+    
+    .row > * {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}
+
+/* Tablet Landscape (1024px - 1199px) */
+@media screen and (min-width: 1024px) and (max-width: 1199px) {
+    .chart-container canvas {
+        max-height: 280px !important;
+    }
+    
+    .kpi-value {
+        font-size: 2.3rem;
+    }
+}
+
+/* Desktop (1200px and up) */
+@media screen and (min-width: 1200px) {
+    .chart-container canvas {
+        max-height: 320px !important;
+    }
+    
+    .kpi-value {
+        font-size: 2.5rem;
+    }
+}
+
+/* Large Desktop (1400px and up) */
+@media screen and (min-width: 1400px) {
+    .container-fluid {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .chart-container canvas {
+        max-height: 350px !important;
+    }
+}
+
+/* Orientation-Specific Styles */
+@media screen and (orientation: landscape) and (max-height: 500px) {
+    /* Landscape mobile optimization */
+    .wcfcb-header {
+        padding: 10px 15px;
+    }
+    
+    .wcfcb-header h1 {
+        font-size: 1rem;
+    }
+    
+    .kpi-card {
+        padding: 10px;
+        min-height: 60px;
+    }
+    
+    .kpi-value {
+        font-size: 1.3rem;
+    }
+    
+    .chart-container {
+        padding: 10px;
+    }
+    
+    .chart-container canvas {
+        max-height: 150px !important;
+    }
+}
+
+/* High DPI Displays */
+@media screen and (-webkit-min-device-pixel-ratio: 2),
+       screen and (min-resolution: 192dpi) {
+    .kpi-card,
+    .chart-container,
+    .dashboard-card {
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    }
+    
+    .status-indicator {
+        width: 10px;
+        height: 10px;
+    }
+}
+
+/* Accessibility Improvements */
+@media (prefers-reduced-motion: reduce) {
+    .kpi-card,
+    .chart-container,
+    .dashboard-card {
+        transition: none;
+    }
+    
+    .refresh-indicator i {
+        animation: none;
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    .kpi-card,
+    .chart-container,
+    .dashboard-card {
+        border: 2px solid #000;
+    }
+    
+    .wcfcb-header {
+        border-bottom: 3px solid #000;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #121212;
+        color: #ffffff;
+    }
+    
+    .kpi-card,
+    .chart-container,
+    .dashboard-card {
+        background-color: #1e1e1e;
+        color: #ffffff;
+        border-color: #333;
+    }
+    
+    .wcfcb-header {
+        background: linear-gradient(135deg, #0d1421 0%, #1a2332 100%);
+    }
+    
+    .kpi-value {
+        color: #4dabf7;
+    }
+    
+    .kpi-label {
+        color: #adb5bd;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .wcfcb-header,
+    .refresh-indicator {
+        display: none;
+    }
+    
+    .kpi-card,
+    .chart-container,
+    .dashboard-card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+    
+    .chart-container canvas {
+        max-height: none !important;
+    }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+    /* Touch-specific styles */
+    .kpi-card,
+    .chart-container,
+    .dashboard-card {
+        min-height: 44px; /* Minimum touch target size */
+    }
+    
+    .refresh-indicator {
+        padding: 12px 16px; /* Larger touch target */
+    }
+    
+    /* Remove hover effects on touch devices */
+    .kpi-card:hover,
+    .chart-container:hover,
+    .dashboard-card:hover {
+        transform: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+}
+
+/* Specific Device Optimizations */
+
+/* iPhone SE and similar small screens */
+@media screen and (max-width: 375px) and (max-height: 667px) {
+    .kpi-value {
+        font-size: 1.4rem;
+    }
+    
+    .chart-container canvas {
+        max-height: 160px !important;
+    }
+}
+
+/* iPad and similar tablets */
+@media screen and (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+    .col-lg-3 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+    
+    .col-lg-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 15px;
+    }
+}
+
+/* iPad landscape */
+@media screen and (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
+    .col-lg-3 {
+        flex: 0 0 25%;
+        max-width: 25%;
+    }
+    
+    .col-lg-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+}
+
+/* Loading States for Mobile */
+.loading-mobile {
+    position: relative;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.loading-mobile::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Performance Optimizations */
+.chart-container canvas {
+    will-change: transform;
+}
+
+.kpi-card,
+.chart-container,
+.dashboard-card {
+    contain: layout style paint;
+}
+
+/* Reduced Motion for Battery Saving */
+@media (prefers-reduced-motion: reduce) {
+    .kpi-card,
+    .chart-container,
+    .dashboard-card {
+        will-change: auto;
+    }
+}

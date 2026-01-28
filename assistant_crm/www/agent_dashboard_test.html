@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Dashboard - WCFCB</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f6fa;
+        }
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .dashboard-header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .agent-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #27ae60;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .metric-label {
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        .conversations-section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .section-header {
+            padding: 20px;
+            border-bottom: 1px solid #ecf0f1;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .conversation-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #ecf0f1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .conversation-info {
+            flex: 1;
+        }
+        .customer-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .last-message {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        .conversation-meta {
+            text-align: right;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+        .priority-high {
+            color: #e74c3c;
+        }
+        .priority-medium {
+            color: #f39c12;
+        }
+        .priority-low {
+            color: #27ae60;
+        }
+        .status-urgent {
+            background-color: #e74c3c;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+        }
+        .status-active {
+            background-color: #27ae60;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+        }
+        .status-pending {
+            background-color: #f39c12;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+        }
+        .refresh-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .refresh-btn:hover {
+            background-color: #2980b9;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <div>
+                <h1>Agent Dashboard</h1>
+                <div class="agent-status">
+                    <div class="status-indicator" id="statusIndicator"></div>
+                    <span id="agentStatus">Loading...</span>
+                </div>
+            </div>
+            <button class="refresh-btn" onclick="refreshDashboard()">Refresh</button>
+        </div>
+
+        <div class="metrics-grid" id="metricsGrid">
+            <div class="loading">Loading metrics...</div>
+        </div>
+
+        <div class="conversations-section">
+            <div class="section-header">Active Conversations</div>
+            <div id="conversationsList">
+                <div class="loading">Loading conversations...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let dashboardData = null;
+
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/method/assistant_crm.api.real_time_refresh_api.get_agent_dashboard_data');
+                const data = await response.json();
+                
+                if (data.message && data.message.success) {
+                    dashboardData = data.message.agent_dashboard;
+                    updateDashboard();
+                } else {
+                    console.error('Failed to load dashboard data:', data);
+                }
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        function updateDashboard() {
+            if (!dashboardData) return;
+
+            // Update agent status
+            const statusElement = document.getElementById('agentStatus');
+            const statusIndicator = document.getElementById('statusIndicator');
+            
+            statusElement.textContent = `${dashboardData.agent_status.status} - Last activity: ${dashboardData.agent_status.last_activity}`;
+            statusIndicator.style.backgroundColor = dashboardData.agent_status.status === 'Online' ? '#27ae60' : '#e74c3c';
+
+            // Update metrics
+            updateMetrics();
+            
+            // Update conversations
+            updateConversations();
+        }
+
+        function updateMetrics() {
+            const metricsGrid = document.getElementById('metricsGrid');
+            const metrics = dashboardData.metrics;
+            
+            metricsGrid.innerHTML = `
+                <div class="metric-card">
+                    <div class="metric-value">${metrics.active_conversations}</div>
+                    <div class="metric-label">Active Conversations</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">${metrics.pending_messages}</div>
+                    <div class="metric-label">Pending Messages</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">${metrics.avg_response_time}</div>
+                    <div class="metric-label">Avg Response Time</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">${metrics.urgent_conversations}</div>
+                    <div class="metric-label">Urgent</div>
+                </div>
+            `;
+        }
+
+        function updateConversations() {
+            const conversationsList = document.getElementById('conversationsList');
+            const conversations = dashboardData.conversations;
+            
+            conversationsList.innerHTML = conversations.map(conv => `
+                <div class="conversation-item">
+                    <div class="conversation-info">
+                        <div class="customer-name">${conv.customer_name}</div>
+                        <div class="last-message">${conv.last_message}</div>
+                    </div>
+                    <div class="conversation-meta">
+                        <div class="status-${conv.status.toLowerCase()}">${conv.status}</div>
+                        <div class="priority-${conv.priority.toLowerCase()}">${conv.priority} Priority</div>
+                        <div>${conv.last_message_time} • ${conv.channel}</div>
+                        ${conv.unread_count > 0 ? `<div>${conv.unread_count} unread</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function refreshDashboard() {
+            loadDashboardData();
+        }
+
+        // Load dashboard data on page load
+        loadDashboardData();
+
+        // Auto-refresh every 5 seconds
+        setInterval(loadDashboardData, 5000);
+    </script>
+</body>
+</html>

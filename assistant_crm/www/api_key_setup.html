@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Assistant CRM - API Key Setup</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { text-align: center; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #2196f3; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #1976d2; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        .status { margin-top: 15px; padding: 12px; border-radius: 4px; }
+        .status.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .help-section { background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin-top: 20px; }
+        .test-section { background-color: #e8f5e8; padding: 20px; border-radius: 4px; margin-top: 20px; }
+        .current-config { background-color: #fff3cd; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔑 Assistant CRM - API Key Setup</h1>
+            <p>Configure your Google Gemini API key for AI-powered chat functionality</p>
+        </div>
+
+        <div class="current-config">
+            <h3>Current Configuration Status</h3>
+            <div id="currentStatus">Loading...</div>
+        </div>
+
+        <form id="apiKeyForm">
+            <div class="form-group">
+                <label for="apiKey">Google Gemini API Key *</label>
+                <input type="password" id="apiKey" placeholder="Enter your Google Gemini API key (starts with AIzaSy...)" required>
+                <small>Your API key will be encrypted and stored securely</small>
+            </div>
+
+            <div class="form-group">
+                <label for="modelName">Model Name</label>
+                <select id="modelName">
+                    <option value="gemini-1.5-flash">gemini-1.5-flash (Recommended - Fast & Free)</option>
+                    <option value="gemini-1.5-pro">gemini-1.5-pro (More Capable)</option>
+                    <option value="gemini-pro">gemini-pro (Legacy)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="welcomeMessage">Welcome Message</label>
+                <textarea id="welcomeMessage" rows="2" placeholder="Hello! I'm Anna, your WCFCB assistant. How can I help you today?"></textarea>
+            </div>
+
+            <button type="submit" id="saveButton">Save Configuration</button>
+            <button type="button" id="testButton" onclick="testConnection()" style="margin-left: 10px; background-color: #28a745;">Test Connection</button>
+        </form>
+
+        <div id="status" class="status" style="display: none;"></div>
+
+        <div class="test-section">
+            <h3>🧪 Test Chat Functionality</h3>
+            <p>After configuring your API key, test the chat functionality:</p>
+            <button type="button" onclick="window.open('/chat_test.html', '_blank')" style="background-color: #17a2b8;">Open Chat Test Interface</button>
+        </div>
+
+        <div class="help-section">
+            <h3>📚 How to Get a Google Gemini API Key</h3>
+            <ol>
+                <li><strong>Visit Google AI Studio:</strong> Go to <a href="https://aistudio.google.com/" target="_blank">https://aistudio.google.com/</a></li>
+                <li><strong>Sign In:</strong> Use your Google account to sign in</li>
+                <li><strong>Get API Key:</strong> Click "Get API key" in the left sidebar</li>
+                <li><strong>Create New Key:</strong> Click "Create API key" and select a Google Cloud project</li>
+                <li><strong>Copy Key:</strong> Copy the generated API key (starts with "AIzaSy")</li>
+                <li><strong>Paste Here:</strong> Enter the key in the form above</li>
+            </ol>
+
+            <h4>💡 Tips</h4>
+            <ul>
+                <li>The free tier includes generous usage limits for testing</li>
+                <li>Keep your API key secure and don't share it publicly</li>
+                <li>Use "gemini-1.5-flash" for faster responses and lower costs</li>
+                <li>Monitor your usage in the Google Cloud Console</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Load current configuration on page load
+        window.onload = function() {
+            loadCurrentConfig();
+        };
+
+        async function loadCurrentConfig() {
+            try {
+                const response = await fetch('/api/method/assistant_crm.page.assistant_crm.assistant_crm.get_settings');
+                const data = await response.json();
+                
+                if (data.message) {
+                    const settings = data.message;
+                    document.getElementById('currentStatus').innerHTML = `
+                        <strong>Status:</strong> ${settings.enabled ? '✅ Enabled' : '❌ Disabled'}<br>
+                        <strong>Provider:</strong> ${settings.ai_provider}<br>
+                        <strong>Model:</strong> ${settings.model_name}<br>
+                        <strong>API Key:</strong> ${settings.has_api_key ? '✅ Configured' : '❌ Not Set'}<br>
+                        <strong>Last Test:</strong> ${settings.last_test_result || 'Never tested'}
+                    `;
+                    
+                    // Populate form
+                    document.getElementById('modelName').value = settings.model_name || 'gemini-1.5-flash';
+                    document.getElementById('welcomeMessage').value = settings.welcome_message || '';
+                }
+            } catch (error) {
+                document.getElementById('currentStatus').innerHTML = '❌ Error loading configuration';
+            }
+        }
+
+        document.getElementById('apiKeyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const saveButton = document.getElementById('saveButton');
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const modelName = document.getElementById('modelName').value;
+            const welcomeMessage = document.getElementById('welcomeMessage').value.trim();
+            
+            if (!apiKey) {
+                showStatus('Please enter an API key', 'error');
+                return;
+            }
+            
+            if (!apiKey.startsWith('AIzaSy')) {
+                showStatus('Invalid API key format. Google Gemini API keys start with "AIzaSy"', 'error');
+                return;
+            }
+            
+            saveButton.disabled = true;
+            showStatus('Saving configuration...', 'info');
+            
+            try {
+                const response = await fetch('/api/method/assistant_crm.page.assistant_crm.assistant_crm.save_settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `settings=${encodeURIComponent(JSON.stringify({
+                        enabled: 1,
+                        ai_provider: 'Google Gemini',
+                        api_key: apiKey,
+                        model_name: modelName,
+                        welcome_message: welcomeMessage,
+                        response_timeout: 30
+                    }))}`
+                });
+                
+                const data = await response.json();
+                
+                if (data.message && data.message.success) {
+                    showStatus('✅ Configuration saved successfully!', 'success');
+                    loadCurrentConfig(); // Reload current config
+                    document.getElementById('apiKey').value = ''; // Clear the password field
+                } else {
+                    showStatus('❌ Error saving configuration: ' + (data.message.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                showStatus('❌ Network error: ' + error.message, 'error');
+            } finally {
+                saveButton.disabled = false;
+            }
+        });
+
+        async function testConnection() {
+            const testButton = document.getElementById('testButton');
+            testButton.disabled = true;
+            showStatus('Testing connection...', 'info');
+            
+            try {
+                const response = await fetch('/api/method/assistant_crm.page.assistant_crm.assistant_crm.test_connection');
+                const data = await response.json();
+                
+                if (data.message && data.message.success) {
+                    showStatus(`✅ Connection successful!<br><strong>Model:</strong> ${data.message.model}<br><strong>Response:</strong> ${data.message.response_preview}`, 'success');
+                } else {
+                    showStatus(`❌ Connection failed: ${data.message.message}<br><small>Please check your API key and try again.</small>`, 'error');
+                }
+            } catch (error) {
+                showStatus('❌ Test failed: ' + error.message, 'error');
+            } finally {
+                testButton.disabled = false;
+            }
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = 'status ' + type;
+            statusDiv.innerHTML = message;
+            statusDiv.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>

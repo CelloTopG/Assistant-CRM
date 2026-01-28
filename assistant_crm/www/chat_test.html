@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Assistant CRM Chat Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .chat-container { max-width: 600px; margin: 0 auto; }
+        .chat-messages { border: 1px solid #ddd; height: 400px; overflow-y: auto; padding: 10px; margin-bottom: 10px; }
+        .message { margin-bottom: 10px; padding: 8px; border-radius: 5px; }
+        .user-message { background-color: #e3f2fd; text-align: right; }
+        .ai-message { background-color: #f5f5f5; }
+        .input-container { display: flex; gap: 10px; }
+        #messageInput { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        #sendButton { padding: 8px 16px; background-color: #2196f3; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        #sendButton:disabled { background-color: #ccc; cursor: not-allowed; }
+        .status { margin-top: 10px; padding: 8px; border-radius: 4px; }
+        .status.success { background-color: #d4edda; color: #155724; }
+        .status.error { background-color: #f8d7da; color: #721c24; }
+        .status.info { background-color: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h1>🤖 Assistant CRM Chat Test</h1>
+        <div id="demoNotice" class="status info" style="margin-bottom: 10px;">
+            <strong>System Status:</strong> <span id="systemStatus">Testing API configuration...</span>
+            <a href="#" onclick="showApiKeyHelp()">Get a new API key</a>
+        </div>
+        <div id="chatMessages" class="chat-messages"></div>
+        <div class="input-container">
+            <input type="text" id="messageInput" placeholder="Type your message here..." />
+            <button id="sendButton" onclick="sendMessage()">Send</button>
+        </div>
+        <div id="status" class="status" style="display: none;"></div>
+    </div>
+
+    <script>
+        let sessionId = 'chat_test_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        
+        function addMessage(message, isUser = false) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ' + (isUser ? 'user-message' : 'ai-message');
+            messageDiv.innerHTML = `<strong>${isUser ? 'You' : 'Anna'}:</strong> ${message}`;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = 'status ' + type;
+            statusDiv.innerHTML = message;
+            statusDiv.style.display = 'block';
+            
+            if (type === 'success' || type === 'error') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Add user message to chat
+            addMessage(message, true);
+
+            // Clear input and disable button
+            input.value = '';
+            sendButton.disabled = true;
+            showStatus('Sending message...', 'info');
+
+            try {
+                // Use the new simplified chat API
+                let apiEndpoint = '/api/method/assistant_crm.api.simplified_chat.send_message';
+                let response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `message=${encodeURIComponent(message)}&session_id=${sessionId}`
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.message) {
+                    const result = data.message;
+
+                    if (result.success) {
+                        const aiResponse = result.response || 'No response received';
+                        addMessage(aiResponse);
+
+                        if (result.hardcoded_mode) {
+                            showStatus(`Message sent successfully! (Working Mode - API Key: ${result.api_key_used})`, 'success');
+                        } else if (result.simple_mode) {
+                            showStatus(`Message sent successfully! (Simple Mode - API Key: ${result.api_key_used})`, 'success');
+                        } else if (result.demo_mode) {
+                            showStatus('Message sent successfully! (Demo Mode - Mock Response)', 'success');
+                        } else {
+                            showStatus('Message sent successfully!', 'success');
+                        }
+                    } else {
+                        addMessage('Sorry, I encountered an error processing your message.');
+                        showStatus('Error: ' + (result.error || 'Unknown error'), 'error');
+                    }
+                } else {
+                    addMessage('Sorry, I encountered a connection error.');
+                    showStatus('Connection error: ' + response.status, 'error');
+                }
+
+            } catch (error) {
+                addMessage('Sorry, I encountered a network error.');
+                showStatus('Network error: ' + error.message, 'error');
+            } finally {
+                sendButton.disabled = false;
+                input.focus();
+            }
+        }
+        
+        // Allow Enter key to send message
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        function showApiKeyHelp() {
+            alert(`To get a new Google Gemini API key:
+
+1. Go to Google AI Studio: https://aistudio.google.com/
+2. Sign in with your Google account
+3. Click "Get API key" in the left sidebar
+4. Create a new API key
+5. Copy the key and update it in Assistant CRM Settings
+
+Note: The API key should start with "AIzaSy" and be about 39 characters long.`);
+        }
+
+        // Focus input on load
+        window.onload = function() {
+            document.getElementById('messageInput').focus();
+            showStatus('Chat test interface loaded. Session ID: ' + sessionId, 'info');
+
+            // Test system status
+            testSystemStatus();
+        };
+
+        async function testSystemStatus() {
+            try {
+                const response = await fetch('/api/method/assistant_crm.api.simplified_chat.get_chat_status');
+                const data = await response.json();
+
+                if (data.message && data.message.success) {
+                    document.getElementById('systemStatus').innerHTML = `API Key: ${data.message.api_key} | Model: ${data.message.model}`;
+                } else {
+                    document.getElementById('systemStatus').innerHTML = 'API configuration issue - using demo mode';
+                }
+            } catch (error) {
+                document.getElementById('systemStatus').innerHTML = 'System check failed - using demo mode';
+            }
+        }
+    </script>
+</body>
+</html>

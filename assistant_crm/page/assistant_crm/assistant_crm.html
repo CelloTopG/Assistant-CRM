@@ -1,0 +1,165 @@
+<!-- Load Anna's CSS styles -->
+<link rel="stylesheet" href="/assets/assistant_crm/css/chat_bubble.css">
+
+<div class="assistant-crm-integration">
+    <div class="page-header">
+        <div class="anna-avatar">
+            <div class="anna-image">👩‍💼</div>
+        </div>
+        <h1>Hi this is Anna!</h1>
+        <p class="anna-greeting">How can I help?</p>
+        <p class="text-muted">Your WCFCB AI assistant for customer service and CRM support</p>
+    </div>
+
+    <!-- Anna's Services Section -->
+    <div class="anna-services-section">
+        <h3>I specialize in helping you with:</h3>
+        <div class="services-grid">
+            <div class="service-card">
+                <div class="service-icon">📋</div>
+                <h4>Claims Processing</h4>
+                <p>Assistance with workers' compensation claims and documentation</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🏢</div>
+                <h4>Employer Registration</h4>
+                <p>Help with company registration and compliance requirements</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">💰</div>
+                <h4>Payment Services</h4>
+                <p>Support with online payments and declaration submissions</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">📊</div>
+                <h4>Reports & Analytics</h4>
+                <p>Access to reports, statistics, and business insights</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🛡️</div>
+                <h4>Safety & Health</h4>
+                <p>Workplace safety guidelines and health compliance</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">📞</div>
+                <h4>General Support</h4>
+                <p>Any questions about WCFCB services and procedures</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="integration-content">
+        <!-- Enable/Disable Section -->
+        <div class="form-group">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" id="assistant-enabled" />
+                    <span class="label-area">Enable Anna Assistant</span>
+                </label>
+            </div>
+            <p class="help-text text-muted">
+                Enable Anna to provide AI-powered assistance across your WCFCB system
+            </p>
+        </div>
+
+        <!-- Settings Form (hidden by default) -->
+        <div id="assistant-settings-form" style="display: none;">
+            <hr>
+            
+            <!-- AI Provider Section -->
+            <div class="form-group">
+                <label class="control-label">AI Provider</label>
+                <select class="form-control" id="ai-provider">
+                    <option value="Google Gemini">Google Gemini</option>
+                    <option value="OpenAI GPT">OpenAI GPT</option>
+                    <option value="Anthropic Claude">Anthropic Claude</option>
+                    <option value="Custom API">Custom API</option>
+                </select>
+            </div>
+
+            <!-- API Key Section -->
+            <div class="form-group">
+                <label class="control-label">API Key</label>
+                <input type="password" class="form-control" id="api-key" placeholder="Enter your AI provider API key">
+                <p class="help-text text-muted">
+                    Your API key will be encrypted and stored securely
+                </p>
+            </div>
+
+            <!-- Model Name Section -->
+            <div class="form-group">
+                <label class="control-label">Model Name</label>
+                <input type="text" class="form-control" id="model-name" placeholder="e.g., gemini-1.5-pro">
+                <p class="help-text text-muted">
+                    Specify the AI model to use (e.g., gemini-1.5-pro, gpt-4, claude-3-sonnet-20240229)
+                </p>
+            </div>
+
+            <!-- Advanced Settings -->
+            <div class="form-group">
+                <label class="control-label">Response Timeout (seconds)</label>
+                <input type="number" class="form-control" id="response-timeout" value="30" min="5" max="120">
+            </div>
+
+            <div class="form-group">
+                <label class="control-label">Welcome Message</label>
+                <textarea class="form-control" id="welcome-message" rows="2" placeholder="Hi! I'm Anna, your WCFCB assistant. How can I help you today? 😊"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label">Chat Bubble Position</label>
+                <select class="form-control" id="chat-position">
+                    <option value="Bottom Right">Bottom Right</option>
+                    <option value="Bottom Left">Bottom Left</option>
+                    <option value="Top Right">Top Right</option>
+                    <option value="Top Left">Top Left</option>
+                </select>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="form-group">
+                <button class="btn btn-primary" id="save-settings">Save Settings</button>
+                <button class="btn btn-default" id="test-connection" style="margin-left: 10px;">Test Connection</button>
+            </div>
+
+            <!-- Status Messages -->
+            <div id="status-message" style="margin-top: 15px;"></div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="help-section" style="margin-top: 30px;">
+            <h4>Getting Started</h4>
+            <ol>
+                <li><strong>Get an API Key:</strong> Sign up for your preferred AI provider (Google AI Studio, OpenAI, Anthropic)</li>
+                <li><strong>Enable Integration:</strong> Check the "Enable Assistant CRM" checkbox above</li>
+                <li><strong>Configure Settings:</strong> Enter your API key and configure preferences</li>
+                <li><strong>Test Connection:</strong> Use the "Test Connection" button to verify your setup</li>
+                <li><strong>Start Using:</strong> The chat bubble will appear on all desk pages when properly configured</li>
+            </ol>
+
+            <h4>Features</h4>
+            <ul>
+                <li>🌐 <strong>Omnichannel Support:</strong> WhatsApp, Telegram, Facebook Messenger integration</li>
+                <li>🎯 <strong>CRM Integration:</strong> Direct access to customer data, leads, and opportunities</li>
+                <li>🤖 <strong>Anna Persona:</strong> Professional, patient, and solution-focused assistant</li>
+                <li>🔍 <strong>Context-Aware:</strong> Understands customer history and preferences</li>
+                <li>🛡️ <strong>Secure:</strong> Role-based access with encrypted API key storage</li>
+                <li>📊 <strong>Analytics:</strong> Sentiment analysis and conversation monitoring</li>
+            </ul>
+
+            <h4>Support</h4>
+            <p>For help and documentation, visit: <a href="https://github.com/QuantumSolver/assistant_crm" target="_blank">Assistant CRM GitHub</a></p>
+        </div>
+    </div>
+</div>
+
+<!-- Load Anna's JavaScript -->
+<script src="/assets/assistant_crm/js/chat_bubble.js"></script>
+<script>
+// Initialize Anna's chat bubble when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof window.initializeAssistantCRM === 'function') {
+        window.initializeAssistantCRM();
+    }
+});
+</script>

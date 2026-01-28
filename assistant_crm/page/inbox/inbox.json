@@ -1,0 +1,59 @@
+{
+ "content": null,
+ "creation": "2025-08-27 16:00:00",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2026-01-07 00:22:56.671232",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "inbox",
+ "owner": "Administrator",
+ "page_name": "inbox",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Assistant CRM Manager"
+  },
+  {
+   "role": "Assistant CRM Agent"
+  },
+  {
+   "role": "CRM Administrator"
+  },
+  {
+   "role": "Claims/ Benefits officer"
+  },
+  {
+   "role": "Branch / Asst Manager"
+  },
+  {
+   "role": "Branch Manager"
+  },
+  {
+   "role": "Employer Relations Officer"
+  },
+  {
+   "role": "Manager Corporate Affairs & Customer Services"
+  },
+  {
+   "role": "Customer Service Officer"
+  },
+  {
+   "role": "Communications Officer"
+  },
+  {
+   "role": "Assistant manager Corporate Affairs and Customer Services"
+  },
+  {
+   "role": "Customer Service Assistants"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Inbox"
+}

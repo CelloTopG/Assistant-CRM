@@ -1,0 +1,1 @@
+# Assistant CRM Settings DocType

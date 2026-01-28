@@ -1,0 +1,333 @@
+{
+ "actions": [],
+ "creation": "2025-07-29 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "connection_section",
+  "base_url",
+  "api_key",
+  "api_secret",
+  "column_break_5",
+  "username",
+  "password",
+  "timeout",
+  "sync_settings_section",
+  "real_time_sync",
+  "sync_interval_minutes",
+  "auto_retry_failed_sync",
+  "column_break_12",
+  "max_retry_attempts",
+  "retry_delay_minutes",
+  "endpoints_section",
+  "auth_endpoint",
+  "employers_endpoint",
+  "beneficiaries_endpoint",
+  "column_break_18",
+  "payments_endpoint",
+  "returns_endpoint",
+  "claims_endpoint",
+  "column_break_22",
+  "compliance_endpoint",
+  "deadlines_endpoint",
+  "customer_lookup_endpoint",
+  "data_mapping_section",
+  "employer_id_field",
+  "beneficiary_id_field",
+  "customer_phone_field",
+  "column_break_29",
+  "customer_email_field",
+  "payment_status_field",
+  "compliance_status_field",
+  "monitoring_section",
+  "last_sync_time",
+  "last_successful_sync",
+  "sync_status",
+  "column_break_36",
+  "total_records_synced",
+  "failed_sync_count",
+  "last_error_message"
+ ],
+ "fields": [
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enable CoreBusiness Integration"
+  },
+  {
+   "fieldname": "connection_section",
+   "fieldtype": "Section Break",
+   "label": "Connection Settings"
+  },
+  {
+   "default": "https://corebusiness.wcfcb.gov.zm/api",
+   "fieldname": "base_url",
+   "fieldtype": "Data",
+   "label": "Base URL",
+   "reqd": 1
+  },
+  {
+   "fieldname": "api_key",
+   "fieldtype": "Data",
+   "label": "API Key",
+   "reqd": 1
+  },
+  {
+   "fieldname": "api_secret",
+   "fieldtype": "Password",
+   "label": "API Secret"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "username",
+   "fieldtype": "Data",
+   "label": "Username"
+  },
+  {
+   "fieldname": "password",
+   "fieldtype": "Password",
+   "label": "Password"
+  },
+  {
+   "default": "30",
+   "fieldname": "timeout",
+   "fieldtype": "Int",
+   "label": "Request Timeout (seconds)"
+  },
+  {
+   "fieldname": "sync_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Synchronization Settings"
+  },
+  {
+   "default": "1",
+   "fieldname": "real_time_sync",
+   "fieldtype": "Check",
+   "label": "Enable Real-time Sync"
+  },
+  {
+   "default": "15",
+   "fieldname": "sync_interval_minutes",
+   "fieldtype": "Int",
+   "label": "Sync Interval (minutes)"
+  },
+  {
+   "default": "1",
+   "fieldname": "auto_retry_failed_sync",
+   "fieldtype": "Check",
+   "label": "Auto Retry Failed Sync"
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "3",
+   "fieldname": "max_retry_attempts",
+   "fieldtype": "Int",
+   "label": "Max Retry Attempts"
+  },
+  {
+   "default": "5",
+   "fieldname": "retry_delay_minutes",
+   "fieldtype": "Int",
+   "label": "Retry Delay (minutes)"
+  },
+  {
+   "fieldname": "endpoints_section",
+   "fieldtype": "Section Break",
+   "label": "API Endpoints"
+  },
+  {
+   "default": "/auth/login",
+   "fieldname": "auth_endpoint",
+   "fieldtype": "Data",
+   "label": "Authentication Endpoint"
+  },
+  {
+   "default": "/employers",
+   "fieldname": "employers_endpoint",
+   "fieldtype": "Data",
+   "label": "Employers Endpoint"
+  },
+  {
+   "default": "/beneficiaries",
+   "fieldname": "beneficiaries_endpoint",
+   "fieldtype": "Data",
+   "label": "Beneficiaries Endpoint"
+  },
+  {
+   "fieldname": "column_break_18",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "/payments",
+   "fieldname": "payments_endpoint",
+   "fieldtype": "Data",
+   "label": "Payments Endpoint"
+  },
+  {
+   "default": "/returns",
+   "fieldname": "returns_endpoint",
+   "fieldtype": "Data",
+   "label": "Returns Endpoint"
+  },
+  {
+   "default": "/claims",
+   "fieldname": "claims_endpoint",
+   "fieldtype": "Data",
+   "label": "Claims Endpoint"
+  },
+  {
+   "fieldname": "column_break_22",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "/compliance",
+   "fieldname": "compliance_endpoint",
+   "fieldtype": "Data",
+   "label": "Compliance Endpoint"
+  },
+  {
+   "default": "/deadlines",
+   "fieldname": "deadlines_endpoint",
+   "fieldtype": "Data",
+   "label": "Deadlines Endpoint"
+  },
+  {
+   "default": "/customers/lookup",
+   "fieldname": "customer_lookup_endpoint",
+   "fieldtype": "Data",
+   "label": "Customer Lookup Endpoint"
+  },
+  {
+   "fieldname": "data_mapping_section",
+   "fieldtype": "Section Break",
+   "label": "Data Field Mapping"
+  },
+  {
+   "default": "employer_number",
+   "fieldname": "employer_id_field",
+   "fieldtype": "Data",
+   "label": "Employer ID Field"
+  },
+  {
+   "default": "beneficiary_id",
+   "fieldname": "beneficiary_id_field",
+   "fieldtype": "Data",
+   "label": "Beneficiary ID Field"
+  },
+  {
+   "default": "phone",
+   "fieldname": "customer_phone_field",
+   "fieldtype": "Data",
+   "label": "Customer Phone Field"
+  },
+  {
+   "fieldname": "column_break_29",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "email",
+   "fieldname": "customer_email_field",
+   "fieldtype": "Data",
+   "label": "Customer Email Field"
+  },
+  {
+   "default": "payment_status",
+   "fieldname": "payment_status_field",
+   "fieldtype": "Data",
+   "label": "Payment Status Field"
+  },
+  {
+   "default": "compliance_status",
+   "fieldname": "compliance_status_field",
+   "fieldtype": "Data",
+   "label": "Compliance Status Field"
+  },
+  {
+   "fieldname": "monitoring_section",
+   "fieldtype": "Section Break",
+   "label": "Sync Monitoring"
+  },
+  {
+   "fieldname": "last_sync_time",
+   "fieldtype": "Datetime",
+   "label": "Last Sync Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_successful_sync",
+   "fieldtype": "Datetime",
+   "label": "Last Successful Sync",
+   "read_only": 1
+  },
+  {
+   "default": "Not Started",
+   "fieldname": "sync_status",
+   "fieldtype": "Select",
+   "label": "Sync Status",
+   "options": "Not Started\nIn Progress\nCompleted\nFailed\nRetrying",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_36",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "total_records_synced",
+   "fieldtype": "Int",
+   "label": "Total Records Synced",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "failed_sync_count",
+   "fieldtype": "Int",
+   "label": "Failed Sync Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_error_message",
+   "fieldtype": "Long Text",
+   "label": "Last Error Message",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-07-29 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "CoreBusiness Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Assistant CRM Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

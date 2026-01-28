@@ -1,0 +1,214 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-07-28 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "campaign_name",
+  "campaign_type",
+  "status",
+  "channels",
+  "target_audience_section",
+  "stakeholder_types",
+  "dynamic_filters",
+  "message_content_section",
+  "message_template",
+  "custom_message",
+  "personalization",
+  "scheduling_section",
+  "send_immediately",
+  "scheduled_time",
+  "timezone",
+  "statistics_section",
+  "total_recipients",
+  "messages_sent",
+  "messages_delivered",
+  "messages_failed",
+  "delivery_rate"
+ ],
+ "fields": [
+  {
+   "default": "BMC-.YYYY.-.#####",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "BMC-.YYYY.-.#####"
+  },
+  {
+   "fieldname": "campaign_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Campaign Name",
+   "reqd": 1
+  },
+  {
+   "default": "Broadcast",
+   "fieldname": "campaign_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Campaign Type",
+   "options": "Broadcast\nTargeted\nScheduled\nTriggered"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Draft\nScheduled\nRunning\nCompleted\nFailed\nCancelled"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "target_audience_section",
+   "fieldtype": "Section Break",
+   "label": "Target Audience"
+  },
+  {
+   "fieldname": "stakeholder_types",
+   "fieldtype": "Table",
+   "label": "Stakeholder Types",
+   "options": "Stakeholder Type Filter"
+  },
+  {
+   "fieldname": "dynamic_filters",
+   "fieldtype": "Table",
+   "label": "Dynamic Filters",
+   "options": "Dynamic Filter"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "message_content_section",
+   "fieldtype": "Section Break",
+   "label": "Message Content"
+  },
+  {
+   "fieldname": "message_template",
+   "fieldtype": "Link",
+   "label": "Message Template",
+   "options": "Message Template"
+  },
+  {
+   "fieldname": "custom_message",
+   "fieldtype": "Text Editor",
+   "label": "Custom Message"
+  },
+  {
+   "fieldname": "personalization",
+   "fieldtype": "Table",
+   "label": "Personalization",
+   "options": "Message Personalization"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "scheduling_section",
+   "fieldtype": "Section Break",
+   "label": "Scheduling"
+  },
+  {
+   "default": "1",
+   "fieldname": "send_immediately",
+   "fieldtype": "Check",
+   "label": "Send Immediately"
+  },
+  {
+   "depends_on": "eval:!doc.send_immediately",
+   "fieldname": "scheduled_time",
+   "fieldtype": "Datetime",
+   "label": "Scheduled Time"
+  },
+  {
+   "default": "Africa/Lusaka",
+   "fieldname": "timezone",
+   "fieldtype": "Select",
+   "label": "Timezone",
+   "options": "UTC\nAfrica/Lusaka\nAfrica/Cairo\nAfrica/Johannesburg\nAfrica/Lagos\nAfrica/Nairobi\nAfrica/Casablanca\nAfrica/Addis_Ababa\nAfrica/Accra\nAfrica/Kinshasa\nAfrica/Maputo\nAfrica/Harare\nAfrica/Windhoek\nAfrica/Kigali\nAfrica/Dar_es_Salaam\nEurope/London\nEurope/Paris\nEurope/Berlin\nAmerica/New_York\nAmerica/Los_Angeles\nAsia/Dubai\nAsia/Hong_Kong\nAsia/Singapore\nAsia/Tokyo"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "statistics_section",
+   "fieldtype": "Section Break",
+   "label": "Campaign Statistics"
+  },
+  {
+   "default": "0",
+   "fieldname": "total_recipients",
+   "fieldtype": "Int",
+   "label": "Total Recipients",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "messages_sent",
+   "fieldtype": "Int",
+   "label": "Messages Sent",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "messages_delivered",
+   "fieldtype": "Int",
+   "label": "Messages Delivered",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "messages_failed",
+   "fieldtype": "Int",
+   "label": "Messages Failed",
+   "read_only": 1
+  },
+  {
+   "default": "0.0",
+   "fieldname": "delivery_rate",
+   "fieldtype": "Percent",
+   "label": "Delivery Rate",
+   "precision": "2",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-07-28 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Bulk Message Campaign",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Assistant CRM User"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

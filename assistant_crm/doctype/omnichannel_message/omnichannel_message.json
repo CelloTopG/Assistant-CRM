@@ -1,0 +1,244 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-07-26 23:48:18.835218",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "channel_type",
+  "channel_id",
+  "direction",
+  "status",
+  "priority",
+  "message_section",
+  "message_content",
+  "sender_info",
+  "metadata",
+  "processing_section",
+  "received_at",
+  "processed_at",
+  "response_time",
+  "ai_response",
+  "processed_by_ai",
+  "escalation_section",
+  "escalated_to_agent",
+  "agent_assigned",
+  "escalation_reason",
+  "escalated_at",
+  "customer_section",
+  "customer_id",
+  "customer_name",
+  "customer_phone",
+  "customer_email"
+ ],
+ "fields": [
+  {
+   "default": "OM-.YYYY.-.#####",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "OM-.YYYY.-.#####"
+  },
+  {
+   "fieldname": "channel_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Channel Type",
+   "options": "Website Chat\nWhatsApp\nFacebook\nInstagram\nTelegram\nUSSD\nPhone",
+   "reqd": 1
+  },
+  {
+   "fieldname": "channel_id",
+   "fieldtype": "Data",
+   "label": "Channel ID",
+   "reqd": 1
+  },
+  {
+   "default": "Inbound",
+   "fieldname": "direction",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Direction",
+   "options": "Inbound\nOutbound"
+  },
+  {
+   "default": "Received",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Received\nProcessing\nResponded\nEscalated\nClosed\nFailed"
+  },
+  {
+   "default": "Medium",
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "label": "Priority",
+   "options": "Low\nMedium\nHigh\nUrgent"
+  },
+  {
+   "fieldname": "message_section",
+   "fieldtype": "Section Break",
+   "label": "Message Details"
+  },
+  {
+   "fieldname": "message_content",
+   "fieldtype": "Long Text",
+   "in_list_view": 1,
+   "label": "Message Content",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sender_info",
+   "fieldtype": "JSON",
+   "label": "Sender Information"
+  },
+  {
+   "fieldname": "metadata",
+   "fieldtype": "JSON",
+   "label": "Metadata"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "processing_section",
+   "fieldtype": "Section Break",
+   "label": "Processing Information"
+  },
+  {
+   "fieldname": "received_at",
+   "fieldtype": "Datetime",
+   "label": "Received At",
+   "reqd": 1
+  },
+  {
+   "fieldname": "processed_at",
+   "fieldtype": "Datetime",
+   "label": "Processed At"
+  },
+  {
+   "fieldname": "response_time",
+   "fieldtype": "Float",
+   "label": "Response Time (seconds)",
+   "precision": "2"
+  },
+  {
+   "fieldname": "ai_response",
+   "fieldtype": "Long Text",
+   "label": "AI Response"
+  },
+  {
+   "default": "0",
+   "fieldname": "processed_by_ai",
+   "fieldtype": "Check",
+   "label": "Processed by AI"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "escalation_section",
+   "fieldtype": "Section Break",
+   "label": "Escalation Details"
+  },
+  {
+   "default": "0",
+   "fieldname": "escalated_to_agent",
+   "fieldtype": "Check",
+   "label": "Escalated to Agent"
+  },
+  {
+   "fieldname": "agent_assigned",
+   "fieldtype": "Link",
+   "label": "Agent Assigned",
+   "options": "User"
+  },
+  {
+   "fieldname": "escalation_reason",
+   "fieldtype": "Data",
+   "label": "Escalation Reason"
+  },
+  {
+   "fieldname": "escalated_at",
+   "fieldtype": "Datetime",
+   "label": "Escalated At"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "customer_section",
+   "fieldtype": "Section Break",
+   "label": "Customer Information"
+  },
+  {
+   "fieldname": "customer_id",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer Name"
+  },
+  {
+   "fieldname": "customer_phone",
+   "fieldtype": "Data",
+   "label": "Customer Phone"
+  },
+  {
+   "fieldname": "customer_email",
+   "fieldtype": "Data",
+   "label": "Customer Email"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-07-27 00:49:08.775935",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Omnichannel Message",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

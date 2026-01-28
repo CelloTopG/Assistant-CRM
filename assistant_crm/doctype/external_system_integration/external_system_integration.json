@@ -1,0 +1,180 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:system_name",
+ "creation": "2025-01-28 10:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "system_name",
+  "system_type",
+  "api_endpoint",
+  "authentication_type",
+  "api_key",
+  "oauth_settings_section",
+  "client_id",
+  "client_secret",
+  "access_token",
+  "refresh_token",
+  "sync_settings_section",
+  "sync_frequency",
+  "data_mappings",
+  "is_active",
+  "status_section",
+  "last_sync_time",
+  "sync_status",
+  "last_error_message"
+ ],
+ "fields": [
+  {
+   "fieldname": "system_name",
+   "fieldtype": "Data",
+   "label": "System Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "system_type",
+   "fieldtype": "Select",
+   "label": "System Type",
+   "options": "CoreBusiness\nPayroll\nHR\nFinance\nCustom",
+   "reqd": 1
+  },
+  {
+   "fieldname": "api_endpoint",
+   "fieldtype": "Data",
+   "label": "API Endpoint",
+   "description": "Base URL for the external system API"
+  },
+  {
+   "fieldname": "authentication_type",
+   "fieldtype": "Select",
+   "label": "Authentication Type",
+   "options": "API Key\nOAuth\nBasic Auth\nToken",
+   "default": "API Key"
+  },
+  {
+   "fieldname": "api_key",
+   "fieldtype": "Password",
+   "label": "API Key",
+   "depends_on": "eval:doc.authentication_type=='API Key'"
+  },
+  {
+   "fieldname": "oauth_settings_section",
+   "fieldtype": "Section Break",
+   "label": "OAuth Settings",
+   "depends_on": "eval:doc.authentication_type=='OAuth'"
+  },
+  {
+   "fieldname": "client_id",
+   "fieldtype": "Data",
+   "label": "Client ID",
+   "depends_on": "eval:doc.authentication_type=='OAuth'"
+  },
+  {
+   "fieldname": "client_secret",
+   "fieldtype": "Password",
+   "label": "Client Secret",
+   "depends_on": "eval:doc.authentication_type=='OAuth'"
+  },
+  {
+   "fieldname": "access_token",
+   "fieldtype": "Password",
+   "label": "Access Token",
+   "depends_on": "eval:doc.authentication_type=='OAuth'"
+  },
+  {
+   "fieldname": "refresh_token",
+   "fieldtype": "Password",
+   "label": "Refresh Token",
+   "depends_on": "eval:doc.authentication_type=='OAuth'"
+  },
+  {
+   "fieldname": "sync_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Sync Settings"
+  },
+  {
+   "fieldname": "sync_frequency",
+   "fieldtype": "Select",
+   "label": "Sync Frequency",
+   "options": "Real-time\nHourly\nDaily\nWeekly\nManual",
+   "default": "Daily"
+  },
+  {
+   "fieldname": "data_mappings",
+   "fieldtype": "Table",
+   "label": "Data Field Mappings",
+   "options": "Data Field Mapping"
+  },
+  {
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active",
+   "default": "1"
+  },
+  {
+   "fieldname": "status_section",
+   "fieldtype": "Section Break",
+   "label": "Status"
+  },
+  {
+   "fieldname": "last_sync_time",
+   "fieldtype": "Datetime",
+   "label": "Last Sync Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sync_status",
+   "fieldtype": "Select",
+   "label": "Sync Status",
+   "options": "Success\nFailed\nPending\nNever Synced",
+   "read_only": 1,
+   "default": "Never Synced"
+  },
+  {
+   "fieldname": "last_error_message",
+   "fieldtype": "Long Text",
+   "label": "Last Error Message",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-01-28 10:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "External System Integration",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "CRM Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

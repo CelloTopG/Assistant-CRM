@@ -1,0 +1,222 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-01-31 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "query_id",
+  "user_id",
+  "session_id",
+  "escalation_date",
+  "escalation_reason",
+  "escalation_type",
+  "priority_level",
+  "department",
+  "status",
+  "query_text",
+  "confidence_score",
+  "ml_escalation_probability",
+  "ml_recommendation",
+  "conversation_turns",
+  "frustration_level",
+  "conversation_duration",
+  "previous_escalation_attempts",
+  "assigned_agent",
+  "resolution_date",
+  "resolution_notes",
+  "customer_satisfaction",
+  "escalation_notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "ESC-WORKFLOW-.YYYY.-.MM.-.#####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "query_id",
+   "fieldtype": "Data",
+   "label": "Query ID",
+   "reqd": 1
+  },
+  {
+   "fieldname": "user_id",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "session_id",
+   "fieldtype": "Data",
+   "label": "Session ID"
+  },
+  {
+   "fieldname": "escalation_date",
+   "fieldtype": "Datetime",
+   "label": "Escalation Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "escalation_reason",
+   "fieldtype": "Select",
+   "label": "Escalation Reason",
+   "options": "low_confidence\nuser_request\nhigh_complexity\nfrustration_detected\nrepeated_queries\nsystem_error\nother",
+   "reqd": 1
+  },
+  {
+   "fieldname": "escalation_type",
+   "fieldtype": "Select",
+   "label": "Escalation Type",
+   "options": "automatic\nmanual\nscheduled\nemergency",
+   "reqd": 1
+  },
+  {
+   "fieldname": "priority_level",
+   "fieldtype": "Select",
+   "label": "Priority Level",
+   "options": "low\nmedium\nhigh\nurgent",
+   "reqd": 1
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Select",
+   "label": "Department",
+   "options": "claims\npayments\ncompliance\ntechnical_support\ncustomer_service\ngeneral",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "pending\nassigned\nin_progress\nresolved\nclosed\nescalated_further",
+   "reqd": 1,
+   "default": "pending"
+  },
+  {
+   "fieldname": "query_text",
+   "fieldtype": "Long Text",
+   "label": "Query Text",
+   "reqd": 1
+  },
+  {
+   "fieldname": "confidence_score",
+   "fieldtype": "Float",
+   "label": "Confidence Score",
+   "precision": 3
+  },
+  {
+   "fieldname": "ml_escalation_probability",
+   "fieldtype": "Float",
+   "label": "ML Escalation Probability",
+   "precision": 3
+  },
+  {
+   "fieldname": "ml_recommendation",
+   "fieldtype": "Data",
+   "label": "ML Recommendation"
+  },
+  {
+   "fieldname": "conversation_turns",
+   "fieldtype": "Int",
+   "label": "Conversation Turns",
+   "default": 0
+  },
+  {
+   "fieldname": "frustration_level",
+   "fieldtype": "Select",
+   "label": "Frustration Level",
+   "options": "low\nmedium\nhigh"
+  },
+  {
+   "fieldname": "conversation_duration",
+   "fieldtype": "Float",
+   "label": "Conversation Duration (minutes)",
+   "precision": 2
+  },
+  {
+   "fieldname": "previous_escalation_attempts",
+   "fieldtype": "Int",
+   "label": "Previous Escalation Attempts",
+   "default": 0
+  },
+  {
+   "fieldname": "assigned_agent",
+   "fieldtype": "Link",
+   "label": "Assigned Agent",
+   "options": "User"
+  },
+  {
+   "fieldname": "resolution_date",
+   "fieldtype": "Datetime",
+   "label": "Resolution Date"
+  },
+  {
+   "fieldname": "resolution_notes",
+   "fieldtype": "Long Text",
+   "label": "Resolution Notes"
+  },
+  {
+   "fieldname": "customer_satisfaction",
+   "fieldtype": "Select",
+   "label": "Customer Satisfaction",
+   "options": "very_satisfied\nsatisfied\nneutral\ndissatisfied\nvery_dissatisfied"
+  },
+  {
+   "fieldname": "escalation_notes",
+   "fieldtype": "Long Text",
+   "label": "Escalation Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-01-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Escalation Workflow",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM User",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

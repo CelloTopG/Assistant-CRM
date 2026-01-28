@@ -1,0 +1,233 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:template_name",
+ "creation": "2025-07-28 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "template_name",
+  "template_type",
+  "language",
+  "column_break_basic",
+  "category",
+  "priority",
+  "is_active",
+  "section_break_content",
+  "subject",
+  "content",
+  "section_break_variables",
+  "variables",
+  "section_break_personalization",
+  "personalization_rules",
+  "section_break_channels",
+  "target_channels",
+  "channel_specific_content",
+  "section_break_filters",
+  "filter_conditions",
+  "section_break_analytics",
+  "usage_count",
+  "success_rate",
+  "column_break_analytics",
+  "last_used",
+  "created_by_migration",
+  "section_break_notes",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "template_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Template Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "template_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Template Type",
+   "options": "General\nWelcome\nGreeting\nClaim Submission\nClaim Status\nEmployer Registration\nPremium Payment\nInformation Request\nService Request\nError Handling\nEscalation\nReminder\nPayment Reminder\nPayment Reminder Advance\nPayment Reminder Overdue\nReturns Reminder\nReturns Reminder Advance\nReturns Reminder Overdue\nCompliance Reminder\nDefault Reminder\nNotification\nPromotion\nAlert\nGoodbye\nFollow-up",
+   "reqd": 1
+  },
+  {
+   "default": "en",
+   "fieldname": "language",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Language",
+   "options": "en\nbem\nny\nto"
+  },
+  {
+   "fieldname": "column_break_basic",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Data",
+   "label": "Category"
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "label": "Priority",
+   "options": "Low\nMedium\nHigh\nCritical",
+   "default": "Medium"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Active"
+  },
+  {
+   "fieldname": "section_break_content",
+   "fieldtype": "Section Break",
+   "label": "Content"
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "label": "Subject"
+  },
+  {
+   "fieldname": "content",
+   "fieldtype": "Text Editor",
+   "label": "Content",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_variables",
+   "fieldtype": "Section Break",
+   "label": "Variables"
+  },
+  {
+   "fieldname": "section_break_personalization",
+   "fieldtype": "Section Break",
+   "label": "Personalization"
+  },
+  {
+   "fieldname": "personalization_rules",
+   "fieldtype": "JSON",
+   "label": "Personalization Rules",
+   "description": "JSON field containing persona-specific content variations"
+  },
+  {
+   "fieldname": "section_break_channels",
+   "fieldtype": "Section Break",
+   "label": "Channel Targeting"
+  },
+  {
+   "fieldname": "target_channels",
+   "fieldtype": "Table MultiSelect",
+   "label": "Target Channels",
+   "options": "Channel"
+  },
+  {
+   "fieldname": "channel_specific_content",
+   "fieldtype": "JSON",
+   "label": "Channel Specific Content",
+   "description": "Channel-specific content variations"
+  },
+  {
+   "fieldname": "section_break_filters",
+   "fieldtype": "Section Break",
+   "label": "Filter Conditions"
+  },
+  {
+   "fieldname": "filter_conditions",
+   "fieldtype": "JSON",
+   "label": "Filter Conditions",
+   "description": "Conditions for when this template should be used"
+  },
+  {
+   "fieldname": "section_break_analytics",
+   "fieldtype": "Section Break",
+   "label": "Analytics"
+  },
+  {
+   "fieldname": "usage_count",
+   "fieldtype": "Int",
+   "label": "Usage Count",
+   "default": "0",
+   "read_only": 1
+  },
+  {
+   "fieldname": "success_rate",
+   "fieldtype": "Percent",
+   "label": "Success Rate",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_analytics",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_used",
+   "fieldtype": "Datetime",
+   "label": "Last Used",
+   "read_only": 1
+  },
+  {
+   "fieldname": "created_by_migration",
+   "fieldtype": "Check",
+   "label": "Created by Migration",
+   "default": "0",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_notes",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-07-28 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Message Template",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Assistant CRM User"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

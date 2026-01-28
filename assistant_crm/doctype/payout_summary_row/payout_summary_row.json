@@ -1,0 +1,129 @@
+{
+ "actions": [],
+ "creation": "2025-11-06 16:06:29.944633",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "beneficiary_number",
+  "beneficiary_name",
+  "nrc_number",
+  "employee_number",
+  "employer_code",
+  "employer_name",
+  "benefit_type",
+  "opening_balance",
+  "gross_payout",
+  "deductions_total",
+  "net_payout",
+  "closing_balance",
+  "deduction_breakdown_json",
+  "exceptions_flag",
+  "exception_codes",
+  "exception_note",
+  "payment_count"
+ ],
+ "fields": [
+  {
+   "fieldname": "beneficiary_number",
+   "fieldtype": "Data",
+   "label": "Beneficiary Number"
+  },
+  {
+   "fieldname": "beneficiary_name",
+   "fieldtype": "Data",
+   "label": "Beneficiary Name"
+  },
+  {
+   "fieldname": "nrc_number",
+   "fieldtype": "Data",
+   "label": "NRC Number"
+  },
+  {
+   "fieldname": "employee_number",
+   "fieldtype": "Data",
+   "label": "Employee Number"
+  },
+  {
+   "fieldname": "employer_code",
+   "fieldtype": "Link",
+   "label": "Employer Code",
+   "options": "Employer Profile"
+  },
+  {
+   "fieldname": "employer_name",
+   "fieldtype": "Data",
+   "label": "Employer Name"
+  },
+  {
+   "fieldname": "benefit_type",
+   "fieldtype": "Data",
+   "label": "Benefit Type"
+  },
+  {
+   "fieldname": "opening_balance",
+   "fieldtype": "Currency",
+   "label": "Opening Balance (ZMW)"
+  },
+  {
+   "fieldname": "gross_payout",
+   "fieldtype": "Currency",
+   "label": "Gross Payout (ZMW)"
+  },
+  {
+   "fieldname": "deductions_total",
+   "fieldtype": "Currency",
+   "label": "Total Deductions (ZMW)"
+  },
+  {
+   "fieldname": "net_payout",
+   "fieldtype": "Currency",
+   "label": "Net Payout (ZMW)"
+  },
+  {
+   "fieldname": "closing_balance",
+   "fieldtype": "Currency",
+   "label": "Closing Balance (ZMW)"
+  },
+  {
+   "fieldname": "deduction_breakdown_json",
+   "fieldtype": "Code",
+   "hidden": 1,
+   "label": "Deduction Breakdown (JSON)"
+  },
+  {
+   "default": "0",
+   "fieldname": "exceptions_flag",
+   "fieldtype": "Check",
+   "label": "Exceptions?"
+  },
+  {
+   "fieldname": "exception_codes",
+   "fieldtype": "Data",
+   "label": "Exception Codes"
+  },
+  {
+   "fieldname": "exception_note",
+   "fieldtype": "Small Text",
+   "label": "Exception Note"
+  },
+  {
+   "fieldname": "payment_count",
+   "fieldtype": "Int",
+   "label": "Payment Count"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-01-08 23:53:45.352461",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Payout Summary Row",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

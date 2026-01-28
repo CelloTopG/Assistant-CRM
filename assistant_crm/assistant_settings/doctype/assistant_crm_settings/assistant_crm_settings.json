@@ -1,0 +1,233 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-07-26 23:47:51.510590",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "ai_section",
+  "ai_provider",
+  "api_key",
+  "model_name",
+  "response_timeout",
+  "max_tokens",
+  "temperature",
+  "business_section",
+  "wcfcb_contact_phone",
+  "wcfcb_contact_email",
+  "wcfcb_office_address",
+  "business_hours_start",
+  "business_hours_end",
+  "language_section",
+  "default_language",
+  "enable_multilingual",
+  "supported_languages",
+  "features_section",
+  "enable_sentiment_analysis",
+  "auto_escalation_enabled",
+  "escalation_threshold",
+  "enable_conversation_logging",
+  "max_conversation_history"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enable Assistant CRM"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "ai_section",
+   "fieldtype": "Section Break",
+   "label": "AI Configuration"
+  },
+  {
+   "default": "Google Gemini",
+   "fieldname": "ai_provider",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "AI Provider",
+   "options": "Google Gemini\nOpenAI\nAnthropic Claude",
+   "reqd": 1
+  },
+  {
+   "fieldname": "api_key",
+   "fieldtype": "Password",
+   "in_list_view": 1,
+   "label": "API Key",
+   "reqd": 1
+  },
+  {
+   "default": "gemini-1.5-flash",
+   "fieldname": "model_name",
+   "fieldtype": "Data",
+   "label": "Model Name"
+  },
+  {
+   "default": "30",
+   "fieldname": "response_timeout",
+   "fieldtype": "Int",
+   "label": "Response Timeout (seconds)"
+  },
+  {
+   "default": "1024",
+   "fieldname": "max_tokens",
+   "fieldtype": "Int",
+   "label": "Max Tokens"
+  },
+  {
+   "default": "0.7",
+   "fieldname": "temperature",
+   "fieldtype": "Float",
+   "label": "Temperature",
+   "precision": "2"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "business_section",
+   "fieldtype": "Section Break",
+   "label": "WCFCB Business Information"
+  },
+  {
+   "default": "+260-211-123456",
+   "fieldname": "wcfcb_contact_phone",
+   "fieldtype": "Data",
+   "label": "Contact Phone"
+  },
+  {
+   "default": "info@wcfcb.gov.zm",
+   "fieldname": "wcfcb_contact_email",
+   "fieldtype": "Data",
+   "label": "Contact Email"
+  },
+  {
+   "default": "WCFCB House, Lusaka, Zambia",
+   "fieldname": "wcfcb_office_address",
+   "fieldtype": "Small Text",
+   "label": "Office Address"
+  },
+  {
+   "default": "08:00:00",
+   "fieldname": "business_hours_start",
+   "fieldtype": "Time",
+   "label": "Business Hours Start"
+  },
+  {
+   "default": "17:00:00",
+   "fieldname": "business_hours_end",
+   "fieldtype": "Time",
+   "label": "Business Hours End"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "language_section",
+   "fieldtype": "Section Break",
+   "label": "Language Configuration"
+  },
+  {
+   "default": "en",
+   "fieldname": "default_language",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Default Language",
+   "options": "en\nbem\nny\nto",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "enable_multilingual",
+   "fieldtype": "Check",
+   "label": "Enable Multilingual Support"
+  },
+  {
+   "default": "English, Bemba, Nyanja, Tonga",
+   "fieldname": "supported_languages",
+   "fieldtype": "Data",
+   "label": "Supported Languages"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "features_section",
+   "fieldtype": "Section Break",
+   "label": "Features Configuration"
+  },
+  {
+   "default": "1",
+   "fieldname": "enable_sentiment_analysis",
+   "fieldtype": "Check",
+   "label": "Enable Sentiment Analysis"
+  },
+  {
+   "default": "1",
+   "fieldname": "auto_escalation_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Auto Escalation"
+  },
+  {
+   "default": "-0.6",
+   "fieldname": "escalation_threshold",
+   "fieldtype": "Float",
+   "label": "Escalation Threshold",
+   "precision": "2"
+  },
+  {
+   "default": "1",
+   "fieldname": "enable_conversation_logging",
+   "fieldtype": "Check",
+   "label": "Enable Conversation Logging"
+  },
+  {
+   "default": "50",
+   "fieldname": "max_conversation_history",
+   "fieldtype": "Int",
+   "label": "Max Conversation History"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-07-27 01:16:50.006705",
+ "modified_by": "Administrator",
+ "module": "Assistant Settings",
+ "name": "Assistant CRM Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Assistant CRM Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Assistant CRM User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

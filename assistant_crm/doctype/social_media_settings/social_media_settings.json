@@ -1,0 +1,468 @@
+{
+ "actions": [],
+ "creation": "2025-07-29 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "make_com_section",
+  "make_com_enabled",
+  "make_com_webhook_url",
+  "make_com_api_key",
+  "column_break_make_1",
+  "make_com_webhook_secret",
+  "make_com_timeout",
+  "make_com_rate_limit",
+  "legacy_integrations_section",
+  "facebook_section",
+  "facebook_enabled",
+  "facebook_app_id",
+  "facebook_app_secret",
+  "column_break_4",
+  "facebook_page_id",
+  "facebook_page_access_token",
+  "facebook_api_version",
+  "instagram_section",
+  "instagram_enabled",
+  "instagram_business_account_id",
+  "instagram_access_token",
+  "column_break_11",
+  "instagram_api_version",
+  "twitter_section",
+  "twitter_enabled",
+  "twitter_client_id",
+  "twitter_client_secret",
+  "column_break_twitter",
+  "twitter_api_key",
+  "twitter_api_secret",
+  "twitter_bearer_token",
+  "twitter_access_token",
+  "twitter_access_token_secret",
+  "twitter_webhook_env",
+  "twitter_webhook_secret",
+  "webhook_section",
+  "webhook_verify_token",
+  "webhook_url",
+  "column_break_16",
+  "webhook_secret",
+  "auto_response_section",
+  "enable_auto_responses",
+  "default_response_template",
+  "business_hours_only",
+  "column_break_21",
+  "response_delay_seconds",
+  "max_auto_responses_per_day",
+  "linkedin_section",
+  "linkedin_enabled",
+  "linkedin_client_id",
+  "linkedin_client_secret",
+  "column_break_linkedin",
+  "linkedin_access_token",
+  "linkedin_organization_id",
+  "linkedin_api_version",
+  "linkedin_webhook_secret",
+  "ussd_section",
+  "ussd_enabled",
+  "ussd_provider",
+  "ussd_short_code",
+  "ussd_service_code",
+  "column_break_ussd",
+  "ussd_app_username",
+  "ussd_api_key",
+  "ussd_webhook_secret",
+  "ussd_session_timeout_seconds",
+  "ussd_default_menu",
+  "ussd_feedback_api_url"
+ ],
+ "fields": [
+  {
+   "fieldname": "make_com_section",
+   "fieldtype": "Section Break",
+   "label": "Make.com Integration"
+  },
+  {
+   "default": "1",
+   "fieldname": "make_com_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Make.com Integration"
+  },
+  {
+   "fieldname": "make_com_webhook_url",
+   "fieldtype": "Data",
+   "label": "Make.com Webhook URL",
+   "description": "URL endpoint for Make.com to send social media messages"
+  },
+  {
+   "fieldname": "make_com_api_key",
+   "fieldtype": "Password",
+   "label": "Make.com API Key",
+   "description": "API key for authenticating Make.com requests"
+  },
+  {
+   "fieldname": "column_break_make_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "make_com_webhook_secret",
+   "fieldtype": "Password",
+   "label": "Make.com Webhook Secret",
+   "description": "Secret for verifying webhook signatures from Make.com"
+  },
+  {
+   "default": "30",
+   "fieldname": "make_com_timeout",
+   "fieldtype": "Int",
+   "label": "Request Timeout (seconds)"
+  },
+  {
+   "default": "100",
+   "fieldname": "make_com_rate_limit",
+   "fieldtype": "Int",
+   "label": "Rate Limit (requests per hour)"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "legacy_integrations_section",
+   "fieldtype": "Section Break",
+   "label": "Legacy Direct Integrations"
+  },
+  {
+   "fieldname": "facebook_section",
+   "fieldtype": "Section Break",
+   "label": "Facebook Integration"
+  },
+  {
+   "default": "0",
+   "fieldname": "facebook_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Facebook Messenger"
+  },
+  {
+   "fieldname": "facebook_app_id",
+   "fieldtype": "Data",
+   "label": "Facebook App ID"
+  },
+  {
+   "fieldname": "facebook_app_secret",
+   "fieldtype": "Password",
+   "label": "Facebook App Secret"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "facebook_page_id",
+   "fieldtype": "Data",
+   "label": "Facebook Page ID"
+  },
+  {
+   "fieldname": "facebook_page_access_token",
+   "fieldtype": "Password",
+   "label": "Facebook Page Access Token"
+  },
+  {
+   "default": "v18.0",
+   "fieldname": "facebook_api_version",
+   "fieldtype": "Data",
+   "label": "Facebook API Version"
+  },
+  {
+   "fieldname": "instagram_section",
+   "fieldtype": "Section Break",
+   "label": "Instagram Integration"
+  },
+  {
+   "default": "0",
+   "fieldname": "instagram_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Instagram Direct Messages"
+  },
+  {
+   "fieldname": "instagram_business_account_id",
+   "fieldtype": "Data",
+   "label": "Instagram Business Account ID"
+  },
+  {
+   "fieldname": "instagram_access_token",
+   "fieldtype": "Password",
+   "label": "Instagram Access Token"
+  },
+  {
+   "fieldname": "column_break_11",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "v18.0",
+   "fieldname": "instagram_api_version",
+   "fieldtype": "Data",
+   "label": "Instagram API Version"
+  },
+  {
+   "fieldname": "twitter_section",
+   "fieldtype": "Section Break",
+   "label": "Twitter Integration"
+  },
+  {
+   "default": "0",
+   "fieldname": "twitter_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Twitter (X)"
+  },
+  {
+   "fieldname": "twitter_client_id",
+   "fieldtype": "Data",
+   "label": "Twitter Client ID"
+  },
+  {
+   "fieldname": "twitter_client_secret",
+   "fieldtype": "Password",
+   "label": "Twitter Client Secret"
+  },
+  {
+   "fieldname": "column_break_twitter",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "twitter_api_key",
+   "fieldtype": "Data",
+   "label": "Twitter API Key"
+  },
+  {
+   "fieldname": "twitter_api_secret",
+   "fieldtype": "Password",
+   "label": "Twitter API Secret"
+  },
+  {
+   "fieldname": "twitter_bearer_token",
+   "fieldtype": "Password",
+   "label": "Twitter Bearer Token"
+  },
+  {
+   "fieldname": "twitter_access_token",
+   "fieldtype": "Password",
+   "label": "Twitter Access Token"
+  },
+  {
+   "fieldname": "twitter_access_token_secret",
+   "fieldtype": "Password",
+   "label": "Twitter Access Token Secret"
+  },
+  {
+   "fieldname": "twitter_webhook_env",
+   "fieldtype": "Data",
+   "label": "Twitter Webhook Environment"
+  },
+  {
+   "fieldname": "twitter_webhook_secret",
+   "fieldtype": "Password",
+   "label": "Twitter Webhook Secret"
+  },
+  {
+   "fieldname": "webhook_section",
+   "fieldtype": "Section Break",
+   "label": "Webhook Configuration"
+  },
+  {
+   "default": "wcfcb_webhook_verify_token",
+   "fieldname": "webhook_verify_token",
+   "fieldtype": "Data",
+   "label": "Webhook Verify Token"
+  },
+  {
+   "fieldname": "webhook_url",
+   "fieldtype": "Data",
+   "label": "Webhook URL",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_16",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "webhook_secret",
+   "fieldtype": "Password",
+   "label": "Webhook Secret"
+  },
+  {
+   "fieldname": "auto_response_section",
+   "fieldtype": "Section Break",
+   "label": "Auto Response Settings"
+  },
+  {
+   "default": "1",
+   "fieldname": "enable_auto_responses",
+   "fieldtype": "Check",
+   "label": "Enable Auto Responses"
+  },
+  {
+   "fieldname": "default_response_template",
+   "fieldtype": "Link",
+   "label": "Default Response Template",
+   "options": "Message Template"
+  },
+  {
+   "default": "1",
+   "fieldname": "business_hours_only",
+   "fieldtype": "Check",
+   "label": "Auto Respond During Business Hours Only"
+  },
+  {
+   "fieldname": "column_break_21",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "30",
+   "fieldname": "response_delay_seconds",
+   "fieldtype": "Int",
+   "label": "Response Delay (seconds)"
+  },
+  {
+   "default": "50",
+   "fieldname": "max_auto_responses_per_day",
+   "fieldtype": "Int",
+   "label": "Max Auto Responses Per Day"
+  },
+  {
+   "fieldname": "linkedin_section",
+   "fieldtype": "Section Break",
+   "label": "LinkedIn Integration"
+  },
+  {
+   "default": "0",
+   "fieldname": "linkedin_enabled",
+   "fieldtype": "Check",
+   "label": "Enable LinkedIn"
+  },
+  {
+   "fieldname": "linkedin_client_id",
+   "fieldtype": "Data",
+   "label": "LinkedIn Client ID"
+  },
+  {
+   "fieldname": "linkedin_client_secret",
+   "fieldtype": "Password",
+   "label": "LinkedIn Client Secret"
+  },
+  {
+   "fieldname": "column_break_linkedin",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "linkedin_access_token",
+   "fieldtype": "Password",
+   "label": "LinkedIn Access Token"
+  },
+  {
+   "fieldname": "linkedin_organization_id",
+   "fieldtype": "Data",
+   "label": "LinkedIn Organization ID"
+  },
+  {
+   "default": "v2",
+   "fieldname": "linkedin_api_version",
+   "fieldtype": "Data",
+   "label": "LinkedIn API Version"
+  },
+  {
+   "fieldname": "linkedin_webhook_secret",
+   "fieldtype": "Password",
+   "label": "LinkedIn Webhook Secret"
+  },
+  {
+   "fieldname": "ussd_section",
+   "fieldtype": "Section Break",
+   "label": "USSD Integration"
+  },
+  {
+   "default": "0",
+   "fieldname": "ussd_enabled",
+   "fieldtype": "Check",
+   "label": "Enable USSD"
+  },
+  {
+   "fieldname": "ussd_provider",
+   "fieldtype": "Select",
+   "label": "USSD Provider",
+   "options": "AfricasTalking\nInfobip\nClickatell\nCustom"
+  },
+  {
+   "fieldname": "ussd_short_code",
+   "fieldtype": "Data",
+   "label": "USSD Short Code"
+  },
+  {
+   "fieldname": "ussd_service_code",
+   "fieldtype": "Data",
+   "label": "Service Code"
+  },
+  {
+   "fieldname": "column_break_ussd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ussd_app_username",
+   "fieldtype": "Data",
+   "label": "App Username"
+  },
+  {
+   "fieldname": "ussd_api_key",
+   "fieldtype": "Password",
+   "label": "API Key"
+  },
+  {
+   "fieldname": "ussd_webhook_secret",
+   "fieldtype": "Password",
+   "label": "Webhook Secret"
+  },
+  {
+   "default": "120",
+   "fieldname": "ussd_session_timeout_seconds",
+   "fieldtype": "Int",
+   "label": "Session Timeout (seconds)"
+  },
+  {
+   "fieldname": "ussd_default_menu",
+   "fieldtype": "Link",
+   "options": "USSD Menu",
+   "label": "Default USSD Menu",
+   "depends_on": "eval:doc.ussd_enabled"
+  },
+  {
+   "fieldname": "ussd_feedback_api_url",
+   "fieldtype": "Data",
+   "label": "USSD Feedback API URL",
+   "default": "http://192.168.1.199:9000/api/v1/feedback",
+   "description": "Optional polling endpoint for USSD feedback"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-07-29 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Social Media Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Assistant CRM Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

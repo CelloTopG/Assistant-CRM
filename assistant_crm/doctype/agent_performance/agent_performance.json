@@ -1,0 +1,262 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-08-27 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "agent",
+  "date",
+  "agent_details_section",
+  "agent_name",
+  "agent_role",
+  "current_workload_status",
+  "column_break_7",
+  "specialties",
+  "last_activity",
+  "performance_metrics_section",
+  "total_conversations",
+  "active_conversations",
+  "resolved_conversations",
+  "column_break_14",
+  "average_response_time",
+  "customer_satisfaction_score",
+  "escalations_handled",
+  "quality_metrics_section",
+  "first_response_time_avg",
+  "resolution_time_avg",
+  "customer_feedback_score",
+  "column_break_21",
+  "ai_override_rate",
+  "escalation_success_rate",
+  "follow_up_completion_rate",
+  "platform_distribution_section",
+  "platform_distribution",
+  "most_active_platform",
+  "platform_expertise_score"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "AGT-PERF-.YYYY.-.MM.-.DD.-.#####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "agent",
+   "fieldtype": "Link",
+   "label": "Agent",
+   "options": "User",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date",
+   "default": "Today",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "agent_details_section",
+   "fieldtype": "Section Break",
+   "label": "Agent Details"
+  },
+  {
+   "fieldname": "agent_name",
+   "fieldtype": "Data",
+   "label": "Agent Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "agent_role",
+   "fieldtype": "Data",
+   "label": "Agent Role"
+  },
+  {
+   "fieldname": "current_workload_status",
+   "fieldtype": "Select",
+   "label": "Current Status",
+   "options": "Available\nBusy\nAway\nOffline",
+   "default": "Available",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "specialties",
+   "fieldtype": "JSON",
+   "label": "Specialties"
+  },
+  {
+   "fieldname": "last_activity",
+   "fieldtype": "Datetime",
+   "label": "Last Activity"
+  },
+  {
+   "fieldname": "performance_metrics_section",
+   "fieldtype": "Section Break",
+   "label": "Performance Metrics"
+  },
+  {
+   "fieldname": "total_conversations",
+   "fieldtype": "Int",
+   "label": "Total Conversations",
+   "default": "0",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "active_conversations",
+   "fieldtype": "Int",
+   "label": "Active Conversations",
+   "default": "0"
+  },
+  {
+   "fieldname": "resolved_conversations",
+   "fieldtype": "Int",
+   "label": "Resolved Conversations",
+   "default": "0"
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "average_response_time",
+   "fieldtype": "Float",
+   "label": "Average Response Time (seconds)",
+   "precision": "2"
+  },
+  {
+   "fieldname": "customer_satisfaction_score",
+   "fieldtype": "Float",
+   "label": "Customer Satisfaction Score",
+   "precision": "2"
+  },
+  {
+   "fieldname": "escalations_handled",
+   "fieldtype": "Int",
+   "label": "Escalations Handled",
+   "default": "0"
+  },
+  {
+   "fieldname": "quality_metrics_section",
+   "fieldtype": "Section Break",
+   "label": "Quality Metrics"
+  },
+  {
+   "fieldname": "first_response_time_avg",
+   "fieldtype": "Float",
+   "label": "First Response Time Average (minutes)",
+   "precision": "2"
+  },
+  {
+   "fieldname": "resolution_time_avg",
+   "fieldtype": "Float",
+   "label": "Resolution Time Average (hours)",
+   "precision": "2"
+  },
+  {
+   "fieldname": "customer_feedback_score",
+   "fieldtype": "Float",
+   "label": "Customer Feedback Score",
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_21",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ai_override_rate",
+   "fieldtype": "Percent",
+   "label": "AI Override Rate",
+   "precision": "2"
+  },
+  {
+   "fieldname": "escalation_success_rate",
+   "fieldtype": "Percent",
+   "label": "Escalation Success Rate",
+   "precision": "2"
+  },
+  {
+   "fieldname": "follow_up_completion_rate",
+   "fieldtype": "Percent",
+   "label": "Follow-up Completion Rate",
+   "precision": "2"
+  },
+  {
+   "fieldname": "platform_distribution_section",
+   "fieldtype": "Section Break",
+   "label": "Platform Distribution"
+  },
+  {
+   "fieldname": "platform_distribution",
+   "fieldtype": "JSON",
+   "label": "Platform Distribution"
+  },
+  {
+   "fieldname": "most_active_platform",
+   "fieldtype": "Data",
+   "label": "Most Active Platform"
+  },
+  {
+   "fieldname": "platform_expertise_score",
+   "fieldtype": "Float",
+   "label": "Platform Expertise Score",
+   "precision": "2"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-08-27 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Agent Performance",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM Agent",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

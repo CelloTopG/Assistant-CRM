@@ -1,0 +1,178 @@
+{% extends "templates/web.html" %}
+
+{% block page_content %}
+<style>
+  body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 24px; background: #f7f7fb; }
+  .card { max-width: 720px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.06); padding: 24px; }
+  h1 { font-size: 20px; margin: 0 0 12px; }
+  .muted { color: #666; font-size: 13px; margin-bottom: 20px; }
+  .q { margin-bottom: 18px; }
+  .q label { display: block; font-weight: 600; margin-bottom: 8px; }
+  input[type="number"], select, textarea { width: 100%; padding: 10px 12px; border: 1px solid #dcdce4; border-radius: 8px; font-size: 14px; }
+  textarea { min-height: 100px; resize: vertical; }
+  .actions { margin-top: 16px; }
+  button { background: #3b82f6; border: none; color: white; padding: 10px 16px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+  button[disabled] { background: #9bbcf8; cursor: not-allowed; }
+  .msg { padding: 12px 14px; border-radius: 8px; margin-bottom: 16px; display: none; }
+  .msg.error { background: #fee2e2; color: #7f1d1d; border: 1px solid #fecaca; }
+  .msg.success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+</style>
+
+<div class="card">
+  <h1 id="title">Survey</h1>
+  <div id="desc" class="muted">Please answer a few quick questions.</div>
+
+  <div id="message" class="msg"></div>
+
+  <form id="survey-form" style="display:none;"></form>
+
+  <div class="actions">
+    <button id="submit-btn" type="button" disabled>Submit</button>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const $msg = document.getElementById('message');
+    const $form = document.getElementById('survey-form');
+    const $btn  = document.getElementById('submit-btn');
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('t');
+
+    function showMessage(text, type) {
+      $msg.textContent = text;
+      $msg.className = 'msg ' + (type || '');
+      $msg.style.display = 'block';
+    }
+
+    if (!token) {
+      showMessage('Missing token. Please use the survey link provided.', 'error');
+      return;
+    }
+
+    async function callMethod(method, args, options) {
+      const httpMethod = (options && options.httpMethod) || 'POST';
+      if (window.frappe && frappe.call) {
+        return new Promise((resolve, reject) => {
+          frappe.call({ method, args, callback: (r) => resolve(r), error: (e) => reject(e) });
+        });
+      }
+      // Fallback to direct REST call for guests
+      try {
+        let url = `/api/method/${method}`;
+        let fetchOpts = { method: httpMethod };
+        if (httpMethod === 'GET') {
+          const qs = new URLSearchParams(args || {}).toString();
+          url = qs ? `${url}?${qs}` : url;
+        } else {
+          fetchOpts.headers = { 'Content-Type': 'application/json' };
+          // Include CSRF token if available (website templates usually inject it)
+          const csrf = (document.querySelector('meta[name="csrf-token"]') || {}).content;
+          if (csrf) fetchOpts.headers['X-Frappe-CSRF-Token'] = csrf;
+          fetchOpts.body = JSON.stringify(args || {});
+        }
+        const resp = await fetch(url, fetchOpts);
+        const data = await resp.json();
+        return { message: data && data.message };
+      } catch (e) {
+        throw e;
+      }
+    }
+
+    // Load survey questions
+    callMethod('assistant_crm.assistant_crm.doctype.survey_response.survey_response.get_survey_form', { token }, { httpMethod: 'GET' })
+      .then(function(r) {
+        if (!r || !r.message) {
+          showMessage('Failed to load survey. Please try again later.', 'error');
+          return;
+        }
+        const res = r.message;
+        if (!res.success) {
+          showMessage(res.message || 'Invalid survey link.', 'error');
+          return;
+        }
+        document.getElementById('title').textContent = res.campaign_label || 'Survey';
+        $form.innerHTML = '';
+
+        (res.questions || []).forEach(function(q) {
+          const wrap = document.createElement('div');
+          wrap.className = 'q';
+
+          const label = document.createElement('label');
+          label.textContent = q.index + '. ' + q.question_text;
+          label.setAttribute('for', 'q-' + q.index);
+          wrap.appendChild(label);
+
+          let input;
+          if (q.question_type === 'Rating') {
+            input = document.createElement('input');
+            input.type = 'number';
+            input.min = '1';
+            input.max = '5';
+            input.placeholder = '1-5';
+          } else if (q.question_type === 'Multiple Choice') {
+            input = document.createElement('select');
+            (q.options || []).forEach(function(opt) {
+              const o = document.createElement('option');
+              o.value = opt; o.textContent = opt; input.appendChild(o);
+            });
+          } else if (q.question_type === 'Yes/No' || q.question_type === 'Yes-No' || q.question_type === 'Boolean') {
+            input = document.createElement('select');
+            ['Yes', 'No'].forEach(function(v) {
+              const o = document.createElement('option'); o.value = v; o.textContent = v; input.appendChild(o);
+            });
+          } else {
+            input = document.createElement('textarea');
+            input.placeholder = 'Your answer';
+          }
+          input.id = 'q-' + q.index;
+          wrap.appendChild(input);
+          $form.appendChild(wrap);
+        });
+
+        $form.style.display = 'block';
+        $btn.disabled = false;
+      })
+      .catch(function() {
+        showMessage('Failed to load survey. Please try again later.', 'error');
+      });
+
+    $btn.addEventListener('click', function() {
+      if ($btn.disabled) return;
+      const fields = Array.from($form.querySelectorAll('[id^=\'q-\']'));
+      if (!fields.length) return;
+      const answers = fields.map(function(el) {
+        const idx = parseInt(el.id.split('-')[1], 10);
+        let type = 'text';
+        if (el.tagName === 'INPUT' && el.type === 'number') type = 'rating';
+        else if (el.tagName === 'SELECT') {
+          if (el.options.length === 2 && el.options[0].value === 'Yes') type = 'yes_no';
+          else type = 'multiple_choice';
+        }
+        const value = el.value;
+        return { index: idx, type: type, value: value };
+      });
+
+      $btn.disabled = true;
+      showMessage('', ''); $msg.style.display = 'none';
+
+      callMethod('assistant_crm.assistant_crm.doctype.survey_response.survey_response.submit_survey_response', { token: token, answers: answers }, { httpMethod: 'POST' })
+        .then(function(r){
+          $btn.disabled = false;
+          if (r && r.message && r.message.success) {
+            showMessage(r.message.message || 'Thank you for your response!', 'success');
+            $form.style.display = 'none';
+          } else {
+            const m = (r && r.message && r.message.message) || 'Submission failed. Please try again.';
+            showMessage(m, 'error');
+          }
+        })
+        .catch(function(){
+          $btn.disabled = false;
+          showMessage('Submission failed. Please try again.', 'error');
+        });
+    });
+  })();
+</script>
+{% endblock %}
+

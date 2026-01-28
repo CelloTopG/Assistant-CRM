@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WCFCB Professional Tone Validator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .tone-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        .validator-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .tone-score {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        
+        .score-excellent {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .score-good {
+            background: linear-gradient(135deg, #17a2b8, #6f42c1);
+            color: white;
+        }
+        
+        .score-fair {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: white;
+        }
+        
+        .score-poor {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+            color: white;
+        }
+        
+        .keyword-tag {
+            display: inline-block;
+            background: #e9ecef;
+            color: #495057;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            margin: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .keyword-tag:hover {
+            background: #007bff;
+            color: white;
+        }
+        
+        .suggestion-item {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        .enhancement-box {
+            background: #e8f5e8;
+            border: 1px solid #28a745;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .context-selector {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+        
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner-border {
+            width: 2rem;
+            height: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .validator-card {
+                padding: 15px;
+            }
+            
+            .tone-score {
+                font-size: 1.5rem;
+                padding: 15px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="tone-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-spell-check"></i> WCFCB Professional Tone Validator</h1>
+                    <p class="mb-0">Enhance your communication with professional tone analysis and suggestions</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-light" onclick="showStatistics()">
+                        <i class="fas fa-chart-bar"></i> Statistics
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Main Validator -->
+        <div class="validator-card">
+            <h3><i class="fas fa-edit"></i> Message Tone Validator</h3>
+            
+            <!-- Context Selector -->
+            <div class="context-selector">
+                <label for="contextSelect" class="form-label">Communication Context:</label>
+                <select class="form-select" id="contextSelect">
+                    <option value="general_inquiry">General Inquiry</option>
+                    <option value="claim_inquiry">Claim Inquiry</option>
+                    <option value="employer_services">Employer Services</option>
+                    <option value="beneficiary_support">Beneficiary Support</option>
+                    <option value="technical_support">Technical Support</option>
+                    <option value="complaint_handling">Complaint Handling</option>
+                    <option value="policy_explanation">Policy Explanation</option>
+                    <option value="medical_authorization">Medical Authorization</option>
+                </select>
+            </div>
+            
+            <!-- Message Input -->
+            <div class="mb-3">
+                <label for="messageInput" class="form-label">Enter your message:</label>
+                <textarea class="form-control" id="messageInput" rows="5" 
+                    placeholder="Type your message here to analyze its professional tone..."></textarea>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="d-flex gap-2 mb-3">
+                <button class="btn btn-primary" onclick="validateTone()">
+                    <i class="fas fa-check"></i> Validate Tone
+                </button>
+                <button class="btn btn-success" onclick="enhanceMessage()">
+                    <i class="fas fa-magic"></i> Enhance Message
+                </button>
+                <button class="btn btn-info" onclick="getSuggestions()">
+                    <i class="fas fa-lightbulb"></i> Get Suggestions
+                </button>
+                <button class="btn btn-secondary" onclick="clearAll()">
+                    <i class="fas fa-eraser"></i> Clear
+                </button>
+            </div>
+            
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="loading-spinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Analyzing tone...</p>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" style="display: none;">
+            <!-- Tone Score -->
+            <div class="validator-card">
+                <h4><i class="fas fa-star"></i> Tone Quality Score</h4>
+                <div id="toneScoreDisplay" class="tone-score">
+                    <!-- Score will be displayed here -->
+                </div>
+                <div id="scoreFeedback" class="text-center">
+                    <!-- Feedback will be displayed here -->
+                </div>
+            </div>
+
+            <!-- Enhanced Message -->
+            <div id="enhancementSection" class="validator-card" style="display: none;">
+                <h4><i class="fas fa-magic"></i> Enhanced Message</h4>
+                <div class="enhancement-box">
+                    <h6>Original Message:</h6>
+                    <p id="originalMessage"></p>
+                    <h6>Enhanced Message:</h6>
+                    <p id="enhancedMessage"></p>
+                </div>
+                <div id="enhancementSuggestions">
+                    <!-- Enhancement suggestions will be displayed here -->
+                </div>
+            </div>
+
+            <!-- Professional Keywords -->
+            <div id="keywordsSection" class="validator-card" style="display: none;">
+                <h4><i class="fas fa-tags"></i> Professional Keywords for Context</h4>
+                <div id="keywordTags">
+                    <!-- Keywords will be displayed here -->
+                </div>
+            </div>
+
+            <!-- Suggestions -->
+            <div id="suggestionsSection" class="validator-card" style="display: none;">
+                <h4><i class="fas fa-lightbulb"></i> Professional Phrase Suggestions</h4>
+                <div id="suggestionsList">
+                    <!-- Suggestions will be displayed here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Section -->
+        <div id="statisticsSection" class="validator-card" style="display: none;">
+            <h4><i class="fas fa-chart-bar"></i> Tone Usage Statistics</h4>
+            <div class="stats-grid" id="statsGrid">
+                <!-- Statistics will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Professional Tone Validator JavaScript
+        let currentContext = 'general_inquiry';
+
+        // Update context when selector changes
+        document.getElementById('contextSelect').addEventListener('change', function() {
+            currentContext = this.value;
+        });
+
+        async function validateTone() {
+            const message = document.getElementById('messageInput').value.trim();
+            
+            if (!message) {
+                alert('Please enter a message to validate.');
+                return;
+            }
+
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/method/assistant_crm.api.professional_tone_api.validate_tone_quality', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: message
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.message && result.message.success) {
+                    displayToneScore(result.message.data);
+                    showResults();
+                } else {
+                    alert('Error validating tone: ' + (result.message?.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Validation error:', error);
+                alert('Error validating tone. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function enhanceMessage() {
+            const message = document.getElementById('messageInput').value.trim();
+            
+            if (!message) {
+                alert('Please enter a message to enhance.');
+                return;
+            }
+
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/method/assistant_crm.api.professional_tone_api.enhance_message_tone', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        target_context: currentContext
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.message && result.message.success) {
+                    displayEnhancement(result.message.data);
+                    showResults();
+                } else {
+                    alert('Error enhancing message: ' + (result.message?.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Enhancement error:', error);
+                alert('Error enhancing message. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function getSuggestions() {
+            const message = document.getElementById('messageInput').value.trim();
+            
+            if (!message) {
+                // Get keywords for context
+                await getContextKeywords();
+                return;
+            }
+
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/method/assistant_crm.api.professional_tone_api.suggest_professional_tone', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_input: message,
+                        context_type: currentContext
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.message && result.message.success) {
+                    displaySuggestions(result.message.data);
+                    showResults();
+                } else {
+                    alert('Error getting suggestions: ' + (result.message?.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Suggestions error:', error);
+                alert('Error getting suggestions. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function getContextKeywords() {
+            showLoading();
+            
+            try {
+                const response = await fetch(`/api/method/assistant_crm.api.professional_tone_api.get_professional_keywords?context_type=${currentContext}&limit=30`);
+                const result = await response.json();
+                
+                if (result.message && result.message.success) {
+                    displayKeywords(result.message.data.keywords);
+                    showResults();
+                } else {
+                    alert('Error getting keywords: ' + (result.message?.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Keywords error:', error);
+                alert('Error getting keywords. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function showStatistics() {
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/method/assistant_crm.api.professional_tone_api.get_tone_statistics');
+                const result = await response.json();
+                
+                if (result.message && result.message.success) {
+                    displayStatistics(result.message.data);
+                    document.getElementById('statisticsSection').style.display = 'block';
+                } else {
+                    alert('Error getting statistics: ' + (result.message?.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Statistics error:', error);
+                alert('Error getting statistics. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function displayToneScore(data) {
+            const scoreDisplay = document.getElementById('toneScoreDisplay');
+            const feedbackDisplay = document.getElementById('scoreFeedback');
+            
+            const score = data.tone_score;
+            const quality = data.quality_rating;
+            const feedback = data.feedback;
+            
+            scoreDisplay.textContent = `${(score * 100).toFixed(0)}%`;
+            scoreDisplay.className = 'tone-score';
+            
+            if (score >= 0.8) {
+                scoreDisplay.classList.add('score-excellent');
+            } else if (score >= 0.6) {
+                scoreDisplay.classList.add('score-good');
+            } else if (score >= 0.4) {
+                scoreDisplay.classList.add('score-fair');
+            } else {
+                scoreDisplay.classList.add('score-poor');
+            }
+            
+            feedbackDisplay.innerHTML = `
+                <h5>${quality}</h5>
+                <p>${feedback}</p>
+                <small>Word Count: ${data.word_count} | Character Count: ${data.character_count}</small>
+            `;
+        }
+
+        function displayEnhancement(data) {
+            document.getElementById('originalMessage').textContent = data.original_message;
+            document.getElementById('enhancedMessage').textContent = data.enhanced_message;
+            
+            const suggestionsContainer = document.getElementById('enhancementSuggestions');
+            suggestionsContainer.innerHTML = '';
+            
+            if (data.suggestions && data.suggestions.length > 0) {
+                data.suggestions.forEach(suggestion => {
+                    const suggestionDiv = document.createElement('div');
+                    suggestionDiv.className = 'suggestion-item';
+                    suggestionDiv.innerHTML = `<i class="fas fa-arrow-right"></i> ${suggestion}`;
+                    suggestionsContainer.appendChild(suggestionDiv);
+                });
+            }
+            
+            document.getElementById('enhancementSection').style.display = 'block';
+        }
+
+        function displayKeywords(keywords) {
+            const keywordContainer = document.getElementById('keywordTags');
+            keywordContainer.innerHTML = '';
+            
+            keywords.forEach(keyword => {
+                const tag = document.createElement('span');
+                tag.className = 'keyword-tag';
+                tag.textContent = keyword;
+                tag.onclick = () => insertKeyword(keyword);
+                keywordContainer.appendChild(tag);
+            });
+            
+            document.getElementById('keywordsSection').style.display = 'block';
+        }
+
+        function displaySuggestions(data) {
+            const suggestionsContainer = document.getElementById('suggestionsList');
+            suggestionsContainer.innerHTML = '';
+            
+            if (data.suggestions && data.suggestions.length > 0) {
+                data.suggestions.forEach(suggestion => {
+                    const suggestionDiv = document.createElement('div');
+                    suggestionDiv.className = 'suggestion-item';
+                    suggestionDiv.innerHTML = `
+                        <i class="fas fa-quote-left"></i> ${suggestion}
+                        <button class="btn btn-sm btn-outline-primary float-end" onclick="insertSuggestion('${suggestion}')">
+                            <i class="fas fa-plus"></i> Use
+                        </button>
+                    `;
+                    suggestionsContainer.appendChild(suggestionDiv);
+                });
+            }
+            
+            document.getElementById('suggestionsSection').style.display = 'block';
+        }
+
+        function displayStatistics(data) {
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${data.total_conversations_analyzed}</div>
+                    <div class="stat-label">Conversations Analyzed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${(data.average_tone_score * 100).toFixed(0)}%</div>
+                    <div class="stat-label">Average Tone Score</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${data.tone_distribution.excellent}</div>
+                    <div class="stat-label">Excellent Tone</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${data.tone_distribution.good}</div>
+                    <div class="stat-label">Good Tone</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${data.total_keywords_available}</div>
+                    <div class="stat-label">Keywords Available</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${data.available_contexts}</div>
+                    <div class="stat-label">Context Types</div>
+                </div>
+            `;
+        }
+
+        function insertKeyword(keyword) {
+            const messageInput = document.getElementById('messageInput');
+            const currentText = messageInput.value;
+            const cursorPosition = messageInput.selectionStart;
+            
+            const newText = currentText.slice(0, cursorPosition) + keyword + ' ' + currentText.slice(cursorPosition);
+            messageInput.value = newText;
+            messageInput.focus();
+            messageInput.setSelectionRange(cursorPosition + keyword.length + 1, cursorPosition + keyword.length + 1);
+        }
+
+        function insertSuggestion(suggestion) {
+            const messageInput = document.getElementById('messageInput');
+            messageInput.value = suggestion;
+            messageInput.focus();
+        }
+
+        function showResults() {
+            document.getElementById('resultsSection').style.display = 'block';
+        }
+
+        function showLoading() {
+            document.getElementById('loadingSpinner').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingSpinner').style.display = 'none';
+        }
+
+        function clearAll() {
+            document.getElementById('messageInput').value = '';
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('statisticsSection').style.display = 'none';
+            document.getElementById('enhancementSection').style.display = 'none';
+            document.getElementById('keywordsSection').style.display = 'none';
+            document.getElementById('suggestionsSection').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

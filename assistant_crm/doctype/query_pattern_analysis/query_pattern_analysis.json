@@ -1,0 +1,175 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-01-31 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "pattern_text",
+  "pattern_category",
+  "query_count",
+  "unique_users",
+  "first_occurrence",
+  "last_occurrence",
+  "trend_direction",
+  "growth_rate",
+  "seasonal_pattern",
+  "user_types",
+  "success_rate",
+  "average_confidence",
+  "knowledge_gap_score",
+  "business_impact_score",
+  "recommended_action",
+  "action_taken",
+  "action_date",
+  "effectiveness_score"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "QPAT-.YYYY.-.#####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "pattern_text",
+   "fieldtype": "Data",
+   "label": "Pattern Text",
+   "reqd": 1
+  },
+  {
+   "fieldname": "pattern_category",
+   "fieldtype": "Select",
+   "label": "Pattern Category",
+   "options": "claims\ncontributions\nregistration\ntechnical\npolicy\nbeneficiary\ngeneral"
+  },
+  {
+   "fieldname": "query_count",
+   "fieldtype": "Int",
+   "label": "Query Count"
+  },
+  {
+   "fieldname": "unique_users",
+   "fieldtype": "Int",
+   "label": "Unique Users"
+  },
+  {
+   "fieldname": "first_occurrence",
+   "fieldtype": "Datetime",
+   "label": "First Occurrence"
+  },
+  {
+   "fieldname": "last_occurrence",
+   "fieldtype": "Datetime",
+   "label": "Last Occurrence"
+  },
+  {
+   "fieldname": "trend_direction",
+   "fieldtype": "Select",
+   "label": "Trend Direction",
+   "options": "increasing\ndecreasing\nstable\nvolatile"
+  },
+  {
+   "fieldname": "growth_rate",
+   "fieldtype": "Float",
+   "label": "Growth Rate (%)",
+   "precision": "2"
+  },
+  {
+   "fieldname": "seasonal_pattern",
+   "fieldtype": "Data",
+   "label": "Seasonal Pattern"
+  },
+  {
+   "fieldname": "user_types",
+   "fieldtype": "Long Text",
+   "label": "User Types"
+  },
+  {
+   "fieldname": "success_rate",
+   "fieldtype": "Float",
+   "label": "Success Rate (%)",
+   "precision": "2"
+  },
+  {
+   "fieldname": "average_confidence",
+   "fieldtype": "Float",
+   "label": "Average Confidence",
+   "precision": "3"
+  },
+  {
+   "fieldname": "knowledge_gap_score",
+   "fieldtype": "Float",
+   "label": "Knowledge Gap Score",
+   "precision": "2"
+  },
+  {
+   "fieldname": "business_impact_score",
+   "fieldtype": "Float",
+   "label": "Business Impact Score",
+   "precision": "2"
+  },
+  {
+   "fieldname": "recommended_action",
+   "fieldtype": "Data",
+   "label": "Recommended Action"
+  },
+  {
+   "fieldname": "action_taken",
+   "fieldtype": "Data",
+   "label": "Action Taken"
+  },
+  {
+   "fieldname": "action_date",
+   "fieldtype": "Datetime",
+   "label": "Action Date"
+  },
+  {
+   "fieldname": "effectiveness_score",
+   "fieldtype": "Float",
+   "label": "Effectiveness Score",
+   "precision": "2"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-01-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Query Pattern Analysis",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,169 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-01-31 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "session_id",
+  "conversation_id",
+  "turn_number",
+  "timestamp",
+  "user_message",
+  "bot_response",
+  "intent",
+  "confidence",
+  "flow_stage",
+  "escalation_risk",
+  "context_data",
+  "response_quality_score",
+  "user_satisfaction",
+  "processing_time"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "CONV-TURN-.YYYY.-.MM.-.#####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "session_id",
+   "fieldtype": "Data",
+   "label": "Session ID",
+   "reqd": 1
+  },
+  {
+   "fieldname": "conversation_id",
+   "fieldtype": "Link",
+   "label": "Conversation Session",
+   "options": "Conversation Session",
+   "reqd": 0
+  },
+  {
+   "fieldname": "turn_number",
+   "fieldtype": "Int",
+   "label": "Turn Number",
+   "reqd": 1
+  },
+  {
+   "fieldname": "timestamp",
+   "fieldtype": "Datetime",
+   "label": "Timestamp",
+   "reqd": 1
+  },
+  {
+   "fieldname": "user_message",
+   "fieldtype": "Long Text",
+   "label": "User Message",
+   "reqd": 1
+  },
+  {
+   "fieldname": "bot_response",
+   "fieldtype": "Long Text",
+   "label": "Bot Response",
+   "reqd": 1
+  },
+  {
+   "fieldname": "intent",
+   "fieldtype": "Data",
+   "label": "Detected Intent"
+  },
+  {
+   "fieldname": "confidence",
+   "fieldtype": "Float",
+   "label": "Confidence Score",
+   "precision": 3
+  },
+  {
+   "fieldname": "flow_stage",
+   "fieldtype": "Select",
+   "label": "Flow Stage",
+   "options": "greeting\ninformation_gathering\nproblem_solving\nclosing\nongoing"
+  },
+  {
+   "fieldname": "escalation_risk",
+   "fieldtype": "Select",
+   "label": "Escalation Risk",
+   "options": "low\nmedium\nhigh\ncritical"
+  },
+  {
+   "fieldname": "context_data",
+   "fieldtype": "Long Text",
+   "label": "Context Data"
+  },
+  {
+   "fieldname": "response_quality_score",
+   "fieldtype": "Float",
+   "label": "Response Quality Score",
+   "precision": 2
+  },
+  {
+   "fieldname": "user_satisfaction",
+   "fieldtype": "Select",
+   "label": "User Satisfaction",
+   "options": "very_satisfied\nsatisfied\nneutral\ndissatisfied\nvery_dissatisfied"
+  },
+  {
+   "fieldname": "processing_time",
+   "fieldtype": "Float",
+   "label": "Processing Time (ms)",
+   "precision": 2
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-01-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Conversation Turn",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM User",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Guest",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

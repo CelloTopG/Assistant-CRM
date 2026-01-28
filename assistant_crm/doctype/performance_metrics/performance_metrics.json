@@ -1,0 +1,213 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-01-19 15:00:00.000000",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "metric_name",
+  "metric_category",
+  "measurement_date",
+  "column_break_5",
+  "metric_value",
+  "target_value",
+  "variance_percentage",
+  "section_break_entity",
+  "entity_type",
+  "entity_id",
+  "entity_name",
+  "column_break_entity",
+  "period",
+  "frequency",
+  "status",
+  "section_break_details",
+  "details",
+  "section_break_trend",
+  "trend_data",
+  "section_break_notes",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "PM-.YYYY.-.MM.-.#####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "metric_name",
+   "fieldtype": "Data",
+   "label": "Metric Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "metric_category",
+   "fieldtype": "Select",
+   "label": "Metric Category",
+   "options": "Agent\nChannel\nRegional\nResponse\nLearning\nSystem\nCustomer",
+   "reqd": 1
+  },
+  {
+   "fieldname": "measurement_date",
+   "fieldtype": "Datetime",
+   "label": "Measurement Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "metric_value",
+   "fieldtype": "Float",
+   "label": "Metric Value",
+   "precision": "4",
+   "reqd": 1
+  },
+  {
+   "fieldname": "target_value",
+   "fieldtype": "Float",
+   "label": "Target Value",
+   "precision": "4"
+  },
+  {
+   "fieldname": "variance_percentage",
+   "fieldtype": "Percent",
+   "label": "Variance %",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_entity",
+   "fieldtype": "Section Break",
+   "label": "Entity Information"
+  },
+  {
+   "fieldname": "entity_type",
+   "fieldtype": "Select",
+   "label": "Entity Type",
+   "options": "Agent\nChannel\nRegion\nSystem\nCampaign\nTemplate\nWorkflow",
+   "reqd": 1
+  },
+  {
+   "fieldname": "entity_id",
+   "fieldtype": "Data",
+   "label": "Entity ID",
+   "reqd": 1
+  },
+  {
+   "fieldname": "entity_name",
+   "fieldtype": "Data",
+   "label": "Entity Name"
+  },
+  {
+   "fieldname": "column_break_entity",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "period",
+   "fieldtype": "Select",
+   "label": "Period",
+   "options": "Real-time\nHourly\nDaily\nWeekly\nMonthly\nQuarterly\nYearly",
+   "default": "Daily"
+  },
+  {
+   "fieldname": "frequency",
+   "fieldtype": "Select",
+   "label": "Frequency",
+   "options": "One-time\nRecurring\nContinuous",
+   "default": "Recurring"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Active\nInactive\nArchived",
+   "default": "Active"
+  },
+  {
+   "fieldname": "section_break_details",
+   "fieldtype": "Section Break",
+   "label": "Metric Details"
+  },
+  {
+   "fieldname": "details",
+   "fieldtype": "JSON",
+   "label": "Details",
+   "description": "JSON field containing metric-specific details and breakdown"
+  },
+  {
+   "fieldname": "section_break_trend",
+   "fieldtype": "Section Break",
+   "label": "Trend Analysis"
+  },
+  {
+   "fieldname": "trend_data",
+   "fieldtype": "JSON",
+   "label": "Trend Data",
+   "description": "Historical trend data for this metric"
+  },
+  {
+   "fieldname": "section_break_notes",
+   "fieldtype": "Section Break",
+   "label": "Additional Information"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-01-19 15:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Performance Metrics",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM User",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "metric_name",
+ "track_changes": 1
+}

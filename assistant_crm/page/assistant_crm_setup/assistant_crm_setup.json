@@ -1,0 +1,12 @@
+{
+  "doctype": "Page",
+  "name": "assistant_crm_setup",
+  "module": "Assistant Settings",
+  "title": "Assistant CRM Setup",
+  "standard": 1,
+  "roles": [
+    {"role": "System Manager"},
+    {"role": "WCFCB Assistant Admin"}
+  ]
+}
+

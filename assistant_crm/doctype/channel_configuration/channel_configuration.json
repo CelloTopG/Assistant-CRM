@@ -1,0 +1,179 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-07-22 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "channel_name",
+  "channel_type",
+  "enabled",
+  "auto_response_enabled",
+  "api_section",
+  "api_endpoint",
+  "api_key",
+  "access_token",
+  "verification_token",
+  "phone_number",
+  "webhook_section",
+  "webhook_url",
+  "webhook_secret",
+  "verify_token",
+  "settings_section",
+  "max_message_length",
+  "response_timeout",
+  "rate_limit_per_minute",
+  "enable_message_logging"
+ ],
+ "fields": [
+  {
+   "fieldname": "channel_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Channel Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "channel_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Channel Type",
+   "options": "Website Chat\nWhatsApp\nFacebook\nInstagram\nTelegram\nUSSD\nPhone",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "default": "1",
+   "fieldname": "auto_response_enabled",
+   "fieldtype": "Check",
+   "label": "Auto Response Enabled"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "api_section",
+   "fieldtype": "Section Break",
+   "label": "API Configuration"
+  },
+  {
+   "fieldname": "api_endpoint",
+   "fieldtype": "Data",
+   "label": "API Endpoint"
+  },
+  {
+   "fieldname": "api_key",
+   "fieldtype": "Password",
+   "label": "API Key"
+  },
+  {
+   "fieldname": "access_token",
+   "fieldtype": "Password",
+   "label": "Access Token"
+  },
+  {
+   "fieldname": "verification_token",
+   "fieldtype": "Password",
+   "label": "Verification Token"
+  },
+  {
+   "fieldname": "phone_number",
+   "fieldtype": "Data",
+   "label": "Phone Number ID"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "webhook_section",
+   "fieldtype": "Section Break",
+   "label": "Webhook Configuration"
+  },
+  {
+   "fieldname": "webhook_url",
+   "fieldtype": "Data",
+   "label": "Webhook URL"
+  },
+  {
+   "fieldname": "webhook_secret",
+   "fieldtype": "Password",
+   "label": "Webhook Secret"
+  },
+  {
+   "fieldname": "verify_token",
+   "fieldtype": "Data",
+   "label": "Verify Token"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "settings_section",
+   "fieldtype": "Section Break",
+   "label": "Channel Settings"
+  },
+  {
+   "default": "4000",
+   "fieldname": "max_message_length",
+   "fieldtype": "Int",
+   "label": "Max Message Length"
+  },
+  {
+   "default": "30",
+   "fieldname": "response_timeout",
+   "fieldtype": "Int",
+   "label": "Response Timeout (seconds)"
+  },
+  {
+   "default": "60",
+   "fieldname": "rate_limit_per_minute",
+   "fieldtype": "Int",
+   "label": "Rate Limit (per minute)"
+  },
+  {
+   "default": "1",
+   "fieldname": "enable_message_logging",
+   "fieldtype": "Check",
+   "label": "Enable Message Logging"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-07-22 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant Settings",
+ "name": "Channel Configuration",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "WCFCB Agent"
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "WCFCB Assistant Admin",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "channel_name",
+ "track_changes": 1
+}

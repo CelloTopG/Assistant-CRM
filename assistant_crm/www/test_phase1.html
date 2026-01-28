@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 1 Integration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        #chatOutput {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .message {
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 5px;
+        }
+        .user-message { background: #007bff; color: white; text-align: right; }
+        .anna-message { background: #e9ecef; color: #333; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 Phase 2 Integration Test</h1>
+        <p>Testing the Session Bridge Service and live authentication workflow integration</p>
+        
+        <div class="test-result info">
+            <strong>Test Status:</strong> <span id="testStatus">Ready to test</span>
+        </div>
+        
+        <button onclick="testSessionCreation()">Test Session Creation</button>
+        <button onclick="testMessageSending()">Test Message Sending</button>
+        <button onclick="testAuthenticationFlow()">Test Authentication</button>
+        <button onclick="testSessionBridge()">Test Session Bridge</button>
+        <button onclick="clearOutput()">Clear Output</button>
+        
+        <div id="chatOutput"></div>
+        
+        <div style="margin-top: 20px;">
+            <input type="text" id="messageInput" placeholder="Type a message..." style="width: 70%; padding: 10px;">
+            <button onclick="sendTestMessage()" style="width: 25%;">Send</button>
+        </div>
+    </div>
+
+    <script>
+        let sessionId = null;
+        let testResults = [];
+
+        function log(message, type = 'info') {
+            const output = document.getElementById('chatOutput');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function updateStatus(status) {
+            document.getElementById('testStatus').textContent = status;
+        }
+
+        async function testSessionCreation() {
+            updateStatus('Testing session creation...');
+            log('🔄 Testing session creation with UnifiedChatAPI...', 'info');
+            
+            try {
+                const response = await fetch('/api/method/assistant_crm.api.unified_chat_api.start_chat_session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Frappe-CSRF-Token': frappe.csrf_token
+                    },
+                    body: JSON.stringify({
+                        user_id: 'test_user',
+                        persona: 'Anna'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.message && data.message.success) {
+                    sessionId = data.message.session_id;
+                    log(`✅ Session created successfully: ${sessionId}`, 'success');
+                    log(`📝 Response: ${data.message.message}`, 'info');
+                    updateStatus('Session created successfully');
+                } else {
+                    log(`❌ Session creation failed: ${JSON.stringify(data)}`, 'error');
+                    updateStatus('Session creation failed');
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                updateStatus('Session creation error');
+            }
+        }
+
+        async function testMessageSending() {
+            if (!sessionId) {
+                log('⚠️ No session ID. Creating session first...', 'info');
+                await testSessionCreation();
+                if (!sessionId) return;
+            }
+            
+            updateStatus('Testing message sending...');
+            log('🔄 Testing message sending with UnifiedChatAPI...', 'info');
+            
+            try {
+                const response = await fetch('/api/method/assistant_crm.api.unified_chat_api.send_message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Frappe-CSRF-Token': frappe.csrf_token
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        message: 'Hello Anna, this is a test message'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.message && data.message.success !== false) {
+                    log(`✅ Message sent successfully`, 'success');
+                    log(`📝 Anna's response: ${data.message.response || data.message}`, 'info');
+                    updateStatus('Message sending successful');
+                } else {
+                    log(`❌ Message sending failed: ${JSON.stringify(data)}`, 'error');
+                    updateStatus('Message sending failed');
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                updateStatus('Message sending error');
+            }
+        }
+
+        async function testAuthenticationFlow() {
+            if (!sessionId) {
+                log('⚠️ No session ID. Creating session first...', 'info');
+                await testSessionCreation();
+                if (!sessionId) return;
+            }
+            
+            updateStatus('Testing authentication flow...');
+            log('🔄 Testing authentication with test credentials...', 'info');
+            
+            try {
+                const response = await fetch('/api/method/assistant_crm.api.unified_chat_api.send_message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Frappe-CSRF-Token': frappe.csrf_token
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        message: '228597/62/1 PEN_0005000168'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.message && data.message.success !== false) {
+                    log(`✅ Authentication message processed`, 'success');
+                    log(`📝 Response: ${data.message.response || data.message}`, 'info');
+                    
+                    if (data.message.live_data_used) {
+                        log(`🎯 LIVE DATA INTEGRATION WORKING!`, 'success');
+                    } else {
+                        log(`⚠️ Live data integration not detected`, 'info');
+                    }
+
+                    if (data.message.session_bridged) {
+                        log(`🌉 Session Bridge Service working!`, 'success');
+                    }
+                    
+                    updateStatus('Authentication test completed');
+                } else {
+                    log(`❌ Authentication test failed: ${JSON.stringify(data)}`, 'error');
+                    updateStatus('Authentication test failed');
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                updateStatus('Authentication test error');
+            }
+        }
+
+        async function sendTestMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            if (!sessionId) {
+                await testSessionCreation();
+                if (!sessionId) return;
+            }
+            
+            input.value = '';
+            log(`👤 User: ${message}`, 'info');
+            
+            try {
+                const response = await fetch('/api/method/assistant_crm.api.unified_chat_api.send_message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Frappe-CSRF-Token': frappe.csrf_token
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        message: message
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.message && data.message.success !== false) {
+                    log(`🤖 Anna: ${data.message.response || data.message}`, 'success');
+                } else {
+                    log(`❌ Error: ${data.message?.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSessionBridge() {
+            updateStatus('Testing Session Bridge Service...');
+            log('🌉 Testing Session Bridge Service integration...', 'info');
+
+            try {
+                // Test session creation with bridge indicators
+                const response = await fetch('/api/method/assistant_crm.api.unified_chat_api.start_chat_session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Frappe-CSRF-Token': frappe.csrf_token
+                    },
+                    body: JSON.stringify({
+                        user_id: 'bridge_test_user',
+                        persona: 'Anna'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.message && data.message.success) {
+                    sessionId = data.message.session_id;
+                    log(`✅ Session created with bridge: ${sessionId}`, 'success');
+
+                    if (data.message.session_bridged) {
+                        log(`🎯 Session Bridge Service is working!`, 'success');
+                    }
+
+                    if (data.message.live_data_integration) {
+                        log(`🔗 Live data integration enabled`, 'success');
+                    }
+
+                    // Test multiple authentication attempts
+                    log('🔄 Testing authentication flow through bridge...', 'info');
+
+                    const authMessages = [
+                        '228597/62/1 PEN_0005000168',
+                        'I need help with my pension',
+                        'What is my payment status?'
+                    ];
+
+                    for (let i = 0; i < authMessages.length; i++) {
+                        const msg = authMessages[i];
+                        log(`📤 Sending: ${msg}`, 'info');
+
+                        const msgResponse = await fetch('/api/method/assistant_crm.api.unified_chat_api.send_message', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Frappe-CSRF-Token': frappe.csrf_token
+                            },
+                            body: JSON.stringify({
+                                session_id: sessionId,
+                                message: msg
+                            })
+                        });
+
+                        const msgData = await msgResponse.json();
+
+                        if (msgData.message && msgData.message.success !== false) {
+                            log(`📥 Response: ${msgData.message.response || msgData.message}`, 'success');
+
+                            if (msgData.message.live_data_used) {
+                                log(`🎯 LIVE DATA DETECTED in response ${i + 1}!`, 'success');
+                            }
+
+                            if (msgData.message.authenticated) {
+                                log(`🔐 User authenticated successfully!`, 'success');
+                            }
+
+                            if (msgData.message.authentication_required) {
+                                log(`🔑 Authentication required`, 'info');
+                            }
+                        } else {
+                            log(`❌ Message ${i + 1} failed: ${msgData.message?.error || 'Unknown error'}`, 'error');
+                        }
+
+                        // Small delay between messages
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+
+                    updateStatus('Session Bridge test completed');
+                } else {
+                    log(`❌ Session creation failed: ${JSON.stringify(data)}`, 'error');
+                    updateStatus('Session Bridge test failed');
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                updateStatus('Session Bridge test error');
+            }
+        }
+
+        function clearOutput() {
+            document.getElementById('chatOutput').innerHTML = '';
+            updateStatus('Output cleared');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🔧 Phase 2 Integration Test Page Loaded', 'info');
+            log('📋 Available tests: Session Creation, Message Sending, Authentication Flow, Session Bridge', 'info');
+            log('🌉 Phase 2 focuses on Session Bridge Service and live authentication workflow integration', 'info');
+            
+            // Enter key support
+            document.getElementById('messageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendTestMessage();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

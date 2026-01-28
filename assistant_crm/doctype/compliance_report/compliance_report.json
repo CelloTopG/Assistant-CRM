@@ -1,0 +1,165 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2024-07-30 07:45:00.000000",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "report_date",
+  "report_type",
+  "overall_compliance_score",
+  "section_break_5",
+  "total_rules_checked",
+  "compliant_rules",
+  "non_compliant_rules",
+  "critical_violations",
+  "high_violations",
+  "section_break_11",
+  "detailed_results",
+  "remediation_summary",
+  "next_check_due",
+  "section_break_15",
+  "created_by",
+  "created_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "COMP-RPT-.YYYY.-.MM.-.#####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "report_date",
+   "fieldtype": "Date",
+   "label": "Report Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "report_type",
+   "fieldtype": "Select",
+   "label": "Report Type",
+   "options": "Scheduled\nManual\nTriggered\nEmergency"
+  },
+  {
+   "fieldname": "overall_compliance_score",
+   "fieldtype": "Float",
+   "label": "Overall Compliance Score"
+  },
+  {
+   "fieldname": "section_break_5",
+   "fieldtype": "Section Break",
+   "label": "Compliance Statistics"
+  },
+  {
+   "default": "0",
+   "fieldname": "total_rules_checked",
+   "fieldtype": "Int",
+   "label": "Total Rules Checked"
+  },
+  {
+   "default": "0",
+   "fieldname": "compliant_rules",
+   "fieldtype": "Int",
+   "label": "Compliant Rules"
+  },
+  {
+   "default": "0",
+   "fieldname": "non_compliant_rules",
+   "fieldtype": "Int",
+   "label": "Non-Compliant Rules"
+  },
+  {
+   "default": "0",
+   "fieldname": "critical_violations",
+   "fieldtype": "Int",
+   "label": "Critical Violations"
+  },
+  {
+   "default": "0",
+   "fieldname": "high_violations",
+   "fieldtype": "Int",
+   "label": "High Violations"
+  },
+  {
+   "fieldname": "section_break_11",
+   "fieldtype": "Section Break",
+   "label": "Report Details"
+  },
+  {
+   "fieldname": "detailed_results",
+   "fieldtype": "Text",
+   "label": "Detailed Results (JSON)"
+  },
+  {
+   "fieldname": "remediation_summary",
+   "fieldtype": "Text",
+   "label": "Remediation Summary (JSON)"
+  },
+  {
+   "fieldname": "next_check_due",
+   "fieldtype": "Datetime",
+   "label": "Next Check Due"
+  },
+  {
+   "fieldname": "section_break_15",
+   "fieldtype": "Section Break",
+   "label": "System Information"
+  },
+  {
+   "fieldname": "created_by",
+   "fieldtype": "Data",
+   "label": "Created By",
+   "read_only": 1
+  },
+  {
+   "fieldname": "created_on",
+   "fieldtype": "Datetime",
+   "label": "Created On",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-07-30 07:45:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Compliance Report",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

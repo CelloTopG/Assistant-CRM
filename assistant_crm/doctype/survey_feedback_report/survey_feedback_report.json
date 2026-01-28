@@ -1,0 +1,71 @@
+{
+  "doctype": "DocType",
+  "name": "Survey Feedback Report",
+  "module": "Assistant CRM",
+  "custom": 0,
+  "is_submittable": 0,
+  "autoname": "SFREP-.YYYY.-.#####",
+  "allow_rename": 0,
+  "editable_grid": 0,
+  "track_changes": 1,
+  "field_order": [
+    "title","period_type","date_from","date_to",
+    "section_summary","total_campaigns","total_surveys_sent","total_responses","response_rate","avg_sentiment_score",
+    "section_sentiment","very_positive_count","positive_count","neutral_count","negative_count","very_negative_count",
+    "section_channels","total_interactions","inbound_count","outbound_count","avg_first_response_minutes","p90_first_response_minutes","p95_first_response_minutes",
+    "section_visuals","survey_chart_json","sentiment_chart_json","channel_chart_json","delivery_chart_json","platform_response_rate_json","trend_chart_json",
+    "kpi_html","alerts_html","report_html","filters_json","snapshot_json","cache_key","cached_at","generated_at","generated_by"
+  ],
+  "fields": [
+    {"fieldname": "title", "label": "Title", "fieldtype": "Data"},
+    {"fieldname": "period_type", "label": "Period Type", "fieldtype": "Select", "options": "Monthly\nQuarterly\nCustom", "default": "Monthly", "reqd": 1},
+    {"fieldname": "date_from", "label": "Date From", "fieldtype": "Date", "reqd": 1},
+    {"fieldname": "date_to", "label": "Date To", "fieldtype": "Date", "reqd": 1},
+
+    {"fieldname": "section_summary", "fieldtype": "Section Break", "label": "Survey Summary"},
+    {"fieldname": "total_campaigns", "label": "Total Campaigns", "fieldtype": "Int", "read_only": 1},
+    {"fieldname": "total_surveys_sent", "label": "Surveys Sent", "fieldtype": "Int", "read_only": 1},
+    {"fieldname": "total_responses", "label": "Responses", "fieldtype": "Int", "read_only": 1},
+    {"fieldname": "response_rate", "label": "Response Rate (%)", "fieldtype": "Float", "read_only": 1, "precision": 2},
+    {"fieldname": "avg_sentiment_score", "label": "Avg Sentiment", "fieldtype": "Float", "read_only": 1, "precision": 3},
+
+    {"fieldname": "section_sentiment", "fieldtype": "Section Break", "label": "Sentiment Distribution"},
+    {"fieldname": "very_positive_count", "label": "Very Positive", "fieldtype": "Int", "read_only": 1},
+    {"fieldname": "positive_count", "label": "Positive", "fieldtype": "Int", "read_only": 1},
+    {"fieldname": "neutral_count", "label": "Neutral", "fieldtype": "Int", "read_only": 1},
+    {"fieldname": "negative_count", "label": "Negative", "fieldtype": "Int", "read_only": 1},
+    {"fieldname": "very_negative_count", "label": "Very Negative", "fieldtype": "Int", "read_only": 1},
+
+    {"fieldname": "section_channels", "fieldtype": "Section Break", "label": "Channel Metrics"},
+    {"fieldname": "total_interactions", "label": "Total Interactions", "fieldtype": "Int", "read_only": 1},
+    {"fieldname": "inbound_count", "label": "Inbound", "fieldtype": "Int", "read_only": 1},
+    {"fieldname": "outbound_count", "label": "Outbound", "fieldtype": "Int", "read_only": 1},
+    {"fieldname": "avg_first_response_minutes", "label": "Avg First Response (min)", "fieldtype": "Float", "read_only": 1, "precision": 2},
+    {"fieldname": "p90_first_response_minutes", "label": "p90 First Response (min)", "fieldtype": "Float", "read_only": 1, "precision": 2},
+    {"fieldname": "p95_first_response_minutes", "label": "p95 First Response (min)", "fieldtype": "Float", "read_only": 1, "precision": 2},
+
+    {"fieldname": "section_visuals", "fieldtype": "Section Break", "label": "Visualizations"},
+    {"fieldname": "survey_chart_json", "label": "Survey Chart Data", "fieldtype": "Code", "read_only": 1},
+    {"fieldname": "sentiment_chart_json", "label": "Sentiment Chart Data", "fieldtype": "Code", "read_only": 1},
+    {"fieldname": "channel_chart_json", "label": "Channel Chart Data", "fieldtype": "Code", "read_only": 1},
+    {"fieldname": "delivery_chart_json", "label": "Delivery Breakdown Chart Data", "fieldtype": "Code", "read_only": 1},
+    {"fieldname": "platform_response_rate_json", "label": "Platform Response Rates Chart Data", "fieldtype": "Code", "read_only": 1},
+    {"fieldname": "trend_chart_json", "label": "Trend Chart Data", "fieldtype": "Code", "read_only": 1},
+
+    {"fieldname": "kpi_html", "label": "Key Insights", "fieldtype": "HTML"},
+    {"fieldname": "alerts_html", "label": "Alerts", "fieldtype": "HTML"},
+    {"fieldname": "report_html", "label": "Report", "fieldtype": "HTML"},
+    {"fieldname": "filters_json", "label": "Filters", "fieldtype": "Code"},
+    {"fieldname": "snapshot_json", "label": "Snapshot JSON", "fieldtype": "Code", "read_only": 1},
+    {"fieldname": "cache_key", "label": "Cache Key", "fieldtype": "Data", "read_only": 1},
+    {"fieldname": "cached_at", "label": "Cached At", "fieldtype": "Datetime", "read_only": 1},
+    {"fieldname": "generated_at", "label": "Generated At", "fieldtype": "Datetime", "read_only": 1},
+    {"fieldname": "generated_by", "label": "Generated By", "fieldtype": "Link", "options": "User", "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1},
+    {"role": "Corporate Affairs", "read": 1, "write": 1, "create": 1},
+    {"role": "WCFCB Manager", "read": 1, "write": 1, "create": 1}
+  ]
+}
+

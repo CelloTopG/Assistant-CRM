@@ -1,0 +1,372 @@
+{
+ "actions": [],
+ "creation": "2025-07-29 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "ai_configuration_section",
+  "openai_api_key",
+  "openai_model",
+  "chat_model",
+  "max_tokens",
+  "column_break_4",
+  "temperature",
+  "timeout_seconds",
+  "rate_limit_per_minute",
+  "enhancement_features_section",
+  "tone_adjustment_enabled",
+  "grammar_correction_enabled",
+  "style_optimization_enabled",
+  "column_break_11",
+  "auto_translate_enabled",
+  "readability_optimization_enabled",
+  "personalization_enabled",
+  "tone_profiles_section",
+  "default_tone_profile",
+  "professional_tone_keywords",
+  "friendly_tone_keywords",
+  "column_break_17",
+  "urgent_tone_keywords",
+  "empathetic_tone_keywords",
+  "informative_tone_keywords",
+  "readability_settings_section",
+  "readability_target",
+  "target_flesch_score",
+  "max_grade_level",
+  "column_break_24",
+  "sentence_length_target",
+  "complexity_threshold",
+  "jargon_replacement_enabled",
+  "platform_optimization_section",
+  "auto_platform_optimization",
+  "character_limit_enforcement",
+  "emoji_optimization",
+  "column_break_31",
+  "hashtag_optimization",
+  "link_optimization",
+  "formatting_optimization",
+  "monitoring_section",
+  "total_messages_enhanced",
+  "average_improvement_score",
+  "last_enhancement_time",
+  "column_break_38",
+  "failed_enhancement_count",
+  "api_usage_count",
+  "enhancement_success_rate"
+ ],
+ "fields": [
+  {
+   "fieldname": "ai_configuration_section",
+   "fieldtype": "Section Break",
+   "label": "AI Configuration"
+  },
+  {
+   "fieldname": "openai_api_key",
+   "fieldtype": "Password",
+   "label": "OpenAI API Key"
+  },
+  {
+   "default": "gpt-4",
+   "fieldname": "openai_model",
+   "fieldtype": "Select",
+   "label": "OpenAI Model (Antoine / Reports)",
+   "options": "gpt-4\ngpt-4-turbo\ngpt-3.5-turbo\ngpt-3.5-turbo-16k"
+  },
+  {
+   "fieldname": "chat_model",
+   "fieldtype": "Data",
+   "label": "Chat Model (Anna / Unified Inbox)",
+   "description": "Optional custom GPT model ID for Anna chat. If empty, the OpenAI Model above will be used."
+  },
+  {
+   "default": "1000",
+   "fieldname": "max_tokens",
+   "fieldtype": "Int",
+   "label": "Max Tokens"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0.7",
+   "fieldname": "temperature",
+   "fieldtype": "Float",
+   "label": "Temperature (0.0-1.0)"
+  },
+  {
+   "default": "30",
+   "fieldname": "timeout_seconds",
+   "fieldtype": "Int",
+   "label": "API Timeout (seconds)"
+  },
+  {
+   "default": "60",
+   "fieldname": "rate_limit_per_minute",
+   "fieldtype": "Int",
+   "label": "Rate Limit Per Minute"
+  },
+  {
+   "fieldname": "enhancement_features_section",
+   "fieldtype": "Section Break",
+   "label": "Enhancement Features"
+  },
+  {
+   "default": "1",
+   "fieldname": "tone_adjustment_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Tone Adjustment"
+  },
+  {
+   "default": "1",
+   "fieldname": "grammar_correction_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Grammar Correction"
+  },
+  {
+   "default": "1",
+   "fieldname": "style_optimization_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Style Optimization"
+  },
+  {
+   "fieldname": "column_break_11",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "auto_translate_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Auto Translation"
+  },
+  {
+   "default": "1",
+   "fieldname": "readability_optimization_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Readability Optimization"
+  },
+  {
+   "default": "1",
+   "fieldname": "personalization_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Message Personalization"
+  },
+  {
+   "fieldname": "tone_profiles_section",
+   "fieldtype": "Section Break",
+   "label": "Tone Profiles"
+  },
+  {
+   "default": "professional",
+   "fieldname": "default_tone_profile",
+   "fieldtype": "Select",
+   "label": "Default Tone Profile",
+   "options": "professional\nfriendly\nurgent\nempathetic\ninformative"
+  },
+  {
+   "default": "please, kindly, appreciate, inform, regarding, sincerely",
+   "fieldname": "professional_tone_keywords",
+   "fieldtype": "Long Text",
+   "label": "Professional Tone Keywords"
+  },
+  {
+   "default": "happy, help, thanks, welcome, glad, pleasure",
+   "fieldname": "friendly_tone_keywords",
+   "fieldtype": "Long Text",
+   "label": "Friendly Tone Keywords"
+  },
+  {
+   "fieldname": "column_break_17",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "immediate, urgent, asap, priority, deadline, action",
+   "fieldname": "urgent_tone_keywords",
+   "fieldtype": "Long Text",
+   "label": "Urgent Tone Keywords"
+  },
+  {
+   "default": "understand, sorry, support, concern, care, assist",
+   "fieldname": "empathetic_tone_keywords",
+   "fieldtype": "Long Text",
+   "label": "Empathetic Tone Keywords"
+  },
+  {
+   "default": "explain, details, information, process, steps, guide",
+   "fieldname": "informative_tone_keywords",
+   "fieldtype": "Long Text",
+   "label": "Informative Tone Keywords"
+  },
+  {
+   "fieldname": "readability_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Readability Settings"
+  },
+  {
+   "default": "professional",
+   "fieldname": "readability_target",
+   "fieldtype": "Select",
+   "label": "Readability Target",
+   "options": "simple\nmoderate\nprofessional\nadvanced"
+  },
+  {
+   "default": "60",
+   "fieldname": "target_flesch_score",
+   "fieldtype": "Float",
+   "label": "Target Flesch Reading Ease Score"
+  },
+  {
+   "default": "10",
+   "fieldname": "max_grade_level",
+   "fieldtype": "Float",
+   "label": "Maximum Grade Level"
+  },
+  {
+   "fieldname": "column_break_24",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "20",
+   "fieldname": "sentence_length_target",
+   "fieldtype": "Int",
+   "label": "Target Sentence Length (words)"
+  },
+  {
+   "default": "3",
+   "fieldname": "complexity_threshold",
+   "fieldtype": "Float",
+   "label": "Complexity Threshold"
+  },
+  {
+   "default": "1",
+   "fieldname": "jargon_replacement_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Jargon Replacement"
+  },
+  {
+   "fieldname": "platform_optimization_section",
+   "fieldtype": "Section Break",
+   "label": "Platform Optimization"
+  },
+  {
+   "default": "1",
+   "fieldname": "auto_platform_optimization",
+   "fieldtype": "Check",
+   "label": "Enable Auto Platform Optimization"
+  },
+  {
+   "default": "1",
+   "fieldname": "character_limit_enforcement",
+   "fieldtype": "Check",
+   "label": "Enforce Character Limits"
+  },
+  {
+   "default": "1",
+   "fieldname": "emoji_optimization",
+   "fieldtype": "Check",
+   "label": "Optimize Emoji Usage"
+  },
+  {
+   "fieldname": "column_break_31",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "hashtag_optimization",
+   "fieldtype": "Check",
+   "label": "Optimize Hashtag Usage"
+  },
+  {
+   "default": "1",
+   "fieldname": "link_optimization",
+   "fieldtype": "Check",
+   "label": "Optimize Link Formatting"
+  },
+  {
+   "default": "1",
+   "fieldname": "formatting_optimization",
+   "fieldtype": "Check",
+   "label": "Optimize Text Formatting"
+  },
+  {
+   "fieldname": "monitoring_section",
+   "fieldtype": "Section Break",
+   "label": "Usage Monitoring"
+  },
+  {
+   "default": "0",
+   "fieldname": "total_messages_enhanced",
+   "fieldtype": "Int",
+   "label": "Total Messages Enhanced",
+   "read_only": 1
+  },
+  {
+   "default": "0.0",
+   "fieldname": "average_improvement_score",
+   "fieldtype": "Float",
+   "label": "Average Improvement Score",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_enhancement_time",
+   "fieldtype": "Datetime",
+   "label": "Last Enhancement Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_38",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "failed_enhancement_count",
+   "fieldtype": "Int",
+   "label": "Failed Enhancement Count",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "api_usage_count",
+   "fieldtype": "Int",
+   "label": "API Usage Count",
+   "read_only": 1
+  },
+  {
+   "default": "0.0",
+   "fieldname": "enhancement_success_rate",
+   "fieldtype": "Percent",
+   "label": "Enhancement Success Rate",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-07-29 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Enhanced AI Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Assistant CRM Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

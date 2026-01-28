@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Error - WCFCB Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .error-container {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 90%;
+        }
+        
+        .error-icon {
+            font-size: 8rem;
+            color: #dc3545;
+            margin-bottom: 30px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .error-title {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .error-subtitle {
+            font-size: 1.5rem;
+            color: #dc3545;
+            margin-bottom: 30px;
+        }
+        
+        .error-message {
+            color: #495057;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+        
+        .anna-message {
+            background: linear-gradient(135deg, #fff3cd, #f8f9fa);
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+            text-align: left;
+        }
+        
+        .anna-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            vertical-align: top;
+        }
+        
+        .anna-text {
+            display: inline-block;
+            width: calc(100% - 60px);
+            vertical-align: top;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,123,255,0.3);
+        }
+        
+        .btn-outline-danger {
+            border: 2px solid #dc3545;
+            color: #dc3545;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-danger:hover {
+            background: #dc3545;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .status-check {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .status-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+        
+        .status-ok {
+            background: #28a745;
+        }
+        
+        .status-error {
+            background: #dc3545;
+        }
+        
+        .status-checking {
+            background: #ffc107;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        .retry-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .countdown {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #007bff;
+            margin: 10px 0;
+        }
+        
+        .technical-details {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #6c757d;
+            display: none;
+        }
+        
+        .show-details-btn {
+            background: none;
+            border: none;
+            color: #007bff;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .error-container {
+                padding: 30px 20px;
+            }
+            
+            .error-title {
+                font-size: 2rem;
+            }
+            
+            .error-subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .error-icon {
+                font-size: 5rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn-primary,
+            .btn-outline-danger {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        
+        <h1 class="error-title">500</h1>
+        <h2 class="error-subtitle">Internal Server Error</h2>
+        
+        <div class="error-message">
+            We're experiencing some technical difficulties right now. 
+            Our team has been automatically notified and is working to resolve this issue.
+        </div>
+        
+        <div class="anna-message">
+            <div class="anna-avatar">A</div>
+            <div class="anna-text">
+                <strong>Hi! This is Anna 😔</strong><br>
+                I'm sorry you're experiencing this issue. I've already notified our technical team, 
+                and they're working on it. In the meantime, you can try refreshing the page or 
+                accessing other parts of the system that might still be working.
+            </div>
+        </div>
+        
+        <div class="status-check">
+            <h6><i class="fas fa-heartbeat"></i> System Status Check</h6>
+            <div class="status-item">
+                <span>Database Connection</span>
+                <span class="status-indicator status-checking" id="dbStatus"></span>
+            </div>
+            <div class="status-item">
+                <span>API Services</span>
+                <span class="status-indicator status-checking" id="apiStatus"></span>
+            </div>
+            <div class="status-item">
+                <span>Chat System</span>
+                <span class="status-indicator status-checking" id="chatStatus"></span>
+            </div>
+            <div class="status-item">
+                <span>Dashboard Services</span>
+                <span class="status-indicator status-checking" id="dashboardStatus"></span>
+            </div>
+        </div>
+        
+        <div class="retry-section">
+            <h6><i class="fas fa-redo"></i> Automatic Retry</h6>
+            <p>The page will automatically refresh in:</p>
+            <div class="countdown" id="countdown">30</div>
+            <button class="btn btn-sm btn-outline-primary" onclick="cancelAutoRetry()">Cancel Auto-Retry</button>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="retryNow()">
+                <i class="fas fa-redo"></i> Try Again Now
+            </button>
+            <button class="btn btn-outline-danger" onclick="goToSafeMode()">
+                <i class="fas fa-shield-alt"></i> Safe Mode
+            </button>
+            <button class="btn btn-outline-primary" onclick="contactSupport()">
+                <i class="fas fa-phone"></i> Contact Support
+            </button>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <button class="show-details-btn" onclick="toggleTechnicalDetails()">
+                Show Technical Details
+            </button>
+        </div>
+        
+        <div class="technical-details" id="technicalDetails">
+            <strong>Error Information:</strong><br>
+            Timestamp: <span id="errorTimestamp"></span><br>
+            Error ID: <span id="errorId"></span><br>
+            User Agent: <span id="userAgent"></span><br>
+            URL: <span id="errorUrl"></span><br>
+            <br>
+            <strong>Troubleshooting Steps:</strong><br>
+            1. Clear browser cache and cookies<br>
+            2. Disable browser extensions<br>
+            3. Try using an incognito/private window<br>
+            4. Check your internet connection<br>
+            5. Contact support if the issue persists
+        </div>
+        
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e9ecef; color: #6c757d; font-size: 0.9rem;">
+            <p><strong>Need immediate assistance?</strong></p>
+            <p><i class="fas fa-phone"></i> Emergency: +260-XXX-XXXX | <i class="fas fa-envelope"></i> support@wcfcb.gov.zm</p>
+            <p>Reference this error when contacting support: <strong id="supportReference"></strong></p>
+        </div>
+    </div>
+
+    <script>
+        let countdownTimer;
+        let countdownValue = 30;
+        let autoRetryEnabled = true;
+        
+        // Initialize error page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeErrorPage();
+            startSystemStatusCheck();
+            startCountdown();
+        });
+        
+        function initializeErrorPage() {
+            // Set error details
+            const now = new Date();
+            const errorId = 'ERR-' + now.getTime().toString(36).toUpperCase();
+            const supportRef = 'WCFCB-' + now.getFullYear() + '-' + (now.getMonth() + 1).toString().padStart(2, '0') + '-' + errorId;
+            
+            document.getElementById('errorTimestamp').textContent = now.toISOString();
+            document.getElementById('errorId').textContent = errorId;
+            document.getElementById('userAgent').textContent = navigator.userAgent;
+            document.getElementById('errorUrl').textContent = window.location.href;
+            document.getElementById('supportReference').textContent = supportRef;
+        }
+        
+        function startSystemStatusCheck() {
+            // Simulate system status checks
+            setTimeout(() => checkDatabaseStatus(), 1000);
+            setTimeout(() => checkApiStatus(), 2000);
+            setTimeout(() => checkChatStatus(), 3000);
+            setTimeout(() => checkDashboardStatus(), 4000);
+        }
+        
+        function checkDatabaseStatus() {
+            const indicator = document.getElementById('dbStatus');
+            // Simulate random status
+            const isOk = Math.random() > 0.3;
+            indicator.className = `status-indicator ${isOk ? 'status-ok' : 'status-error'}`;
+        }
+        
+        function checkApiStatus() {
+            const indicator = document.getElementById('apiStatus');
+            const isOk = Math.random() > 0.4;
+            indicator.className = `status-indicator ${isOk ? 'status-ok' : 'status-error'}`;
+        }
+        
+        function checkChatStatus() {
+            const indicator = document.getElementById('chatStatus');
+            const isOk = Math.random() > 0.2;
+            indicator.className = `status-indicator ${isOk ? 'status-ok' : 'status-error'}`;
+        }
+        
+        function checkDashboardStatus() {
+            const indicator = document.getElementById('dashboardStatus');
+            const isOk = Math.random() > 0.5;
+            indicator.className = `status-indicator ${isOk ? 'status-ok' : 'status-error'}`;
+        }
+        
+        function startCountdown() {
+            if (!autoRetryEnabled) return;
+            
+            countdownTimer = setInterval(() => {
+                countdownValue--;
+                document.getElementById('countdown').textContent = countdownValue;
+                
+                if (countdownValue <= 0) {
+                    retryNow();
+                }
+            }, 1000);
+        }
+        
+        function cancelAutoRetry() {
+            autoRetryEnabled = false;
+            clearInterval(countdownTimer);
+            document.querySelector('.retry-section').style.display = 'none';
+        }
+        
+        function retryNow() {
+            // Show loading state
+            document.querySelector('.error-container').style.opacity = '0.7';
+            
+            // Attempt to reload the page
+            window.location.reload();
+        }
+        
+        function goToSafeMode() {
+            // Redirect to a minimal version of the dashboard
+            window.location.href = '/app/assistant-crm';
+        }
+        
+        function contactSupport() {
+            // Open support contact options
+            const supportRef = document.getElementById('supportReference').textContent;
+            const subject = encodeURIComponent(`WCFCB System Error - ${supportRef}`);
+            const body = encodeURIComponent(`I encountered a system error while using the WCFCB Assistant CRM.
+
+Error Reference: ${supportRef}
+Time: ${new Date().toISOString()}
+URL: ${window.location.href}
+Browser: ${navigator.userAgent}
+
+Please assist with resolving this issue.`);
+            
+            window.open(`mailto:support@wcfcb.gov.zm?subject=${subject}&body=${body}`);
+        }
+        
+        function toggleTechnicalDetails() {
+            const details = document.getElementById('technicalDetails');
+            const button = document.querySelector('.show-details-btn');
+            
+            if (details.style.display === 'none' || details.style.display === '') {
+                details.style.display = 'block';
+                button.textContent = 'Hide Technical Details';
+            } else {
+                details.style.display = 'none';
+                button.textContent = 'Show Technical Details';
+            }
+        }
+        
+        // Track 500 errors for analytics
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'server_error', {
+                'page_location': window.location.href,
+                'page_title': document.title,
+                'error_id': document.getElementById('errorId').textContent
+            });
+        }
+        
+        // Send error report to monitoring system
+        function sendErrorReport() {
+            const errorData = {
+                timestamp: new Date().toISOString(),
+                url: window.location.href,
+                userAgent: navigator.userAgent,
+                errorId: document.getElementById('errorId').textContent,
+                referrer: document.referrer
+            };
+            
+            // In a real implementation, this would send to your error tracking service
+            console.log('Error report:', errorData);
+        }
+        
+        // Send error report
+        sendErrorReport();
+    </script>
+</body>
+</html>

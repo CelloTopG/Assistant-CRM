@@ -1,0 +1,29 @@
+{
+ "content": null,
+ "creation": "2025-01-24 12:00:00",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2025-07-27 00:32:15.828447",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "assistant-crm",
+ "owner": "Administrator",
+ "page_name": "assistant-crm",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Assistant CRM Admin"
+  },
+  {
+   "role": "Assistant CRM User"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Assistant CRM"
+}

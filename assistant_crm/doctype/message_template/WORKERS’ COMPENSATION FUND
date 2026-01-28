@@ -1,0 +1,386 @@
+WORKERS’ COMPENSATION FUND 
+CONTROL BOARD (WCFCB) 
+FUNCTIONAL SCOPE DOCUMENT (FSD) 
+CUSTOMER RELATIONSHIP MANAGEMENT (CRM) MODULE 
+WORKCOM CONNECT – CRM REQUIREMENTS 
+CONTENTS 
+1. Introduction .................................................................................... 3 
+2. Scope .............................................................................................. 4 
+3. Functional Requirements ................................................................ 5 
+3.1 Tawk.to and Contact Center Integration .................................... 5 
+3.1.1 Integration with All Social Media Platforms ......................... 5 
+3.1.2 CRM Board's Virtual Assistant – FAQ Handling................... 6 
+3.1.3 Third-party Bulk Messaging Integration .............................. 8 
+3.1.4 Omnichannel Interaction View .......................................... 10 
+3.1.5 Agent Performance Tracking ............................................. 10 
+3.2 Customer Feedback and Surveys ................................................ 10 
+3.2.1 Dynamic and Visually Appealing Reporting ....................... 11 
+3.3 CoreBusiness System Integration ............................................ 11 
+3.3.1 Centralized Employer and Beneficiary Profiles................... 11 
+4 Future Trends and AI Adoption ..................................................... 13 
+Intelligent Automation for Repetitive Tasks ....................................... 13 
+5 Conclusion .................................................................................... 14 
+6 Appendix....................................................................................... 15 
+6.1 Example of Communication Integration Table ......................... 15 
+6.2 Example of Survey and Feedback Utilization Table .................. 15 
+ 
+ 
+ 
+  
+WORKCOM CONNECT – CRM REQUIREMENTS 
+1. INTRODUCTION 
+The Workers’ Compensation Fund Control Board (WCFCB) recognizes the 
+critical importance of a robust Customer Relationship Management 
+(CRM) system. As part of the ERPNext implementation, this document 
+outlines the Functional Scope Document (FSD) for the CRM Module, 
+detailing the customization requirements necessary to align the CRM 
+functionalities with the specific operational needs of the Board. 
+WORKCOM CONNECT – CRM REQUIREMENTS 
+2. SCOPE 
+This document covers the additional functionalities that must be 
+incorporated into the ERPNext CRM Module to fully meet WCFCB’s 
+needs. It builds upon ERPNext’s base capabilities and ensures a more 
+integrated, centralized, and intelligent customer management system.  
+Key areas include: 
+− Integration with existing contact center systems (Tawk.to, others). 
+− Centralized communication via social media and messaging 
+platforms. 
+− Deployment of customizable surveys and intelligent reporting. 
+− Full integration with the CoreBusiness system for unified data 
+analytics. 
+− Adoption of Artificial Intelligence (AI) for predictive analytics, 
+automation, and smart reports. 
+WORKCOM CONNECT – CRM REQUIREMENTS 
+3. FUNCTIONAL REQUIREMENTS 
+3.1 TAWK.TO AND CONTACT CENTER INTEGRATION 
+To enhance centralized customer interaction management, the CRM 
+Module must seamlessly integrate with Tawk.to and the Board’s existing 
+Contact Center system. This integration will ensure that all 
+communication touchpoints — calls, chats, emails, and social media 
+interactions — are accessible and manageable from a single, unified 
+platform, greatly improving efficiency, response times, and customer 
+satisfaction. 
+The integration must be bi-directional, allowing real-time data exchange 
+between ERPNext CRM and the Contact Center, ensuring consistency 
+across systems. 
+Requirements include: 
+− Integration with all major social media platforms for centralized 
+communications. 
+− Third-party bulk messaging integration allowing selection of 
+messaging channels. 
+− Full call center integration for real-time call management. 
+3.1.1 INTEGRATION WITH ALL SOCIAL MEDIA PLATFORMS 
+To ensure centralized management of customer communications, the 
+CRM must fully aggregate and unify messages from all major social 
+media platforms, including WhatsApp, Facebook Messenger, Instagram, 
+Twitter (X), Telegram, and LinkedIn. 
+The goal is to allow customer service agents and other Board users to 
+handle all client interactions through a single interface, without the need 
+to log into multiple external platforms. 
+Centralized Communication Hub 
+Messages from all integrated platforms must appear in a single inbox 
+view, linked to the customer’s CRM profile for full interaction history and 
+context. 
+One-Click Multi-Platform Broadcasting 
+When creating an announcement, blog post, or update, users should be 
+able to select multiple platforms and broadcast the content with a single 
+WORKCOM CONNECT – CRM REQUIREMENTS 
+click. This ensures consistent messaging across all customer channels 
+while saving significant time and effort. 
+Generative AI Integration for Content Composure 
+CRM should integrate with AI writing services (e.g., OpenAI, Google 
+Gemini, or similar models) to assist users in composing professional, 
+clear, and structured messages. 
+This would allow: 
+− Grammar and tone checks. 
+− Auto-suggested posts based on the announcement topic. 
+− Rewriting or summarization tools to tailor messages per platform 
+(e.g., a shorter version for X, a formal one for LinkedIn etc.) 
+AI-Based Auto-Responses 
+Incoming queries on social media should be answered automatically 
+using intelligent AI Bots trained specifically on the Board's processes, 
+services, FAQs, and common inquiries. 
+The system should: 
+− Recognize common customer questions and answer them 
+instantly. 
+− Escalate complex queries to human agents when necessary. 
+− Continuously learn from previous interactions to improve future 
+responses. 
+3.1.2 CRM BOARD'S VIRTUAL ASSISTANT – FAQ HANDLING 
+To enhance customer self-service and reduce manual workload, a CRM 
+Board Virtual Assistant (Bot) must be deployed across all integrated 
+platforms. 
+Features of the CRM Board Bot: 
+Automated FAQs Management 
+The Bot must be trained with a detailed FAQ database covering key 
+topics such as beneficiary services, employer assessments, claims 
+procedures, contribution processes, and Board contacts. 
+Multilingual Support 
+Where necessary, the Bot should support Zambia’s key languages 
+besides English, like Bemba, Nyanja, and Tonga, ensuring inclusivity. 
+WORKCOM CONNECT – CRM REQUIREMENTS 
+Escalation Protocols 
+For inquiries beyond the Bot’s capability (e.g., complex case-specific 
+questions), the Bot must automatically escalate the ticket to a live agent 
+while transferring conversation context. 
+Personalized Interactions 
+When identifying returning customers, the Bot should greet them by 
+name, reference previous tickets, and personalize the conversation for a 
+better customer experience. 
+AI Learning and Updates 
+The FAQ database must be updated regularly, and the Bot should use 
+machine learning to recognize and adapt to new types of questions 
+emerging over time. 
+Examples of Bot FAQ Topics 
+Category Example Question Example Bot Response 
+Contributions "How do I register as 
+an employer?" 
+"You can register via our 
+online portal or visit any 
+WCFCB office. [More Details]" 
+Claims "How do I file a 
+compensation claim or 
+report an accident?" 
+"Please submit Form6 via our 
+Claims Section or through our 
+online platform." 
+Assessments "When is my next 
+assessment due?" 
+"Assessments are due 
+annually. You will receive a 
+reminder. [View your account 
+here]" 
+Payments "How can I pay my 
+contributions?" 
+"Payments can be made via 
+bank transfer, mobile money, 
+or direct deposit via any of our 
+branch bank accounts." 
+General 
+Contact 
+"Where is your nearest 
+office?" 
+"Find your nearest office 
+[here]. You can also contact 
+our hotline: 1234-567." 
+ 
+WORKCOM CONNECT – CRM REQUIREMENTS 
+Figure 1 - Proposed Process Flow 
+3.1.3 THIRD-PARTY BULK MESSAGING INTEGRATION 
+The CRM system must provide seamless integration with third-party 
+messaging services to allow bulk communication across multiple 
+platforms through a single, user-friendly interface. The following are the 
+functional requirements. 
+Multi-Channel Broadcasting 
+Users must be able to compose a single message and select multiple or 
+all available channels (e.g., SMS, WhatsApp, Email, Slack, Telegram, 
+Facebook Messenger) via an intuitive multi-select dropdown. 
+Recipient Categorization 
+The system must allow users to categorize and target specific groups 
+such as: 
+− Employers 
+− Beneficiaries 
+− Suppliers 
+WORKCOM CONNECT – CRM REQUIREMENTS 
+− Internal Staff 
+Dynamic Targeting 
+Recipients should be selectable based on: 
+− Pre-defined groups (e.g., "All Employers", "Active Beneficiaries", 
+"Registered Suppliers") 
+− Filters (e.g., based on region, industry, type of pension, return 
+history, payment status, branch etc.) 
+Scheduling and Immediate Dispatch 
+Ability to either schedule messages for future delivery or send 
+immediately. 
+Template Management 
+Pre-approved templates for common alerts must be available, 
+customizable before sending. 
+Use Cases / Examples 
+Employers 
+− Reminders for submission of annual returns.  
+− Notifications on upcoming assessment payments. 
+Beneficiaries 
+− Reminders to submit Life Certificates,  
+− updates on pension increments or benefits changes. 
+Suppliers 
+− Notifications about procurement opportunities, clarifications on 
+tender submissions, payment follow-ups. 
+Internal Communication 
+• Policy updates, internal announcements, critical alerts for staff. 
+Advanced AI Usage 
+• Personalization at Scale 
+AI should enable dynamic personalization — inserting variables 
+like Name, Employer Number, Pensioner ID into the messaging 
+automatically. 
+WORKCOM CONNECT – CRM REQUIREMENTS 
+• Optimal Channel Prediction 
+Using historical data, AI could suggest the most effective channel 
+per recipient (e.g., SMS for older pensioners, Email for suppliers). 
+• Smart Content Recommendations 
+CRM should offer smart suggestions on message tone and 
+structure based on the recipient category selected (Formal for 
+suppliers, Friendly for beneficiaries). 
+High level workflow 
+Step 
+Activity 
+1 
+User composes message 
+2 
+Selects recipient group(s) 
+3 
+Chooses channel(s) 
+4 
+(Optional) Schedules message 
+5 
+Reviews and sends 
+3.1.4 OMNICHANNEL INTERACTION VIEW 
+Each customer’s communication history across all channels must be 
+visible in one timeline, enabling agents to have full context of previous 
+interactions regardless of the platform used. 
+3.1.5 AGENT PERFORMANCE TRACKING 
+Integration must allow for tracking and reporting on agent productivity 
+(e.g., average handling time, resolution rates, customer satisfaction 
+scores). 
+3.2 CUSTOMER FEEDBACK AND SURVEYS 
+The CRM must facilitate the creation, distribution, and reporting of 
+surveys for employers and beneficiaries. 
+An effective CRM must offer robust capabilities to collect, analyze, and 
+act upon feedback from both employers and beneficiaries. This ensures 
+WORKCOM CONNECT – CRM REQUIREMENTS 
+that the Board continuously improves service delivery based on real, 
+actionable insights from its key stakeholders. 
+Requirements include: 
+− Customizable surveys launched at any time. 
+− Automated alerts to survey owners and participants. 
+− Dynamic and visually appealing reporting post-survey. 
+3.2.1 DYNAMIC AND VISUALLY APPEALING REPORTING 
+After the survey period closes, the CRM must automatically generate: 
+• Executive Dashboards (charts, graphs, key statistics) 
+• Downloadable detailed reports (Excel, PDF) 
+• Insights with AI-based analysis, such as sentiment analysis on 
+free-text feedback 
+3.3 COREBUSINESS SYSTEM INTEGRATION 
+CRM must integrate seamlessly with the existing CoreBusiness system to 
+ensure a unified, real-time, and centralized view of all critical stakeholder 
+information. 
+This integration is essential for streamlining Board operations, improving 
+data accuracy, and enabling advanced reporting and forecasting. 
+3.3.1 CENTRALIZED EMPLOYER AND BENEFICIARY PROFILES 
+The CRM must pull and synchronize key data from CoreBusiness such 
+as: 
+− Employer registration details 
+− Assessment history 
+− Beneficiary payment history 
+− Life certificate status 
+− Employer returns submissions 
+Profiles must be accessible in real-time from the CRM dashboard, with 
+changes updated automatically across systems. 
+Single View of Customer (SVOC) 
+Ensure that a comprehensive, 360° profile is available for each 
+stakeholder without toggling between systems. 
+WORKCOM CONNECT – CRM REQUIREMENTS 
+AI-Based Auto-Generation of Reports 
+Periodic reports (e.g., monthly, quarterly) should be automatically 
+generated by the system. 
+Reports must include: 
+− Key metrics (e.g., assessment collections, beneficiary trends 
+− Recommendations generated by AI (e.g., "Focus on Region X for 
+improvement in returns collection") 
+− Highlight anomalies or urgent issues automatically. 
+Users must also be able to request on-demand reports with custom date 
+ranges and filters. 
+WORKCOM CONNECT – CRM REQUIREMENTS 
+4 FUTURE TRENDS AND AI ADOPTION 
+To ensure that the Boards CRM module remains resilient, innovative, 
+and future proof, the Board will proactively adopt emerging trends and 
+intelligent technologies. 
+The focus will be on building a CRM system that is not just reactive but 
+predictive, not just transactional but relational, and fully aligned to 
+global digital transformation standards: 
+− Predictive customer insights using Machine Learning. 
+− AI-powered chatbots for real-time query management. 
+− Sentiment analysis from customer interactions. 
+− Intelligent automation for repetitive tasks. 
+− Omnichannel communication with personalized user experiences. 
+INTELLIGENT AUTOMATION FOR REPETITIVE TASKS 
+Automate repetitive administrative tasks such as: 
+− Sending payment reminders 
+Strategic Note 
+By embedding AI-driven innovations early, WCFCB will not only 
+enhance operational efficiency but will also position itself as a leader 
+in customer-centric digital transformation within the public sector. 
+WORKCOM CONNECT – CRM REQUIREMENTS 
+5 CONCLUSION 
+The outlined customizations and feature enhancements are designed to 
+align the WorkCom Connet CRM module with the Boards strategic vision 
+of a modern, intelligent, and integrated customer management system. 
+By addressing key integration points such as social media aggregation, 
+bulk messaging capabilities, real-time contact center linkage, and 
+survey-driven feedback loops, WCFCB ensures that both employers and 
+beneficiaries experience efficient, seamless, and responsive engagement. 
+Incorporating emerging technologies like AI-powered automation, 
+predictive analytics, sentiment analysis, and intelligent chatbots will not 
+only modernize customer interactions but also position WCFCB as a 
+pioneering and forward-thinking institution within the public sector. 
+By embracing omnichannel communication, centralized reporting, and 
+AI-driven insights, WCFCB is making a strategic investment to: 
+− Strengthen stakeholder relationships, 
+− Enhance operational efficiency, and 
+− Future-proof its service delivery models against evolving customer 
+expectations. 
+Ultimately, the CRM enhancements will empower the Board to serve 
+employers, beneficiaries, and stakeholders better, while positioning itself 
+at the forefront of digital transformation in customer relationship 
+management. 
+WORKCOM CONNECT – CRM REQUIREMENTS 
+6 APPENDIX 
+6.1 EXAMPLE OF COMMUNICATION INTEGRATION TABLE 
+Platform Integration Type Notes 
+WhatsApp Messaging Integration Send and receive real-time messages within the 
+CRM. 
+Facebook 
+Messenger 
+Social Media Integration Manage customer conversations directly from 
+Facebook into the CRM. 
+Instagram Social Media Integration Handle direct messages and comments from 
+Instagram centrally. 
+Twitter (X) Social Media Integration Engage with mentions, direct messages, and posts 
+within CRM. 
+Telegram Messaging Integration Receive and reply to messages sent by customers 
+through Telegram. 
+LinkedIn Professional Network 
+Integration 
+Manage employer and partner communications 
+originating from LinkedIn. 
+Email 
+(SMTP/IMAP) 
+Direct Email Integration Integrated sending and receiving of corporate 
+emails. 
+SMS Gateway Messaging Integration Send SMS alerts and notifications to employers, 
+beneficiaries, or suppliers. 
+Slack Internal Communication 
+Integration 
+Broadcast internal alerts and updates across 
+departments via Slack. 
+6.2 EXAMPLE OF SURVEY AND FEEDBACK UTILIZATION 
+TABLE 
+ 
+Survey Type Target Audience Purpose 
+Employer Satisfaction Survey Registered 
+Employers 
+Collect feedback on Board processes and 
+services. 
+Beneficiary Life Certificate 
+Feedback 
+Pension 
+Beneficiaries 
+Improve life certificate submission 
+processes. 
+Assessment Returns Reminder 
+Survey 
+Employers Remind and gather feedback on the ease of 
+returns submission. 
+Supplier Evaluation Survey Procurement 
+Suppliers 
+Assess supplier performance for 
+procurement processes.

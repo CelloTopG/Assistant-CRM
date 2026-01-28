@@ -1,0 +1,332 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-08-27 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "message_id",
+  "conversation",
+  "platform",
+  "direction",
+  "message_details_section",
+  "message_type",
+  "message_content",
+  "message_html",
+  "column_break_10",
+  "sender_name",
+  "sender_id",
+  "sender_platform_id",
+  "timestamp",
+  "attachments_section",
+  "has_attachments",
+  "attachments_data",
+  "media_urls",
+  "ai_processing_section",
+  "processed_by_ai",
+  "ai_response",
+  "ai_confidence",
+  "column_break_22",
+  "ai_processing_time",
+  "ai_model_used",
+  "requires_escalation",
+  "agent_handling_section",
+  "handled_by_agent",
+  "agent_response",
+  "agent_response_time",
+  "column_break_30",
+  "agent_notes",
+  "internal_notes",
+  "platform_specific_section",
+  "platform_message_id",
+  "platform_metadata",
+  "delivery_status",
+  "column_break_37",
+  "read_status",
+  "delivery_timestamp",
+  "read_timestamp"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "UINB-MSG-.YYYY.-.MM.-.#####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "message_id",
+   "fieldtype": "Data",
+   "label": "Message ID",
+   "unique": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "conversation",
+   "fieldtype": "Link",
+   "label": "Conversation",
+   "options": "Unified Inbox Conversation",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "platform",
+   "fieldtype": "Select",
+   "label": "Platform",
+   "options": "WhatsApp\nFacebook\nInstagram\nTelegram\nTwitter\nTawk.to\nWebsite Chat\nEmail\nPhone\nLinkedIn\nUSSD\nYouTube",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "direction",
+   "fieldtype": "Select",
+   "label": "Direction",
+   "options": "Inbound\nOutbound",
+   "default": "Inbound",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "message_details_section",
+   "fieldtype": "Section Break",
+   "label": "Message Details"
+  },
+  {
+   "fieldname": "message_type",
+   "fieldtype": "Select",
+   "label": "Message Type",
+   "options": "text\nimage\nvideo\naudio\ndocument\nlocation\ncontact\nsticker\nvoice_note\nfile",
+   "default": "text"
+  },
+  {
+   "fieldname": "message_content",
+   "fieldtype": "Long Text",
+   "label": "Message Content",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "message_html",
+   "fieldtype": "Text Editor",
+   "label": "Message HTML"
+  },
+  {
+   "fieldname": "column_break_10",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sender_name",
+   "fieldtype": "Data",
+   "label": "Sender Name"
+  },
+  {
+   "fieldname": "sender_id",
+   "fieldtype": "Data",
+   "label": "Sender ID"
+  },
+  {
+   "fieldname": "sender_platform_id",
+   "fieldtype": "Data",
+   "label": "Sender Platform ID"
+  },
+  {
+   "fieldname": "timestamp",
+   "fieldtype": "Datetime",
+   "label": "Timestamp",
+   "default": "now",
+   "reqd": 1
+  },
+  {
+   "fieldname": "attachments_section",
+   "fieldtype": "Section Break",
+   "label": "Attachments"
+  },
+  {
+   "default": "0",
+   "fieldname": "has_attachments",
+   "fieldtype": "Check",
+   "label": "Has Attachments"
+  },
+  {
+   "fieldname": "attachments_data",
+   "fieldtype": "JSON",
+   "label": "Attachments Data"
+  },
+  {
+   "fieldname": "media_urls",
+   "fieldtype": "JSON",
+   "label": "Media URLs"
+  },
+  {
+   "fieldname": "ai_processing_section",
+   "fieldtype": "Section Break",
+   "label": "AI Processing"
+  },
+  {
+   "default": "0",
+   "fieldname": "processed_by_ai",
+   "fieldtype": "Check",
+   "label": "Processed by AI"
+  },
+  {
+   "fieldname": "ai_response",
+   "fieldtype": "Long Text",
+   "label": "AI Response"
+  },
+  {
+   "fieldname": "ai_confidence",
+   "fieldtype": "Float",
+   "label": "AI Confidence",
+   "precision": "3"
+  },
+  {
+   "fieldname": "column_break_22",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ai_processing_time",
+   "fieldtype": "Float",
+   "label": "AI Processing Time (seconds)",
+   "precision": "3"
+  },
+  {
+   "fieldname": "ai_model_used",
+   "fieldtype": "Data",
+   "label": "AI Model Used"
+  },
+  {
+   "default": "0",
+   "fieldname": "requires_escalation",
+   "fieldtype": "Check",
+   "label": "Requires Escalation"
+  },
+  {
+   "fieldname": "agent_handling_section",
+   "fieldtype": "Section Break",
+   "label": "Agent Handling"
+  },
+  {
+   "default": "0",
+   "fieldname": "handled_by_agent",
+   "fieldtype": "Check",
+   "label": "Handled by Agent"
+  },
+  {
+   "fieldname": "agent_response",
+   "fieldtype": "Long Text",
+   "label": "Agent Response"
+  },
+  {
+   "fieldname": "agent_response_time",
+   "fieldtype": "Float",
+   "label": "Agent Response Time (seconds)",
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_30",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "agent_notes",
+   "fieldtype": "Long Text",
+   "label": "Agent Notes"
+  },
+  {
+   "fieldname": "internal_notes",
+   "fieldtype": "Long Text",
+   "label": "Internal Notes"
+  },
+  {
+   "fieldname": "platform_specific_section",
+   "fieldtype": "Section Break",
+   "label": "Platform Specific"
+  },
+  {
+   "fieldname": "platform_message_id",
+   "fieldtype": "Data",
+   "label": "Platform Message ID"
+  },
+  {
+   "fieldname": "platform_metadata",
+   "fieldtype": "JSON",
+   "label": "Platform Metadata"
+  },
+  {
+   "fieldname": "delivery_status",
+   "fieldtype": "Select",
+   "label": "Delivery Status",
+   "options": "Pending\nSent\nDelivered\nRead\nFailed"
+  },
+  {
+   "fieldname": "column_break_37",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "read_status",
+   "fieldtype": "Select",
+   "label": "Read Status",
+   "options": "Unread\nRead"
+  },
+  {
+   "fieldname": "delivery_timestamp",
+   "fieldtype": "Datetime",
+   "label": "Delivery Timestamp"
+  },
+  {
+   "fieldname": "read_timestamp",
+   "fieldtype": "Datetime",
+   "label": "Read Timestamp"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-08-27 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "Unified Inbox Message",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Assistant CRM Agent",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

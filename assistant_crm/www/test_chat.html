@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WCFCB Assistant CRM - Test Chat</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .chat-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .chat-header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .chat-header p {
+            margin: 5px 0 0 0;
+            opacity: 0.8;
+            font-size: 14px;
+        }
+        
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message.bot {
+            justify-content: flex-start;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+        
+        .message.user .message-content {
+            background: #007bff;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .message.bot .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .message-info {
+            font-size: 11px;
+            opacity: 0.6;
+            margin-top: 4px;
+        }
+        
+        .chat-input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .message-input:focus {
+            border-color: #007bff;
+        }
+        
+        .send-btn {
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .send-btn:hover {
+            background: #0056b3;
+        }
+        
+        .send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .language-selector {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .language-selector select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .typing-indicator {
+            display: none;
+            padding: 10px 16px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 18px;
+            margin-bottom: 15px;
+            max-width: 70%;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            background: #999;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .sample-messages {
+            margin-bottom: 15px;
+        }
+        
+        .sample-messages h4 {
+            margin: 0 0 10px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .sample-btn {
+            display: inline-block;
+            margin: 5px;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        
+        .sample-btn:hover {
+            background: #e9ecef;
+            border-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>🏛️ WCFCB Assistant CRM</h1>
+            <p>Test Chat Interface - Multilingual AI Assistant</p>
+        </div>
+        
+        <div class="chat-input-area">
+            <div class="language-selector">
+                <label for="language">Language: </label>
+                <select id="language">
+                    <option value="en">English</option>
+                    <option value="bem">Bemba</option>
+                    <option value="ny">Nyanja</option>
+                    <option value="to">Tonga</option>
+                </select>
+            </div>
+            
+            <div class="sample-messages">
+                <h4>Try these sample messages:</h4>
+                <div class="sample-btn" onclick="sendSampleMessage('Hello, I need help with business registration')">Business Registration (EN)</div>
+                <div class="sample-btn" onclick="sendSampleMessage('Muli bwanji, nfwaya ukusungula business')">Business Registration (BEM)</div>
+                <div class="sample-btn" onclick="sendSampleMessage('How do I apply for pension benefits?')">Pension Services (EN)</div>
+                <div class="sample-btn" onclick="sendSampleMessage('My employee was injured at work')">Claims Processing (EN)</div>
+                <div class="sample-btn" onclick="sendSampleMessage('This is terrible service, I want to speak to your manager!')">Escalation Test (EN)</div>
+            </div>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="message-content">
+                    <strong>🤖 WCFCB Assistant:</strong><br>
+                    Muli bwanji! Welcome to WCFCB! I'm your AI assistant and I can help you in English, Bemba, Nyanja, or Tonga.<br><br>
+                    I can assist you with:
+                    <ul>
+                        <li>🏢 Business Registration</li>
+                        <li>💰 Pension Services</li>
+                        <li>👥 Employer Registration</li>
+                        <li>📋 Claims Processing</li>
+                        <li>📊 Compliance Requirements</li>
+                    </ul>
+                    How can I help you today?
+                </div>
+            </div>
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-input-area">
+            <div class="input-group">
+                <input type="text" id="messageInput" class="message-input" placeholder="Type your message here..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()" class="send-btn" id="sendBtn">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const languageSelect = document.getElementById('language');
+
+        function addMessage(content, isUser = false, language = 'en') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            
+            if (isUser) {
+                messageContent.innerHTML = content;
+            } else {
+                messageContent.innerHTML = `<strong>🤖 WCFCB Assistant (${language.toUpperCase()}):</strong><br>${content}`;
+            }
+            
+            messageDiv.appendChild(messageContent);
+            
+            // Insert before typing indicator
+            chatMessages.insertBefore(messageDiv, typingIndicator);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTyping() {
+            typingIndicator.style.display = 'block';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTyping() {
+            typingIndicator.style.display = 'none';
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Add user message
+            addMessage(message, true);
+            messageInput.value = '';
+            sendBtn.disabled = true;
+
+            // Show typing indicator
+            showTyping();
+
+            try {
+                // Simulate API call to the chatbot (using simplified API for testing)
+                const response = await fetch('/api/method/assistant_crm.api.simple_test_chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        language: languageSelect.value,
+                        channel_type: 'Website Chat',
+                        channel_id: 'test_user_' + Date.now()
+                    })
+                });
+
+                const data = await response.json();
+                
+                // Hide typing indicator
+                hideTyping();
+
+                if (data.message && data.message.success) {
+                    addMessage(data.message.response, false, data.message.detected_language || languageSelect.value);
+                    
+                    // Show additional analysis if available
+                    if (data.message.analysis) {
+                        const analysis = data.message.analysis;
+                        let analysisText = `<br><small><em>Analysis: Language: ${analysis.language}, Sentiment: ${analysis.sentiment}, Query Type: ${analysis.query_type}</em></small>`;
+                        if (analysis.escalation_needed) {
+                            analysisText += `<br><small><strong>⚠️ Escalation recommended</strong></small>`;
+                        }
+                        
+                        const lastMessage = chatMessages.lastElementChild.previousElementSibling;
+                        if (lastMessage && lastMessage.classList.contains('bot')) {
+                            lastMessage.querySelector('.message-content').innerHTML += analysisText;
+                        }
+                    }
+                } else {
+                    addMessage('Sorry, I encountered an error processing your message. Please try again.', false);
+                }
+            } catch (error) {
+                hideTyping();
+                console.error('Error:', error);
+                addMessage('Sorry, I\'m having trouble connecting right now. Please try again later.', false);
+            }
+
+            sendBtn.disabled = false;
+            messageInput.focus();
+        }
+
+        function sendSampleMessage(message) {
+            messageInput.value = message;
+            sendMessage();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Focus on input when page loads
+        window.onload = function() {
+            messageInput.focus();
+        };
+    </script>
+</body>
+</html>

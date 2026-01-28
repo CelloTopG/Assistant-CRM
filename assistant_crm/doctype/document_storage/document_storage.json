@@ -1,0 +1,244 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:title",
+ "creation": "2025-02-02 10:30:00.000000",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "storage_id",
+  "file_id",
+  "access_level",
+  "column_break_5",
+  "storage_status",
+  "storage_date",
+  "stored_by",
+  "last_accessed",
+  "section_break_10",
+  "encryption_enabled",
+  "storage_tier",
+  "retention_policy",
+  "column_break_14",
+  "access_count",
+  "version",
+  "backup_status",
+  "section_break_18",
+  "authorized_users",
+  "authorized_roles",
+  "column_break_21",
+  "access_restrictions",
+  "audit_enabled",
+  "section_break_24",
+  "storage_path",
+  "backup_path",
+  "column_break_27",
+  "file_hash",
+  "checksum",
+  "section_break_30",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "storage_id",
+   "fieldtype": "Data",
+   "label": "Storage ID",
+   "reqd": 1
+  },
+  {
+   "fieldname": "file_id",
+   "fieldtype": "Data",
+   "label": "File ID",
+   "reqd": 1
+  },
+  {
+   "fieldname": "access_level",
+   "fieldtype": "Select",
+   "label": "Access Level",
+   "options": "Public\nInternal\nRestricted\nConfidential\nClassified",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "storage_status",
+   "fieldtype": "Select",
+   "label": "Storage Status",
+   "options": "Storing\nStored\nArchived\nDeleted",
+   "reqd": 1
+  },
+  {
+   "fieldname": "storage_date",
+   "fieldtype": "Datetime",
+   "label": "Storage Date"
+  },
+  {
+   "fieldname": "stored_by",
+   "fieldtype": "Data",
+   "label": "Stored By"
+  },
+  {
+   "fieldname": "last_accessed",
+   "fieldtype": "Datetime",
+   "label": "Last Accessed"
+  },
+  {
+   "fieldname": "section_break_10",
+   "fieldtype": "Section Break",
+   "label": "Storage Configuration"
+  },
+  {
+   "fieldname": "encryption_enabled",
+   "fieldtype": "Check",
+   "label": "Encryption Enabled"
+  },
+  {
+   "fieldname": "storage_tier",
+   "fieldtype": "Select",
+   "label": "Storage Tier",
+   "options": "Hot\nWarm\nCold\nArchive"
+  },
+  {
+   "fieldname": "retention_policy",
+   "fieldtype": "Data",
+   "label": "Retention Policy"
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "access_count",
+   "fieldtype": "Int",
+   "label": "Access Count"
+  },
+  {
+   "fieldname": "version",
+   "fieldtype": "Data",
+   "label": "Version"
+  },
+  {
+   "fieldname": "backup_status",
+   "fieldtype": "Select",
+   "label": "Backup Status",
+   "options": "Pending\nCompleted\nFailed"
+  },
+  {
+   "fieldname": "section_break_18",
+   "fieldtype": "Section Break",
+   "label": "Access Control"
+  },
+  {
+   "fieldname": "authorized_users",
+   "fieldtype": "Text",
+   "label": "Authorized Users"
+  },
+  {
+   "fieldname": "authorized_roles",
+   "fieldtype": "Text",
+   "label": "Authorized Roles"
+  },
+  {
+   "fieldname": "column_break_21",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "access_restrictions",
+   "fieldtype": "Text",
+   "label": "Access Restrictions"
+  },
+  {
+   "fieldname": "audit_enabled",
+   "fieldtype": "Check",
+   "label": "Audit Enabled"
+  },
+  {
+   "fieldname": "section_break_24",
+   "fieldtype": "Section Break",
+   "label": "Storage Information"
+  },
+  {
+   "fieldname": "storage_path",
+   "fieldtype": "Data",
+   "label": "Storage Path"
+  },
+  {
+   "fieldname": "backup_path",
+   "fieldtype": "Data",
+   "label": "Backup Path"
+  },
+  {
+   "fieldname": "column_break_27",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "file_hash",
+   "fieldtype": "Data",
+   "label": "File Hash"
+  },
+  {
+   "fieldname": "checksum",
+   "fieldtype": "Data",
+   "label": "Checksum"
+  },
+  {
+   "fieldname": "section_break_30",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Text Editor",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-02-02 10:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant Crm",
+ "name": "Document Storage",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "WCFCB Staff",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
