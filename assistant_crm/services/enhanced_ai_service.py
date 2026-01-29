@@ -1511,6 +1511,80 @@ USER QUESTION:
                 "administrator to verify the Antoine/OpenAI configuration in Enhanced AI Settings."
             )
 
+    def generate_employee_status_report_insights(self, query: str, context: Dict[str, Any]) -> str:
+        """Generate Antoine-style insights for Employee Status Analysis Report using OpenAI.
+
+        Context is expected to contain:
+        - window: {"period_type": ..., "from": ..., "to": ...}
+        - current: employee counts for the current window (total, active, inactive, suspended, left, male, female)
+        - distributions: status/gender/department breakdowns
+        """
+        try:
+            if not self.openai_client:
+                return (
+                    "AI insights are not available because OpenAI is not configured. "
+                    "Please configure Enhanced AI Settings with a valid OpenAI API key."
+                )
+
+            context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
+
+            prompt = f"""
+You are Antoine, a senior HR analytics specialist for the Workers' Compensation Fund Control Board (WCFCB) in Zambia.
+
+You are given:
+- A reporting window
+- Aggregated counts of employees by status (Active, Inactive, Suspended, Left)
+- Gender distribution (Male, Female, Other)
+- Department distribution (top departments by headcount)
+
+Your job is to answer the user's question about employee workforce composition, trends and risks using this data only.
+
+REQUIREMENTS:
+- First, briefly anchor your answer to the reporting window described in the JSON.
+- Highlight 2-4 key insights: workforce size, status distribution (especially active vs inactive/left),
+  gender diversity metrics, and department concentration.
+- If department data is present, comment on department distribution and any imbalances.
+- Call out any workforce risk or HR flags that management should be aware of (high attrition, gender imbalance, etc.).
+- Be specific and numeric where possible (for example "Active employees: 245 (78%), with 35 (11%) having left in the period").
+- Keep the answer concise: 3-6 bullet points plus a one-line summary for HR Management.
+
+DATA (JSON):
+{context_json}
+
+USER QUESTION:
+{query}
+"""
+
+            response = self.openai_client.chat.completions.create(
+                model=self.config.get("openai_model", "gpt-4"),
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are Antoine, a WCFCB HR and workforce analytics specialist. "
+                            "Respond with concise, numeric, executive-level insights based only on the provided JSON."
+                        ),
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                max_tokens=int(self.config.get("max_tokens", 800) or 800),
+                temperature=float(self.config.get("temperature", 0.7) or 0.7),
+            )
+
+            text = response.choices[0].message.content.strip()
+            return text or "No insights generated."
+        except Exception as e:
+            key = (self.config.get("openai_api_key") or "")
+            key_len = len(key)
+            frappe.log_error(
+                f"Error generating employee status report insights (key_len={key_len}): {str(e)}",
+                "EnhancedAI Antoine Employee Insights",
+            )
+            return (
+                "AI insights are temporarily unavailable. Please ask your system "
+                "administrator to verify the Antoine/OpenAI configuration in Enhanced AI Settings."
+            )
+
     def generate_payout_summary_report_insights(self, query: str, context: Dict[str, Any]) -> str:
         """Generate Antoine-style insights for Payout Summary Report using OpenAI.
 

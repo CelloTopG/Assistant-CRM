@@ -209,20 +209,13 @@ def aggregate_beneficiaries(date_from: Any, date_to: Any) -> Tuple[Dict[str, int
     df = getdate(date_from)
     dt = getdate(date_to)
 
-    # NOTE: Beneficiary Profile doctype has been removed - beneficiary data managed externally
-    # Return empty data if table doesn't exist
-    if not frappe.db.table_exists("tabBeneficiary Profile"):
-        rows = []
-    else:
-        fields = [
-            "name", "beneficiary_number", "first_name", "last_name",
-            "benefit_status", "life_status", "province", "benefit_type",
-            "benefit_start_date", "benefit_end_date"
-        ]
-        try:
-            rows = frappe.get_all("Beneficiary Profile", fields=fields, limit=20000)
-        except Exception:
-            rows = []
+    # Query the native Beneficiary Profile doctype directly
+    fields = [
+        "name", "beneficiary_number", "first_name", "last_name",
+        "benefit_status", "life_status", "province", "benefit_type",
+        "benefit_start_date", "benefit_end_date"
+    ]
+    rows = frappe.get_all("Beneficiary Profile", fields=fields, limit=20000)
 
     counts = {"total": 0, "active": 0, "suspended": 0, "deceased": 0, "pending_verification": 0, "terminated": 0}
     status_rows: List[Dict[str, Any]] = []
@@ -317,45 +310,35 @@ def get_or_build_monthly_snapshot(date_from: Any, date_to: Any):
 def aggregate_beneficiaries_sql(date_from: Any, date_to: Any, return_maps: bool = False):
     """Aggregate beneficiaries using SQL for performance.
 
-    NOTE: Beneficiary Profile doctype has been removed. Returns empty data if table doesn't exist.
+    Uses the native Beneficiary Profile doctype directly.
     """
     df = getdate(date_from)
     dt = getdate(date_to)
     t = "`tabBeneficiary Profile`"
 
-    # Check if table exists (doctype has been removed)
-    if not frappe.db.table_exists("tabBeneficiary Profile"):
-        counts = {"total": 0, "active": 0, "suspended": 0, "deceased": 0, "pending_verification": 0, "terminated": 0}
-        if return_maps:
-            return counts, {}, {}
-        return counts
-
     # Counts using indexed filters
     def q(sql, params=None):
         return frappe.db.sql(sql, params or {}, as_dict=False)[0][0]
+
     counts = {}
-    try:
-        counts["total"] = q(f"SELECT COUNT(*) FROM {t}")
-        counts["active"] = q(
-            f"""
-            SELECT COUNT(*) FROM {t}
-            WHERE benefit_status='Active'
-              AND (benefit_start_date IS NULL OR benefit_start_date <= %(dt)s)
-              AND (benefit_end_date IS NULL OR benefit_end_date >= %(df)s)
-            """,
-            {"df": df, "dt": dt},
-        )
-        counts["suspended"] = q(f"SELECT COUNT(*) FROM {t} WHERE benefit_status='Suspended'")
-        counts["deceased"] = q(
-            f"SELECT COUNT(*) FROM {t} WHERE life_status='Deceased' OR benefit_status='Deceased'"
-        )
-        counts["pending_verification"] = q(
-            f"SELECT COUNT(*) FROM {t} WHERE benefit_status IN ('Pending Verification','Under Review','Pending')"
-        )
-        counts["terminated"] = q(f"SELECT COUNT(*) FROM {t} WHERE benefit_status='Terminated'")
-    except Exception:
-        # Fallback to legacy aggregator if SQL fails
-        return aggregate_beneficiaries(date_from, date_to)
+    counts["total"] = q(f"SELECT COUNT(*) FROM {t}")
+    counts["active"] = q(
+        f"""
+        SELECT COUNT(*) FROM {t}
+        WHERE benefit_status='Active'
+          AND (benefit_start_date IS NULL OR benefit_start_date <= %(dt)s)
+          AND (benefit_end_date IS NULL OR benefit_end_date >= %(df)s)
+        """,
+        {"df": df, "dt": dt},
+    )
+    counts["suspended"] = q(f"SELECT COUNT(*) FROM {t} WHERE benefit_status='Suspended'")
+    counts["deceased"] = q(
+        f"SELECT COUNT(*) FROM {t} WHERE life_status='Deceased' OR benefit_status='Deceased'"
+    )
+    counts["pending_verification"] = q(
+        f"SELECT COUNT(*) FROM {t} WHERE benefit_status IN ('Pending Verification','Under Review','Pending')"
+    )
+    counts["terminated"] = q(f"SELECT COUNT(*) FROM {t} WHERE benefit_status='Terminated'")
 
     # Distributions
     def qmap(sql, key):
@@ -425,24 +408,17 @@ def _build_charts_from_maps(counts: Dict[str, int], province_map: Dict[str, int]
         },
         "trend": {"data": {"labels": [], "datasets": [{"name": "Total", "values": []}]}, "type": "line"},
     }
-    # Build 6-month trend using current total (snapshot caching removed)
-    # NOTE: Beneficiary Profile doctype has been removed - returns 0 if table doesn't exist
-    try:
-        labels: List[str] = []
-        values: List[int] = []
-        anchor = getdate(anchor_date)
-        if frappe.db.table_exists("tabBeneficiary Profile"):
-            total = frappe.db.count("Beneficiary Profile")
-        else:
-            total = 0
-        for i in range(5, -1, -1):
-            mstart = frappe.utils.add_months(frappe.utils.get_first_day(anchor), -i)
-            labels.append(mstart.strftime("%b %Y"))
-            values.append(int(total))
-        charts["trend"]["data"]["labels"] = labels
-        charts["trend"]["data"]["datasets"][0]["values"] = values
-    except Exception:
-        pass
+    # Build 6-month trend using current total from Beneficiary Profile
+    labels: List[str] = []
+    values: List[int] = []
+    anchor = getdate(anchor_date)
+    total = frappe.db.count("Beneficiary Profile")
+    for i in range(5, -1, -1):
+        mstart = frappe.utils.add_months(frappe.utils.get_first_day(anchor), -i)
+        labels.append(mstart.strftime("%b %Y"))
+        values.append(int(total))
+    charts["trend"]["data"]["labels"] = labels
+    charts["trend"]["data"]["datasets"][0]["values"] = values
     return charts
 
 

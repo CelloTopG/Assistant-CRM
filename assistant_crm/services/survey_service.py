@@ -1,7 +1,7 @@
 import frappe
 from frappe import _
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 
 class SurveyService:
     def __init__(self):
@@ -27,212 +27,330 @@ class SurveyService:
         Query CoreBusiness for beneficiaries matching the filter conditions,
         then find corresponding Contact records by email or mobile.
         Returns a set of Contact names that match the beneficiary filters.
-        Returns empty set if CoreBusiness is not available.
+        Falls back to local Contact/Customer doctype filtering if CoreBusiness is not available.
         """
+        contact_names = set()
+
+        # First try CoreBusiness if available
         try:
-            # Check if CoreBusiness is enabled
             try:
                 cbs_settings = frappe.get_single('CoreBusiness Settings')
-                if not cbs_settings.enabled:
-                    return set()
+                if cbs_settings.enabled:
+                    from assistant_crm.api.corebusiness_integration import CoreBusinessConnector
+                    connector = CoreBusinessConnector()
+
+                    # Map filter field to CoreBusiness column names
+                    field_map = {
+                        'full_name': ['FIRST_NAME', 'LAST_NAME'],
+                        'first_name': ['FIRST_NAME'],
+                        'last_name': ['LAST_NAME'],
+                        'email': ['EMAIL_ADDRESS'],
+                        'mobile': ['PHONE_NUMBER'],
+                        'nrc_number': ['NRC_NUMBER'],
+                        'beneficiary_number': ['BENEFICIARY_ID'],
+                    }
+
+                    cbs_columns = field_map.get(filter_field, [])
+                    if cbs_columns:
+                        where_clauses = []
+                        for col in cbs_columns:
+                            if filter_operator == 'equals':
+                                where_clauses.append(f"LOWER({col}) = LOWER('{filter_value}')")
+                            elif filter_operator == 'contains':
+                                where_clauses.append(f"LOWER({col}) LIKE LOWER('%{filter_value}%')")
+                            elif filter_operator == 'in':
+                                values = [f"'{v.strip()}'" for v in filter_value.split(',')]
+                                where_clauses.append(f"LOWER({col}) IN ({','.join(values)})")
+
+                        if where_clauses:
+                            where_condition = ' OR '.join(where_clauses)
+                            query = f"""
+                                SELECT BENEFICIARY_ID, FIRST_NAME, LAST_NAME, EMAIL_ADDRESS, PHONE_NUMBER, NRC_NUMBER
+                                FROM BENEFICIARIES
+                                WHERE STATUS = 'ACTIVE' AND ({where_condition})
+                            """
+                            results = connector.execute_query(query)
+                            connector.close_connection()
+
+                            if results:
+                                for beneficiary in results:
+                                    email = beneficiary.get('EMAIL_ADDRESS', '').strip()
+                                    phone = beneficiary.get('PHONE_NUMBER', '').strip()
+                                    if email:
+                                        contacts = frappe.db.get_list('Contact', filters={'email_id': email}, fields=['name'])
+                                        for contact in contacts:
+                                            contact_names.add(contact['name'])
+                                    if phone:
+                                        contacts = frappe.db.get_list('Contact', filters={'mobile_no': phone}, fields=['name'])
+                                        for contact in contacts:
+                                            contact_names.add(contact['name'])
+                                if contact_names:
+                                    return contact_names
             except Exception:
-                return set()
+                pass  # Fall through to local filtering
+        except Exception:
+            pass
 
-            from assistant_crm.api.corebusiness_integration import CoreBusinessConnector
+        # Fall back to local ERPNext Contact doctype filtering (beneficiary = Customer type Individual)
+        return self._get_beneficiary_contacts_from_erpnext(filter_field, filter_operator, filter_value)
 
-            connector = CoreBusinessConnector()
+    def _get_beneficiary_contacts_from_erpnext(self, filter_field, filter_operator, filter_value):
+        """
+        Query ERPNext Contact doctype for beneficiaries (individuals) matching the filter conditions.
+        Beneficiaries are represented as Contacts linked to Customers of type 'Individual'.
+        Returns a set of Contact names matching the filter criteria.
+        """
+        contact_names = set()
 
-            # Map filter field to CoreBusiness column names
-            field_map = {
-                'full_name': ['FIRST_NAME', 'LAST_NAME'],
-                'first_name': ['FIRST_NAME'],
-                'last_name': ['LAST_NAME'],
-                'email': ['EMAIL_ADDRESS'],
-                'mobile': ['PHONE_NUMBER'],
-                'nrc_number': ['NRC_NUMBER'],
-                'beneficiary_number': ['BENEFICIARY_ID'],
+        try:
+            # Map filter field to Contact/Customer fields
+            contact_field_map = {
+                'full_name': 'full_name',
+                'first_name': 'first_name',
+                'last_name': 'last_name',
+                'email': 'email_id',
+                'email_id': 'email_id',
+                'mobile': 'mobile_no',
+                'mobile_no': 'mobile_no',
+                'phone': 'phone',
             }
 
-            # Get the CoreBusiness columns for this field
-            cbs_columns = field_map.get(filter_field, [])
-            if not cbs_columns:
-                return set()
+            # Fields that need to query Customer table
+            customer_field_map = {
+                'customer_name': 'customer_name',
+                'beneficiary_number': 'name',  # Customer.name as beneficiary ID
+                'nrc_number': 'tax_id',  # Tax ID can be used for NRC
+                'territory': 'territory',
+                'customer_group': 'customer_group',
+            }
 
-            # Build the WHERE clause based on filter operator
-            where_clauses = []
-            for col in cbs_columns:
-                if filter_operator == 'equals':
-                    where_clauses.append(f"LOWER({col}) = LOWER('{filter_value}')")
-                elif filter_operator == 'contains':
-                    where_clauses.append(f"LOWER({col}) LIKE LOWER('%{filter_value}%')")
-                elif filter_operator == 'in':
-                    values = [f"'{v.strip()}'" for v in filter_value.split(',')]
-                    where_clauses.append(f"LOWER({col}) IN ({','.join(values)})")
+            # Build query based on field type
+            if filter_field in contact_field_map:
+                # Direct Contact field filtering
+                db_field = contact_field_map[filter_field]
+                contact_names = self._query_contacts_by_field(db_field, filter_operator, filter_value)
 
-            if not where_clauses:
-                return set()
+            elif filter_field in customer_field_map:
+                # Customer field filtering - get contacts linked to matching customers
+                db_field = customer_field_map[filter_field]
+                contact_names = self._query_contacts_via_customer(db_field, filter_operator, filter_value, customer_type='Individual')
+            else:
+                # Try as a custom field on Contact
+                contact_names = self._query_contacts_by_field(filter_field, filter_operator, filter_value)
 
-            where_condition = ' OR '.join(where_clauses)
+        except Exception as e:
+            frappe.log_error(f"Error in _get_beneficiary_contacts_from_erpnext: {str(e)}")
 
-            # Get all active beneficiaries from CoreBusiness matching the filter
+        return contact_names
+
+    def _query_contacts_by_field(self, field_name, operator, value):
+        """Query Contact doctype by a specific field with given operator and value."""
+        contact_names = set()
+
+        try:
+            # Build SQL condition based on operator
+            if operator == 'equals':
+                condition = f"LOWER(TRIM(`{field_name}`)) = LOWER(TRIM(%s))"
+                params = [value]
+            elif operator == 'contains':
+                condition = f"LOWER(`{field_name}`) LIKE LOWER(%s)"
+                params = [f"%{value}%"]
+            elif operator == 'in':
+                parts = [p.strip() for p in value.split(',') if p.strip()]
+                if not parts:
+                    return contact_names
+                placeholders = ', '.join(['LOWER(%s)'] * len(parts))
+                condition = f"LOWER(`{field_name}`) IN ({placeholders})"
+                params = parts
+            elif operator == 'greater_than':
+                condition = f"`{field_name}` > %s"
+                params = [value]
+            elif operator == 'less_than':
+                condition = f"`{field_name}` < %s"
+                params = [value]
+            elif operator in ('is_set', 'is not null'):
+                condition = f"COALESCE(`{field_name}`, '') <> ''"
+                params = []
+            elif operator in ('is_not_set', 'is null'):
+                condition = f"COALESCE(`{field_name}`, '') = ''"
+                params = []
+            else:
+                return contact_names
+
+            query = f"SELECT name FROM `tabContact` WHERE {condition}"
+            results = frappe.db.sql(query, params, as_dict=True)
+
+            for row in results:
+                contact_names.add(row['name'])
+
+        except Exception as e:
+            frappe.log_error(f"Error in _query_contacts_by_field: {str(e)}")
+
+        return contact_names
+
+    def _query_contacts_via_customer(self, customer_field, operator, value, customer_type=None):
+        """Query Contacts linked to Customers matching the filter criteria via Dynamic Link."""
+        contact_names = set()
+
+        try:
+            # Build customer filter condition
+            if operator == 'equals':
+                cust_condition = f"LOWER(TRIM(c.`{customer_field}`)) = LOWER(TRIM(%s))"
+                params = [value]
+            elif operator == 'contains':
+                cust_condition = f"LOWER(c.`{customer_field}`) LIKE LOWER(%s)"
+                params = [f"%{value}%"]
+            elif operator == 'in':
+                parts = [p.strip() for p in value.split(',') if p.strip()]
+                if not parts:
+                    return contact_names
+                placeholders = ', '.join(['LOWER(%s)'] * len(parts))
+                cust_condition = f"LOWER(c.`{customer_field}`) IN ({placeholders})"
+                params = parts
+            elif operator == 'greater_than':
+                cust_condition = f"c.`{customer_field}` > %s"
+                params = [value]
+            elif operator == 'less_than':
+                cust_condition = f"c.`{customer_field}` < %s"
+                params = [value]
+            else:
+                return contact_names
+
+            # Add customer type filter if specified
+            type_condition = ""
+            if customer_type:
+                type_condition = "AND c.customer_type = %s"
+                params.append(customer_type)
+
+            # Query contacts linked to matching customers via Dynamic Link
             query = f"""
-                SELECT
-                    BENEFICIARY_ID,
-                    FIRST_NAME,
-                    LAST_NAME,
-                    EMAIL_ADDRESS,
-                    PHONE_NUMBER,
-                    NRC_NUMBER
-                FROM BENEFICIARIES
-                WHERE STATUS = 'ACTIVE'
-                AND ({where_condition})
+                SELECT DISTINCT ct.name
+                FROM `tabContact` ct
+                INNER JOIN `tabDynamic Link` dl ON dl.parent = ct.name
+                    AND dl.parenttype = 'Contact'
+                    AND dl.link_doctype = 'Customer'
+                INNER JOIN `tabCustomer` c ON c.name = dl.link_name
+                WHERE {cust_condition} {type_condition}
             """
+            results = frappe.db.sql(query, params, as_dict=True)
 
-            results = connector.execute_query(query)
-            connector.close_connection()
+            for row in results:
+                contact_names.add(row['name'])
 
-            if not results:
-                return set()
+        except Exception as e:
+            frappe.log_error(f"Error in _query_contacts_via_customer: {str(e)}")
 
-            # Find Contact records that match these beneficiaries by email or mobile
-            contact_names = set()
-            for beneficiary in results:
-                email = beneficiary.get('EMAIL_ADDRESS', '').strip()
-                phone = beneficiary.get('PHONE_NUMBER', '').strip()
-
-                # Search for contacts by email
-                if email:
-                    try:
-                        contacts = frappe.db.get_list('Contact',
-                            filters={'email_id': email},
-                            fields=['name']
-                        )
-                        for contact in contacts:
-                            contact_names.add(contact['name'])
-                    except Exception:
-                        pass
-
-                # Search for contacts by phone
-                if phone:
-                    try:
-                        contacts = frappe.db.get_list('Contact',
-                            filters={'mobile_no': phone},
-                            fields=['name']
-                        )
-                        for contact in contacts:
-                            contact_names.add(contact['name'])
-                    except Exception:
-                        pass
-
-            return contact_names
-
-        except Exception:
-            # Silently fall back to local table
-            return set()
+        return contact_names
 
     def _get_employer_contacts_from_corebusiness(self, filter_field, filter_operator, filter_value):
         """
         Query CoreBusiness for employers matching the filter conditions,
         then find corresponding Contact records by email or mobile.
+        Falls back to ERPNext Customer doctype (type Company) if CoreBusiness is not available.
         Returns a set of Contact names that match the employer filters.
-        Returns empty set if CoreBusiness is not available.
         """
+        contact_names = set()
+
+        # First try CoreBusiness if available
         try:
-            # Check if CoreBusiness is enabled
             try:
                 cbs_settings = frappe.get_single('CoreBusiness Settings')
-                if not cbs_settings.enabled:
-                    return set()
+                if cbs_settings.enabled:
+                    from assistant_crm.api.corebusiness_integration import CoreBusinessConnector
+                    connector = CoreBusinessConnector()
+
+                    # Map filter field to CoreBusiness column names
+                    field_map = {
+                        'employer_name': ['EMPLOYER_NAME'],
+                        'employer_code': ['EMPLOYER_CODE'],
+                        'email': ['EMPLOYER_EMAIL'],
+                        'mobile': ['EMPLOYER_PHONE'],
+                        'phone': ['EMPLOYER_PHONE'],
+                    }
+
+                    cbs_columns = field_map.get(filter_field, [])
+                    if cbs_columns:
+                        where_clauses = []
+                        for col in cbs_columns:
+                            if filter_operator == 'equals':
+                                where_clauses.append(f"LOWER({col}) = LOWER('{filter_value}')")
+                            elif filter_operator == 'contains':
+                                where_clauses.append(f"LOWER({col}) LIKE LOWER('%{filter_value}%')")
+                            elif filter_operator == 'in':
+                                values = [f"'{v.strip()}'" for v in filter_value.split(',')]
+                                where_clauses.append(f"LOWER({col}) IN ({','.join(values)})")
+
+                        if where_clauses:
+                            where_condition = ' OR '.join(where_clauses)
+                            query = f"""
+                                SELECT DISTINCT EMPLOYER_NAME, EMPLOYER_EMAIL, EMPLOYER_PHONE
+                                FROM BENEFICIARIES
+                                WHERE STATUS = 'ACTIVE' AND ({where_condition})
+                            """
+                            results = connector.execute_query(query)
+                            connector.close_connection()
+
+                            if results:
+                                for employer in results:
+                                    email = employer.get('EMPLOYER_EMAIL', '').strip()
+                                    phone = employer.get('EMPLOYER_PHONE', '').strip()
+                                    if email:
+                                        contacts = frappe.db.get_list('Contact', filters={'email_id': email}, fields=['name'])
+                                        for contact in contacts:
+                                            contact_names.add(contact['name'])
+                                    if phone:
+                                        contacts = frappe.db.get_list('Contact', filters={'mobile_no': phone}, fields=['name'])
+                                        for contact in contacts:
+                                            contact_names.add(contact['name'])
+                                if contact_names:
+                                    return contact_names
             except Exception:
-                return set()
+                pass  # Fall through to local filtering
+        except Exception:
+            pass
 
-            from assistant_crm.api.corebusiness_integration import CoreBusinessConnector
+        # Fall back to ERPNext Customer doctype (employers = Customers of type Company)
+        return self._get_employer_contacts_from_erpnext(filter_field, filter_operator, filter_value)
 
-            connector = CoreBusinessConnector()
+    def _get_employer_contacts_from_erpnext(self, filter_field, filter_operator, filter_value):
+        """
+        Query ERPNext Customer doctype for employers (companies) matching the filter conditions.
+        Employers are represented as Customers of type 'Company'.
+        Returns Contacts linked to matching Customers via Dynamic Link.
+        """
+        contact_names = set()
 
-            # Map filter field to CoreBusiness column names
-            field_map = {
-                'employer_name': ['EMPLOYER_NAME'],
-                'employer_code': ['EMPLOYER_CODE'],
-                'email': ['EMPLOYER_EMAIL'],
-                'mobile': ['EMPLOYER_PHONE'],
-                'phone': ['EMPLOYER_PHONE'],
+        try:
+            # Map filter field to Customer doctype fields
+            customer_field_map = {
+                'employer_name': 'customer_name',
+                'customer_name': 'customer_name',
+                'name': 'name',
+                'employer_code': 'name',  # Customer name serves as employer code
+                'email': 'email_id',
+                'email_id': 'email_id',
+                'mobile': 'mobile_no',
+                'mobile_no': 'mobile_no',
+                'phone': 'mobile_no',
+                'territory': 'territory',
+                'customer_group': 'customer_group',
+                'industry': 'industry',
+                'tax_id': 'tax_id',
             }
 
-            # Get the CoreBusiness columns for this field
-            cbs_columns = field_map.get(filter_field, [])
-            if not cbs_columns:
-                return set()
+            db_field = customer_field_map.get(filter_field)
 
-            # Build the WHERE clause based on filter operator
-            where_clauses = []
-            for col in cbs_columns:
-                if filter_operator == 'equals':
-                    where_clauses.append(f"LOWER({col}) = LOWER('{filter_value}')")
-                elif filter_operator == 'contains':
-                    where_clauses.append(f"LOWER({col}) LIKE LOWER('%{filter_value}%')")
-                elif filter_operator == 'in':
-                    values = [f"'{v.strip()}'" for v in filter_value.split(',')]
-                    where_clauses.append(f"LOWER({col}) IN ({','.join(values)})")
+            if db_field:
+                # Query contacts linked to matching Company-type customers
+                contact_names = self._query_contacts_via_customer(db_field, filter_operator, filter_value, customer_type='Company')
+            else:
+                # Try as a custom field on Customer
+                contact_names = self._query_contacts_via_customer(filter_field, filter_operator, filter_value, customer_type='Company')
 
-            if not where_clauses:
-                return set()
+        except Exception as e:
+            frappe.log_error(f"Error in _get_employer_contacts_from_erpnext: {str(e)}")
 
-            where_condition = ' OR '.join(where_clauses)
-
-            # Get all active employers from CoreBusiness matching the filter
-            # Query beneficiaries by employer
-            query = f"""
-                SELECT DISTINCT
-                    EMPLOYER_NAME,
-                    EMPLOYER_EMAIL,
-                    EMPLOYER_PHONE
-                FROM BENEFICIARIES
-                WHERE STATUS = 'ACTIVE'
-                AND ({where_condition})
-            """
-
-            results = connector.execute_query(query)
-            connector.close_connection()
-
-            if not results:
-                return set()
-
-            # Find Contact records that match these employers by email or mobile
-            contact_names = set()
-            for employer in results:
-                email = employer.get('EMPLOYER_EMAIL', '').strip()
-                phone = employer.get('EMPLOYER_PHONE', '').strip()
-
-                # Search for contacts by email
-                if email:
-                    try:
-                        contacts = frappe.db.get_list('Contact',
-                            filters={'email_id': email},
-                            fields=['name']
-                        )
-                        for contact in contacts:
-                            contact_names.add(contact['name'])
-                    except Exception:
-                        pass
-
-                # Search for contacts by phone
-                if phone:
-                    try:
-                        contacts = frappe.db.get_list('Contact',
-                            filters={'mobile_no': phone},
-                            fields=['name']
-                        )
-                        for contact in contacts:
-                            contact_names.add(contact['name'])
-                    except Exception:
-                        pass
-
-            return contact_names
-
-        except Exception:
-            # Silently fall back to local table
-            return set()
+        return contact_names
 
     def create_survey_campaign(self, campaign_data):
         """Create new survey campaign"""
@@ -376,12 +494,10 @@ class SurveyService:
         except Exception:
             meta = None
 
-        # Optional profile metadata (for Beneficiary/Employer filtering)
-        # NOTE: Beneficiary Profile and Employer Profile doctypes have been removed
-        # Beneficiary Profile - removed, beneficiary data managed externally
-        # Employer Profile - replaced by ERPNext Customer
-        meta_b = None  # Beneficiary Profile doctype removed
-        meta_e = None  # Employer Profile doctype removed - use Customer instead
+        # NOTE: Beneficiary filtering uses ERPNext Contact/Customer (type Individual)
+        # Employer filtering uses ERPNext Customer (type Company)
+        # Both are handled by _get_beneficiary_contacts_from_erpnext() and
+        # _get_employer_contacts_from_erpnext() methods respectively
 
         def has_field(fn):
             try:
@@ -417,102 +533,72 @@ class SurveyService:
             WHERE 1=1
         """
 
-        # Accumulate profile filters to apply via EXISTS subqueries
-        b_conds, b_vals = [], []
-        e_conds, e_vals = [], []
-
         def _norm_key(s: str) -> str:
             return (s or '').strip().lower().replace(' ', '_').replace('-', '_')
 
         def _map_beneficiary_field(key: str) -> str:
+            """Map user-friendly field names to ERPNext Contact/Customer fields for beneficiaries."""
             k = _norm_key(key)
-            # ID mappings
+            # ID mappings - mapped to Customer.name for Individual customers
             if k in ('id', 'beneficiary_id', 'beneficiary_number', 'number'):
                 return 'beneficiary_number'
-            # Name mappings
+            # Name mappings - mapped to Contact.full_name or Contact.first_name/last_name
             if k in ('name', 'full_name', 'fullname', 'customer_name', 'customer name'):
                 return 'full_name'
             if k in ('first_name', 'first name', 'fname'):
                 return 'first_name'
             if k in ('last_name', 'last name', 'lname'):
                 return 'last_name'
-            # Contact mappings
+            # Contact mappings - mapped to Contact.email_id, Contact.mobile_no
             if k in ('email', 'email_address', 'email address', 'email_id'):
                 return 'email'
             if k in ('phone', 'phone_number', 'phone number', 'telephone'):
                 return 'phone'
             if k in ('mobile', 'mobile_no', 'mobile number', 'cell', 'cellphone'):
                 return 'mobile'
-            # Benefit mappings
-            if k in ('benefit_type', 'benefit type', 'type'):
-                return 'benefit_type'
-            if k in ('benefit_status', 'benefit status', 'status'):
-                return 'benefit_status'
-            # NRC mapping
-            if k in ('nrc', 'nrc_number', 'nrc number', 'national_id'):
+            # NRC mapping - mapped to Customer.tax_id for Individual customers
+            if k in ('nrc', 'nrc_number', 'nrc number', 'national_id', 'tax_id'):
                 return 'nrc_number'
+            # Territory and group mappings
+            if k in ('territory', 'region', 'area'):
+                return 'territory'
+            if k in ('customer_group', 'group', 'category'):
+                return 'customer_group'
             return k
 
         def _map_employer_field(key: str) -> str:
+            """Map user-friendly field names to ERPNext Customer fields for employers (Company type)."""
             k = _norm_key(key)
-            # ID mappings
+            # ID mappings - mapped to Customer.name
             if k in ('id', 'code', 'employer_id', 'employer_number', 'employer_code'):
                 return 'employer_code'
-            # Name mappings
-            if k in ('name', 'employer_name', 'company_name', 'company name'):
+            # Name mappings - mapped to Customer.customer_name
+            if k in ('name', 'employer_name', 'company_name', 'company name', 'customer_name'):
                 return 'employer_name'
-            # Contact mappings
+            # Contact mappings - mapped to Customer.email_id, Customer.mobile_no
             if k in ('email', 'email_address', 'email address', 'email_id'):
                 return 'email'
             if k in ('phone', 'phone_number', 'phone number', 'telephone'):
                 return 'phone'
             if k in ('mobile', 'mobile_no', 'mobile number', 'cell', 'cellphone'):
                 return 'mobile'
+            # Business mappings - mapped to Customer fields
+            if k in ('territory', 'region', 'area'):
+                return 'territory'
+            if k in ('customer_group', 'group', 'category'):
+                return 'customer_group'
+            if k in ('industry', 'sector', 'business_type'):
+                return 'industry'
+            if k in ('tax_id', 'registration_number', 'company_number'):
+                return 'tax_id'
             return k
-
-        def _add_profile_cond(meta_dt, fieldname: str, op: str, val: str, out_sql: list, out_vals: list, alias: str):
-            try:
-                # verify field exists on target doctype
-                if not meta_dt:
-                    frappe.log_warning(f"Survey filter: DocType metadata not available for alias '{alias}'")
-                    return
-                if not meta_dt.get_field(fieldname):
-                    dt_name = meta_dt.name if hasattr(meta_dt, 'name') else 'Unknown'
-                    frappe.log_warning(f"Survey filter: Field '{fieldname}' not found on {dt_name}. Check your filter field name.")
-                    return
-                if not val:
-                    return
-                if op == 'equals':
-                    out_sql.append(f"LOWER(TRIM({alias}.`{fieldname}`)) = LOWER(TRIM(%s))")
-                    out_vals.append(val)
-                elif op == 'contains':
-                    out_sql.append(f"LOWER(TRIM({alias}.`{fieldname}`)) LIKE LOWER(%s)")
-                    out_vals.append(f"%{val}%")
-                elif op == 'in':
-                    parts = [p.strip() for p in (val or '').split(',') if p.strip()]
-                    if parts:
-                        placeholders = ', '.join(['LOWER(%s)'] * len(parts))
-                        out_sql.append(f"LOWER({alias}.`{fieldname}`) IN ({placeholders})")
-                        out_vals.extend(parts)
-                elif op == 'greater_than':
-                    out_sql.append(f"{alias}.`{fieldname}` > %s")
-                    out_vals.append(val)
-                elif op == 'less_than':
-                    out_sql.append(f"{alias}.`{fieldname}` < %s")
-                    out_vals.append(val)
-            except Exception as e:
-                frappe.log_warning(f"Survey filter error: {str(e)}")
-                return
 
         conditions = []
         values = []
 
-        # Detect optional fields on Contact used for filtering
-        has_stakeholder_type = False
-        try:
-            has_stakeholder_type = bool(meta and meta.get_field('stakeholder_type'))
-        except Exception:
-            has_stakeholder_type = False
+        # Track beneficiary and employer filter items for later processing
+        beneficiary_filters = []
+        employer_filters = []
 
         # Process target audience filters
         for filter_item in campaign.target_audience:
@@ -521,15 +607,15 @@ class SurveyService:
             fval = (filter_item.filter_value or '').strip()
             ffield = (filter_item.filter_field or '').strip()
 
-
-            # Beneficiary / Employer profile-driven filters
+            # Beneficiary filters - use ERPNext Contact/Customer (type Individual)
             if ftype == 'Beneficiary':
-                # Map alias labels to real fields; then add a profile condition
                 fkey = _map_beneficiary_field(ffield)
-                _add_profile_cond(meta_b, fkey, fop, fval, b_conds, b_vals, 'bp')
+                beneficiary_filters.append({'field': fkey, 'operator': fop, 'value': fval})
+
+            # Employer filters - use ERPNext Customer (type Company)
             elif ftype == 'Employer':
                 fkey = _map_employer_field(ffield)
-                _add_profile_cond(meta_e, fkey, fop, fval, e_conds, e_vals, 'ep')
+                employer_filters.append({'field': fkey, 'operator': fop, 'value': fval})
 
             elif ftype == 'Date Range':
                 # Filter by creation date (or another provided field) if present
@@ -596,75 +682,47 @@ class SurveyService:
                             conditions.append(f"LOWER({field_sql}) IN ({placeholders})")
                             values.extend(vals)
 
-        # Apply profile EXISTS constraints if present
-        # First, try to get beneficiaries from CoreBusiness if filtering by Beneficiary
+        # Apply beneficiary filtering using ERPNext Contact/Customer (type Individual)
+        # Uses CoreBusiness first, then falls back to native ERPNext doctypes
         beneficiary_contacts = set()
-        if any(fi.filter_type == 'Beneficiary' for fi in (campaign.target_audience or [])):
-            # Get the beneficiary filter details
-            for filter_item in (campaign.target_audience or []):
-                if filter_item.filter_type == 'Beneficiary':
-                    ffield = _map_beneficiary_field(filter_item.filter_field or '')
-                    fop = filter_item.filter_operator or ''
-                    fval = filter_item.filter_value or ''
+        if beneficiary_filters:
+            for bf in beneficiary_filters:
+                if bf['field'] and bf['operator'] and bf['value']:
+                    try:
+                        # Get beneficiary contacts - tries CoreBusiness first, then ERPNext fallback
+                        bf_result = self._get_beneficiary_contacts_from_corebusiness(
+                            bf['field'], bf['operator'], bf['value']
+                        )
+                        beneficiary_contacts.update(bf_result)
+                    except Exception:
+                        pass
 
-                    if ffield and fop and fval:
-                        try:
-                            # Try to get beneficiaries from CoreBusiness
-                            beneficiary_contacts = self._get_beneficiary_contacts_from_corebusiness(ffield, fop, fval)
-                        except Exception:
-                            beneficiary_contacts = set()
+            # If beneficiary filters were applied and we have results, add condition
+            if beneficiary_contacts:
+                placeholders = ', '.join(['%s'] * len(beneficiary_contacts))
+                conditions.append(f"`tabContact`.name IN ({placeholders})")
+                values.extend(list(beneficiary_contacts))
 
-                        # If we got beneficiaries from CoreBusiness, use them
-                        if beneficiary_contacts:
-                            placeholders = ', '.join(['%s'] * len(beneficiary_contacts))
-                            conditions.append(f"`tabContact`.name IN ({placeholders})")
-                            values.extend(list(beneficiary_contacts))
-                            break
-
-            # NOTE: Beneficiary Profile doctype has been removed - beneficiary data managed externally
-            # If CoreBusiness didn't return results, skip local Beneficiary Profile table fallback
-            if not beneficiary_contacts and b_conds:
-                # Beneficiary Profile table no longer exists - skip this fallback
-                pass
-
-        # Apply employer filtering from CoreBusiness
+        # Apply employer filtering using ERPNext Customer (type Company)
+        # Uses CoreBusiness first, then falls back to native ERPNext doctypes
         employer_contacts = set()
-        if any(fi.filter_type == 'Employer' for fi in (campaign.target_audience or [])):
-            # Get the employer filter details
-            for filter_item in (campaign.target_audience or []):
-                if filter_item.filter_type == 'Employer':
-                    ffield = _map_employer_field(filter_item.filter_field or '')
-                    fop = filter_item.filter_operator or ''
-                    fval = filter_item.filter_value or ''
+        if employer_filters:
+            for ef in employer_filters:
+                if ef['field'] and ef['operator'] and ef['value']:
+                    try:
+                        # Get employer contacts - tries CoreBusiness first, then ERPNext fallback
+                        ef_result = self._get_employer_contacts_from_corebusiness(
+                            ef['field'], ef['operator'], ef['value']
+                        )
+                        employer_contacts.update(ef_result)
+                    except Exception:
+                        pass
 
-                    if ffield and fop and fval:
-                        try:
-                            # Try to get employers from CoreBusiness
-                            employer_contacts = self._get_employer_contacts_from_corebusiness(ffield, fop, fval)
-                        except Exception:
-                            employer_contacts = set()
-
-                        # If we got employers from CoreBusiness, use them
-                        if employer_contacts:
-                            placeholders = ', '.join(['%s'] * len(employer_contacts))
-                            conditions.append(f"`tabContact`.name IN ({placeholders})")
-                            values.extend(list(employer_contacts))
-                            break
-
-            # NOTE: Employer Profile doctype has been removed - using ERPNext Customer instead
-            # If CoreBusiness didn't return results, try ERPNext Customer table fallback
-            if not employer_contacts and e_conds:
-                # Use ERPNext Customer table instead of Employer Profile
-                c_pred = (
-                    "(c.name IN (SELECT dl.link_name FROM `tabDynamic Link` dl "
-                    "WHERE dl.parenttype='Contact' AND dl.link_doctype='Customer' AND dl.parent = `tabContact`.name) "
-                    "OR (COALESCE(c.email_id,'') <> '' AND LOWER(TRIM(c.email_id)) = LOWER(TRIM(`tabContact`.email_id))) "
-                    "OR (COALESCE(c.mobile_no,'') <> '' AND TRIM(c.mobile_no) = TRIM(`tabContact`.mobile_no)))"
-                )
-                # Map e_conds from old Employer Profile fields to Customer fields
-                # e_conds references old field names - skip if mapping not possible
-                # For now, just use the customer_type filter to ensure we get companies
-                conditions.append(f"EXISTS (SELECT 1 FROM `tabCustomer` c WHERE c.customer_type='Company' AND {c_pred})")
+            # If employer filters were applied and we have results, add condition
+            if employer_contacts:
+                placeholders = ', '.join(['%s'] * len(employer_contacts))
+                conditions.append(f"`tabContact`.name IN ({placeholders})")
+                values.extend(list(employer_contacts))
 
         # Build final queries (primary-only first), then fallback to all contacts
         query_primary = base_query_primary + (f" AND {' AND '.join(conditions)}" if conditions else '')
@@ -720,11 +778,14 @@ WCFCB Team
             return False
 
     def start_conversational_survey_session(self, recipient, campaign, response_id: str, platform: str):
-        """Send a survey invitation link via unified inbox and close the conversation.
+        """Send a survey invitation link via unified inbox.
         Returns a diagnostics dict: { ok: bool, reason?: str, send_result?: dict }.
-        - Does NOT keep a conversational survey session active
-        - Immediately marks the conversation Resolved after sending
-        - Subsequent inbound messages are parsed as normal chats
+
+        Behavior depends on the campaign's is_campaign flag:
+        - If is_campaign is False (default): One-way survey - conversation is immediately
+          marked as Resolved after sending, subsequent inbound messages are parsed as normal chats.
+        - If is_campaign is True: Two-way campaign - conversation remains open to receive
+          responses from users (bidirectional communication).
         """
         try:
             from frappe.utils import now
@@ -848,41 +909,53 @@ WCFCB Team
             send_res = send_social_media_message(platform, conversation_name, message_text)
             ok = bool(send_res and send_res.get('status') == 'success')
             if ok:
-                # Immediately mark survey not active and close the conversation so
-                # subsequent inbound messages are parsed as normal chats.
+                # Check if this is a two-way campaign (is_campaign=True) or one-way survey (is_campaign=False/default)
+                is_two_way_campaign = False
                 try:
-                    # Update survey context to inactive
+                    is_two_way_campaign = bool(campaign.get('is_campaign') if isinstance(campaign, dict) else getattr(campaign, 'is_campaign', False))
+                except Exception:
+                    is_two_way_campaign = False
+
+                # For one-way surveys (default), immediately mark conversation as resolved
+                # For two-way campaigns, keep conversation open for user responses
+                if not is_two_way_campaign:
+                    # Immediately mark survey not active and close the conversation so
+                    # subsequent inbound messages are parsed as normal chats.
                     try:
-                        current_ctx = {}
-                        if conversation_doc.conversation_context:
-                            current_ctx = _json.loads(conversation_doc.conversation_context) if isinstance(conversation_doc.conversation_context, str) else conversation_doc.conversation_context
-                        current_ctx = current_ctx or {}
-                    except Exception:
-                        current_ctx = {}
-                    if 'survey' in current_ctx and isinstance(current_ctx['survey'], dict):
+                        # Update survey context to inactive
                         try:
-                            current_ctx['survey']['active'] = False
+                            current_ctx = {}
+                            if conversation_doc.conversation_context:
+                                current_ctx = _json.loads(conversation_doc.conversation_context) if isinstance(conversation_doc.conversation_context, str) else conversation_doc.conversation_context
+                            current_ctx = current_ctx or {}
                         except Exception:
-                            # fallback: remove key
+                            current_ctx = {}
+                        if 'survey' in current_ctx and isinstance(current_ctx['survey'], dict):
                             try:
-                                del current_ctx['survey']
+                                current_ctx['survey']['active'] = False
                             except Exception:
-                                pass
-                    conversation_doc.db_set('conversation_context', _json.dumps(current_ctx), update_modified=True)
-                except Exception:
-                    pass
-                try:
-                    conversation_doc.db_set('ai_mode', 'Auto')
-                except Exception:
-                    pass
-                try:
-                    if hasattr(conversation_doc, 'mark_resolved'):
-                        conversation_doc.mark_resolved("Survey invitation sent; session closed immediately")
-                    else:
-                        conversation_doc.db_set('status', 'Resolved')
-                except Exception:
-                    pass
-                return {'ok': True, 'send_result': send_res}
+                                # fallback: remove key
+                                try:
+                                    del current_ctx['survey']
+                                except Exception:
+                                    pass
+                        conversation_doc.db_set('conversation_context', _json.dumps(current_ctx), update_modified=True)
+                    except Exception:
+                        pass
+                    try:
+                        conversation_doc.db_set('ai_mode', 'Auto')
+                    except Exception:
+                        pass
+                    try:
+                        if hasattr(conversation_doc, 'mark_resolved'):
+                            conversation_doc.mark_resolved("Survey invitation sent; session closed immediately")
+                        else:
+                            conversation_doc.db_set('status', 'Resolved')
+                    except Exception:
+                        pass
+                # else: Two-way campaign - keep conversation open for user responses
+
+                return {'ok': True, 'send_result': send_res, 'is_campaign': is_two_way_campaign}
             else:
                 reason = None
                 try:

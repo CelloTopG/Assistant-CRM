@@ -8,6 +8,7 @@
  "field_order": [
   "campaign_name",
   "survey_type",
+  "is_campaign",
   "description",
   "column_break_basic",
   "status",
@@ -67,6 +68,13 @@
    "fieldtype": "Select",
    "label": "Survey Type",
    "options": "Customer Satisfaction\nService Feedback\nProduct Feedback\nGeneral Survey"
+  },
+  {
+   "default": "0",
+   "description": "When enabled, conversations remain open to receive responses from users (bidirectional). When disabled (default), conversations are automatically closed after sending (one-way survey).",
+   "fieldname": "is_campaign",
+   "fieldtype": "Check",
+   "label": "Is Campaign"
   },
   {
    "fieldname": "description",

@@ -27,7 +27,7 @@
    "fieldname": "filter_operator",
    "fieldtype": "Select",
    "label": "Filter Operator",
-   "options": "equals\ncontains\nin\ngreater_than\nless_than",
+   "options": "equals\ncontains\nin\ngreater_than\nless_than\nis_set\nis_not_set",
    "in_list_view": 1
   },
   {

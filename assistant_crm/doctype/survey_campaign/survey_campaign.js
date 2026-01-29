@@ -63,12 +63,12 @@ frappe.ui.form.on('Survey Target Audience', {
       }, 5);
     } else if (filter_type === 'Beneficiary') {
       frappe.show_alert({
-        message: __('Beneficiary filter: Use field names like full_name, first_name, last_name, email, mobile, beneficiary_number, nrc_number, benefit_type, benefit_status'),
+        message: __('Beneficiary filter: Use Contact/Customer (Individual) fields like first_name, last_name, email, mobile, beneficiary_number, territory, customer_group'),
         indicator: 'blue'
       }, 5);
     } else if (filter_type === 'Employer') {
       frappe.show_alert({
-        message: __('Employer filter: Use field names like employer_name, employer_code, email, mobile, phone'),
+        message: __('Employer filter: Use Customer (Company) fields like employer_name, email, mobile, territory, customer_group, industry'),
         indicator: 'blue'
       }, 5);
     } else if (filter_type === 'Date Range') {
@@ -318,11 +318,15 @@ async function validate_row(frm, row) {
   }
 
   // Validate Beneficiary/Employer field names
+  // Beneficiary filters map to ERPNext Contact doctype and Customer (type Individual)
   if (ftype === 'Beneficiary') {
-    const valid_fields = ['beneficiary_number', 'nrc_number', 'first_name', 'last_name', 'full_name',
-                         'email', 'phone', 'mobile', 'benefit_type', 'benefit_status', 'employee_number',
-                         'date_of_birth', 'gender', 'marital_status', 'nationality', 'physical_address',
-                         'postal_address', 'city', 'province', 'bank_name', 'bank_account_number', 'bank_branch'];
+    const valid_fields = [
+      // Contact fields
+      'first_name', 'last_name', 'full_name', 'email', 'email_id', 'phone', 'mobile', 'mobile_no',
+      // Customer (Individual) fields via Dynamic Link
+      'beneficiary_number', 'customer_name', 'nrc_number', 'tax_id',
+      'territory', 'customer_group', 'gender'
+    ];
     const normalized_field = ffield.toLowerCase().replace(/\s+/g, '_').replace(/-/g, '_');
 
     if (!valid_fields.includes(normalized_field)) {
@@ -338,9 +342,14 @@ async function validate_row(frm, row) {
     }
   }
 
+  // Employer filters map to ERPNext Customer doctype (type Company) via Dynamic Link
   if (ftype === 'Employer') {
-    const valid_fields = ['employer_code', 'employer_name', 'email', 'phone', 'mobile',
-                         'physical_address', 'postal_address', 'city', 'province'];
+    const valid_fields = [
+      // Customer (Company) fields
+      'employer_name', 'employer_code', 'customer_name', 'name',
+      'email', 'email_id', 'phone', 'mobile', 'mobile_no',
+      'territory', 'customer_group', 'industry', 'tax_id'
+    ];
     const normalized_field = ffield.toLowerCase().replace(/\s+/g, '_').replace(/-/g, '_');
 
     if (!valid_fields.includes(normalized_field)) {

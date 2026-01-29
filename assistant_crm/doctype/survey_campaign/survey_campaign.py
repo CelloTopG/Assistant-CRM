@@ -207,16 +207,20 @@ def preview_recipients_from_doc(doc: dict | str, limit: int = 20):
 		warnings = []
 		field_keys = {'name','full_name','first_name','last_name','email_id','mobile_no','telegram_chat_id','facebook_psid','instagram_user_id'}
 
-		# Valid fields for filtering (Beneficiary Profile and Employer Profile doctypes removed)
-		# These fields can still be used for filtering on other data sources
-		beneficiary_fields = {'beneficiary_number', 'nrc_number', 'first_name', 'last_name', 'full_name',
-							  'email', 'phone', 'mobile', 'benefit_type', 'benefit_status', 'employee_number',
-							  'date_of_birth', 'gender', 'marital_status', 'nationality', 'physical_address',
-							  'postal_address', 'city', 'province', 'bank_name', 'bank_account_number', 'bank_branch'}
+		# Valid fields for Beneficiary filtering (maps to ERPNext Contact and Customer type Individual)
+		beneficiary_fields = {
+			# Contact fields
+			'first_name', 'last_name', 'full_name', 'email', 'email_id', 'phone', 'mobile', 'mobile_no',
+			# Customer (Individual) fields via Dynamic Link
+			'beneficiary_number', 'customer_name', 'nrc_number', 'tax_id', 'territory', 'customer_group', 'gender'
+		}
 
-		# Valid ERPNext Customer fields (replaces Employer Profile)
-		employer_fields = {'name', 'customer_name', 'email_id', 'mobile_no', 'territory',
-						  'customer_type', 'customer_group'}
+		# Valid fields for Employer filtering (maps to ERPNext Customer type Company)
+		employer_fields = {
+			'employer_name', 'employer_code', 'customer_name', 'name',
+			'email', 'email_id', 'phone', 'mobile', 'mobile_no',
+			'territory', 'customer_group', 'industry', 'tax_id'
+		}
 
 		for f in (campaign.target_audience or []):
 			ftype = (getattr(f, 'filter_type', '') or '').strip()
@@ -236,7 +240,7 @@ def preview_recipients_from_doc(doc: dict | str, limit: int = 20):
 				known_aliases = {'customer_name', 'customer name', 'id', 'name', 'email_address', 'email address',
 								'phone_number', 'phone number', 'nrc', 'national_id'}
 				if fkey not in known_aliases and fkey not in beneficiary_fields:
-					warnings.append(f"Beneficiary field '{ffield}' may not exist. Valid fields: beneficiary_number, full_name, first_name, last_name, email, mobile, benefit_type, benefit_status, nrc_number.")
+					warnings.append(f"Beneficiary field '{ffield}' may not exist. Valid fields: first_name, last_name, full_name, email, mobile, beneficiary_number, territory, customer_group.")
 
 			elif ftype == 'Employer':
 				# Normalize field name for validation
@@ -245,7 +249,7 @@ def preview_recipients_from_doc(doc: dict | str, limit: int = 20):
 				known_aliases = {'id', 'code', 'name', 'company_name', 'company name', 'email_address', 'email address',
 								'phone_number', 'phone number'}
 				if fkey not in known_aliases and fkey not in employer_fields:
-					warnings.append(f"Employer field '{ffield}' may not exist. Valid fields: employer_code, employer_name, email, mobile, phone.")
+					warnings.append(f"Employer field '{ffield}' may not exist. Valid fields: employer_name, employer_code, email, mobile, territory, customer_group, industry.")
 		# Sample recipients
 		lim = int(limit or 20)
 		sample = []
