@@ -8,7 +8,7 @@ from frappe import _
 def after_install():
 	"""Setup after WCFCB Assistant CRM installation"""
 	try:
-			# Setup WCFCB roles and permissions
+		# Setup WCFCB roles and permissions
 		setup_wcfcb_roles()
 
 		# Setup system settings
@@ -37,19 +37,34 @@ def after_install():
 				"Assistant CRM Install",
 			)
 
-			# Ensure Social Media Settings baseline is present (idempotent)
-			try:
-				ensure_social_media_settings_seed()
-			except Exception as e:
-				frappe.log_error(f"Error seeding Social Media Settings: {str(e)}", "Assistant CRM Install")
+		# Seed API keys from site_config.json (idempotent)
+		# This enables new instances to auto-configure from site config
+		try:
+			ensure_assistant_crm_settings_seed()
+		except Exception as e:
+			frappe.log_error(f"Error seeding Assistant CRM Settings: {str(e)}", "Assistant CRM Install")
 
+		try:
+			ensure_enhanced_ai_settings_seed()
+		except Exception as e:
+			frappe.log_error(f"Error seeding Enhanced AI Settings: {str(e)}", "Assistant CRM Install")
 
-			# Print success message
+		try:
+			ensure_social_media_settings_seed()
+		except Exception as e:
+			frappe.log_error(f"Error seeding Social Media Settings: {str(e)}", "Assistant CRM Install")
+
+		# Print success message
 		print("✅ WCFCB Assistant CRM installed successfully!")
 		print("🤖 Omnichannel AI assistant is now available")
 		print("📍 Configure at: Assistant CRM Settings")
+		print("📍 Configure AI: Enhanced AI Settings")
+		print("📍 Configure Social: Social Media Settings")
 		print("🔗 Test Chat: /test_chat")
 		print("🔗 Agent Workspace: /app/agent_workspace")
+		print("")
+		print("💡 TIP: Add API keys to site_config.json with prefix 'assistant_crm_'")
+		print("   Example: assistant_crm_openai_api_key, assistant_crm_gemini_api_key")
 
 	except Exception as e:
 		frappe.log_error(f"Error in WCFCB Assistant CRM installation: {str(e)}", "WCFCB Assistant Install")
@@ -124,14 +139,8 @@ def ensure_social_media_settings_seed():
 	"""Idempotently ensure Social Media Settings baseline values from site config.
 
 	Reads optional keys from frappe.conf (site_config.json) so new instances can
-	bootstrap credentials without fixtures:
-	- assistant_crm_public_base_url
-	- assistant_crm_twitter_enabled
-	- assistant_crm_twitter_client_id / _client_secret
-	- assistant_crm_twitter_api_key / _api_secret
-	- assistant_crm_twitter_bearer_token
-	- assistant_crm_twitter_access_token / _access_token_secret
-	- assistant_crm_twitter_webhook_env / _webhook_secret
+	bootstrap credentials without fixtures. Supports ALL platform credentials:
+	- Twitter, Facebook, Instagram, LinkedIn, Make.com, USSD
 	"""
 	try:
 		if not frappe.db.exists("DocType", "Social Media Settings"):
@@ -164,7 +173,7 @@ def ensure_social_media_settings_seed():
 
 		# Twitter credentials
 		enabled_flag = conf.get("assistant_crm_twitter_enabled")
-		if str(enabled_flag).lower() in ("1", "true", "yes"):  # don't force disable
+		if str(enabled_flag).lower() in ("1", "true", "yes"):
 			try:
 				doc.set("twitter_enabled", 1)
 				updated = True
@@ -180,12 +189,160 @@ def ensure_social_media_settings_seed():
 		set_if_absent("twitter_webhook_env", conf.get("assistant_crm_twitter_webhook_env"))
 		set_if_absent("twitter_webhook_secret", conf.get("assistant_crm_twitter_webhook_secret"))
 
+		# Make.com credentials
+		set_if_absent("make_com_api_key", conf.get("assistant_crm_make_com_api_key"))
+		set_if_absent("make_com_webhook_secret", conf.get("assistant_crm_make_com_webhook_secret"))
+
+		# Facebook credentials
+		set_if_absent("facebook_app_secret", conf.get("assistant_crm_facebook_app_secret"))
+		set_if_absent("facebook_page_access_token", conf.get("assistant_crm_facebook_page_access_token"))
+
+		# Instagram credentials
+		set_if_absent("instagram_access_token", conf.get("assistant_crm_instagram_access_token"))
+
+		# LinkedIn credentials
+		set_if_absent("linkedin_client_secret", conf.get("assistant_crm_linkedin_client_secret"))
+		set_if_absent("linkedin_access_token", conf.get("assistant_crm_linkedin_access_token"))
+		set_if_absent("linkedin_webhook_secret", conf.get("assistant_crm_linkedin_webhook_secret"))
+
+		# USSD credentials
+		set_if_absent("ussd_api_key", conf.get("assistant_crm_ussd_api_key"))
+		set_if_absent("ussd_webhook_secret", conf.get("assistant_crm_ussd_webhook_secret"))
+
 		if updated:
 			doc.save(ignore_permissions=True)
 			frappe.db.commit()
 			print("✅ Seeded Social Media Settings from site config (idempotent)")
 	except Exception as e:
 		frappe.log_error(f"Error ensuring Social Media Settings seed: {str(e)}", "Assistant CRM Install")
+
+
+def ensure_enhanced_ai_settings_seed():
+	"""Idempotently seed Enhanced AI Settings (OpenAI for Antoine/Anna) from site config.
+
+	Reads from frappe.conf (site_config.json):
+	- assistant_crm_openai_api_key
+	- assistant_crm_openai_model
+	- assistant_crm_chat_model
+	"""
+	try:
+		if not frappe.db.exists("DocType", "Enhanced AI Settings"):
+			return
+
+		# Create if not exists
+		if not frappe.db.exists("Enhanced AI Settings", "Enhanced AI Settings"):
+			doc = frappe.get_doc({
+				"doctype": "Enhanced AI Settings",
+				"name": "Enhanced AI Settings",
+				"openai_model": "gpt-4",
+				"tone_adjustment_enabled": 1,
+				"grammar_correction_enabled": 1,
+				"style_optimization_enabled": 1,
+			})
+			doc.insert(ignore_permissions=True)
+			print("✅ Created Enhanced AI Settings")
+
+		doc = frappe.get_single("Enhanced AI Settings")
+		conf = frappe.conf or {}
+		updated = False
+
+		def set_if_absent(field, value, is_password=False):
+			"""Set field only if value provided and field currently empty."""
+			nonlocal updated
+			if value is None or value == "":
+				return
+			current = None
+			try:
+				if is_password:
+					current = doc.get_password(field)
+				else:
+					current = doc.get(field)
+			except Exception:
+				current = doc.get(field)
+			if not current:
+				doc.set(field, value)
+				updated = True
+
+		# OpenAI API Key
+		set_if_absent("openai_api_key", conf.get("assistant_crm_openai_api_key"), is_password=True)
+
+		# Model configuration
+		set_if_absent("openai_model", conf.get("assistant_crm_openai_model"))
+		set_if_absent("chat_model", conf.get("assistant_crm_chat_model"))
+
+		if updated:
+			doc.save(ignore_permissions=True)
+			frappe.db.commit()
+			print("✅ Seeded Enhanced AI Settings from site config (idempotent)")
+
+	except Exception as e:
+		frappe.log_error(f"Error ensuring Enhanced AI Settings seed: {str(e)}", "Assistant CRM Install")
+
+
+def ensure_assistant_crm_settings_seed():
+	"""Idempotently seed Assistant CRM Settings (Gemini API for Anna) from site config.
+
+	Reads from frappe.conf (site_config.json):
+	- assistant_crm_gemini_api_key (or assistant_crm_api_key)
+	- assistant_crm_corebusiness_api_key
+	- assistant_crm_claims_api_key
+	- assistant_crm_telegram_bot_token
+	"""
+	try:
+		if not frappe.db.exists("DocType", "Assistant CRM Settings"):
+			return
+
+		# Create if not exists (setup_system_settings should have created it)
+		if not frappe.db.exists("Assistant CRM Settings", "Assistant CRM Settings"):
+			setup_system_settings()
+
+		doc = frappe.get_single("Assistant CRM Settings")
+		conf = frappe.conf or {}
+		updated = False
+
+		def set_if_absent(field, value, is_password=False):
+			"""Set field only if value provided and field currently empty."""
+			nonlocal updated
+			if value is None or value == "":
+				return
+			current = None
+			try:
+				if is_password:
+					current = doc.get_password(field)
+				else:
+					current = doc.get(field)
+			except Exception:
+				current = doc.get(field)
+			if not current:
+				doc.set(field, value)
+				updated = True
+
+		# Gemini API Key (main AI provider for Anna)
+		gemini_key = conf.get("assistant_crm_gemini_api_key") or conf.get("assistant_crm_api_key")
+		set_if_absent("api_key", gemini_key, is_password=True)
+
+		# CoreBusiness API Key
+		set_if_absent("corebusiness_api_key", conf.get("assistant_crm_corebusiness_api_key"), is_password=True)
+
+		# Claims API Key
+		set_if_absent("claims_api_key", conf.get("assistant_crm_claims_api_key"), is_password=True)
+
+		# Telegram Bot Token
+		set_if_absent("telegram_bot_token", conf.get("assistant_crm_telegram_bot_token"), is_password=True)
+
+		# Enable AI if API key is set
+		if gemini_key and not doc.get("enabled"):
+			doc.set("enabled", 1)
+			doc.set("ai_provider", "Google Gemini")
+			updated = True
+
+		if updated:
+			doc.save(ignore_permissions=True)
+			frappe.db.commit()
+			print("✅ Seeded Assistant CRM Settings from site config (idempotent)")
+
+	except Exception as e:
+		frappe.log_error(f"Error ensuring Assistant CRM Settings seed: {str(e)}", "Assistant CRM Install")
 
 
 def setup_contact_social_fields():
@@ -505,6 +662,23 @@ def after_migrate():
             setup_contact_social_fields()
         except Exception as e:
             frappe.log_error(f"after_migrate social fields setup error: {str(e)}", "Assistant CRM Install")
+
+        # Re-seed API keys from site_config.json on every migration
+        # This ensures new config values are picked up without reinstalling
+        try:
+            ensure_assistant_crm_settings_seed()
+        except Exception as e:
+            frappe.log_error(f"after_migrate Assistant CRM Settings seed error: {str(e)}", "Assistant CRM Install")
+
+        try:
+            ensure_enhanced_ai_settings_seed()
+        except Exception as e:
+            frappe.log_error(f"after_migrate Enhanced AI Settings seed error: {str(e)}", "Assistant CRM Install")
+
+        try:
+            ensure_social_media_settings_seed()
+        except Exception as e:
+            frappe.log_error(f"after_migrate Social Media Settings seed error: {str(e)}", "Assistant CRM Install")
 
     finally:
         try:
