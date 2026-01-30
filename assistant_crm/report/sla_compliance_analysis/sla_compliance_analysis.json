@@ -1,0 +1,45 @@
+{
+ "add_total_row": 0,
+ "add_translate_data": 0,
+ "columns": [],
+ "creation": "2026-01-29 12:00:00.000000",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "letter_head": "WCFCB",
+ "letterhead": null,
+ "modified": "2026-01-29 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "SLA Compliance Analysis",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Unified Inbox Conversation",
+ "report_name": "SLA Compliance Analysis",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "CRM Administrator"
+  },
+  {
+   "role": "ICT"
+  },
+  {
+   "role": "CRM Manager"
+  },
+  {
+   "role": "Customer Service Manager"
+  },
+  {
+   "role": "Customer Service"
+  }
+ ],
+ "timeout": 0
+}
+
