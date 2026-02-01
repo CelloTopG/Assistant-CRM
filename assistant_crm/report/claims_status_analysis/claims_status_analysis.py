@@ -86,7 +86,7 @@ def get_columns() -> List[Dict[str, Any]]:
         {"fieldname": "status", "label": "Status", "fieldtype": "Data", "width": 120},
         {"fieldname": "claim_type", "label": "Type", "fieldtype": "Data", "width": 110},
         {"fieldname": "claimant", "label": "Claimant", "fieldtype": "Link", "options": "Customer", "width": 150},
-        {"fieldname": "employer", "label": "Employer", "fieldtype": "Link", "options": "Employer", "width": 150},
+        {"fieldname": "employer", "label": "Employer", "fieldtype": "Link", "options": "Employee", "width": 150},
         {"fieldname": "amount", "label": "Amount", "fieldtype": "Currency", "width": 120},
         {"fieldname": "incident_date", "label": "Incident Date", "fieldtype": "Date", "width": 110},
         {"fieldname": "is_escalated", "label": "Escalated", "fieldtype": "Check", "width": 80},

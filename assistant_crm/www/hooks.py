@@ -25,12 +25,12 @@ url_patterns = [
     {
         "pattern": r"^/employer-services/(?P<employer_slug>[\w-]+)/?$",
         "handler": "assistant_crm.www.handlers.employer_handler.render_employer_page",
-        "doctype": "Employer"
+        "doctype": "Employee"
     },
     {
         "pattern": r"^/employer-compliance/(?P<employer_id>[\w-]+)/?$",
         "handler": "assistant_crm.www.handlers.employer_handler.render_compliance_page",
-        "doctype": "Employer"
+        "doctype": "Employee"
     },
     
     # Beneficiary Services URLs
@@ -189,7 +189,7 @@ def get_breadcrumb_data(doctype, doc_name, doc_data=None):
             {"name": "Claims", "url": "/workers-compensation-claims/", "position": 2},
             {"name": f"Claim {doc_name}", "url": f"/workers-compensation-claims/{doc_name}/", "position": 3}
         ])
-    elif doctype == "Employer":
+    elif doctype == "Employee":
         breadcrumbs.extend([
             {"name": "Employer Services", "url": "/employer-services/", "position": 2},
             {"name": doc_data.get("company_name", doc_name), "url": f"/employer-services/{doc_name}/", "position": 3}

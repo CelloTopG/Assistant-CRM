@@ -75,7 +75,7 @@
    "fieldname": "employer",
    "fieldtype": "Link",
    "label": "Employer",
-   "options": "Employer"
+   "options": "Employee"
   },
   {
    "fieldname": "submission_date",

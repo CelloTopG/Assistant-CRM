@@ -60,7 +60,7 @@ frappe.query_reports["Claims Status Analysis"] = {
             fieldname: "employer",
             label: __("Employer"),
             fieldtype: "Link",
-            options: "Employer"
+            options: "Employee"
         }
     ],
 
