@@ -56,7 +56,9 @@
   "platform_metadata_section",
   "platform_metadata",
   "conversation_context",
-  "tags"
+  "tags",
+  "issue_linking_section",
+  "custom_issue_id"
  ],
  "fields": [
   {
@@ -338,6 +340,17 @@
    "fieldname": "tags",
    "fieldtype": "Data",
    "label": "Tags"
+  },
+  {
+   "fieldname": "issue_linking_section",
+   "fieldtype": "Section Break",
+   "label": "Issue Linking"
+  },
+  {
+   "fieldname": "custom_issue_id",
+   "fieldtype": "Link",
+   "label": "Linked Issue",
+   "options": "Issue"
   }
  ],
  "index_web_pages_for_search": 1,

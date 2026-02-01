@@ -1,5 +1,4 @@
 {
- "app": "erpnext",
  "charts": [
   {
    "chart_name": "Expense Claims",
@@ -18,7 +17,6 @@
  "indicator_color": "green",
  "is_hidden": 0,
  "label": "Client Relationship Management",
- "link_type": "DocType",
  "links": [
   {
    "hidden": 0,
@@ -55,144 +53,6 @@
    "label": "Enhanced AI Settings",
    "link_count": 0,
    "link_to": "Enhanced AI Settings",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Reports",
-   "link_count": 13,
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "AI Automation Report",
-   "link_count": 0,
-   "link_to": "AI Automation Report",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Branch Performance Report",
-   "link_count": 0,
-   "link_to": "Branch Performance Report",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Claims Status Report",
-   "link_count": 0,
-   "link_to": "Claims Status Report",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Auto Email Report",
-   "link_count": 0,
-   "link_to": "Auto Email Report",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Complaints Status Report",
-   "link_count": 0,
-   "link_to": "Complaints Status Report",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Compliance Report",
-   "link_count": 0,
-   "link_to": "Compliance Report",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Employer Status Report",
-   "link_count": 0,
-   "link_to": "Employer Status Report",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Inbox Status Report",
-   "link_count": 0,
-   "link_to": "Inbox Status Report",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Payout Summary Report",
-   "link_count": 0,
-   "link_to": "Payout Summary Report",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "SLA Compliance Report",
-   "link_count": 0,
-   "link_to": "SLA Compliance Report",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Survey Feedback Report",
-   "link_count": 0,
-   "link_to": "Survey Feedback Report",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Surveys ",
-   "link_count": 2,
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Survey Response",
-   "link_count": 0,
-   "link_to": "Survey Response",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -364,7 +224,6 @@
    "onboard": 0,
    "type": "Link"
   },
-
   {
    "hidden": 0,
    "is_query_report": 0,
@@ -384,9 +243,100 @@
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Reports",
+   "link_count": 8,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Branch Performance Analysis",
+   "link_count": 0,
+   "link_to": "Branch Performance Analysis",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Claims Status Analysis",
+   "link_count": 0,
+   "link_to": "Claims Status Analysis",
+   "link_type": "Report",
+   "onboard": 0,
+   "report_ref_doctype": "Claim",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "SLA Compliance Analysis",
+   "link_count": 0,
+   "link_to": "SLA Compliance Analysis",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Beneficiary Status Analysis",
+   "link_count": 0,
+   "link_to": "Beneficiary Status Analysis",
+   "link_type": "Report",
+   "onboard": 0,
+   "report_ref_doctype": "Customer",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Employer Analysis",
+   "link_count": 0,
+   "link_to": "Employee Status Analysis",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Inbox Status Analysis",
+   "link_count": 0,
+   "link_to": "Inbox Status Analysis",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Payout Summary Analysis",
+   "link_count": 0,
+   "link_to": "Payout Summary Analysis",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Survey Feedback Analysis",
+   "link_count": 0,
+   "link_to": "Survey Feedback Analysis",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2026-01-11 20:47:59.275971",
+ "modified": "2026-01-30 14:27:32.937891",
  "modified_by": "Administrator",
  "module": "Assistant CRM",
  "name": "Client Relationship Management",
@@ -452,6 +402,5 @@
    "type": "DocType"
   }
  ],
- "title": "Client Relationship Management",
- "type": "Workspace"
+ "title": "Client Relationship Management"
 }
