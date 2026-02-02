@@ -11,6 +11,7 @@
   "incident_date",
   "claimant",
   "employer",
+  "branch",
   "amount",
   "amended_from"
  ],
@@ -57,6 +58,13 @@
    "label": "Employer",
    "options": "Employee",
    "reqd": 1
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Branch",
+   "options": "Head Office\nLusaka\nKitwe\nNdola\nLivingstone\nChipata\nKasama\nSolwezi\nKabwe\nChingola\nMufulira"
   },
   {
    "fieldname": "amount",
