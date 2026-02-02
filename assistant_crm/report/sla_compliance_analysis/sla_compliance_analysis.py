@@ -156,7 +156,7 @@ def get_data(filters: Dict) -> Tuple[List[Dict], Dict]:
         "Unified Inbox Conversation",
         filters=conv_filters,
         fields=["name", "platform", "priority", "status", "assigned_agent",
-                "creation", "modified", "last_message_time", "branch"],
+                "creation", "modified", "last_message_time"],
         order_by="creation asc",
         limit=5000,
     )
