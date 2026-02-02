@@ -40,6 +40,7 @@
   "agent_assignment_section",
   "assigned_to",
   "assigned_agent",
+  "branch",
   "agent_assigned_at",
   "agent_status",
   "column_break_35",
@@ -254,6 +255,12 @@
    "fieldtype": "Link",
    "label": "Assigned Agent",
    "options": "User"
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Select",
+   "label": "Branch",
+   "options": "Head Office\nLusaka\nKitwe\nNdola\nLivingstone\nChipata\nKasama\nSolwezi\nKabwe\nChingola\nMufulira"
   },
   {
    "fieldname": "agent_assigned_at",
