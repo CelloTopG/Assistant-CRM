@@ -213,7 +213,7 @@ def _aggregate_issues_by_branch(df: date, dt: date, branch_filter: str, priority
     to_date = str(dt) if dt else None
 
     sql = """
-        SELECT name, custom_branch, status, priority, creation, resolution_date
+        SELECT name, custom_branch, status, priority, creation, modified
         FROM `tabIssue`
         WHERE 1=1
     """
@@ -246,7 +246,8 @@ def _aggregate_issues_by_branch(df: date, dt: date, branch_filter: str, priority
             bucket["open"] += 1
 
         creation = i.get("creation")
-        resolution_date = i.get("resolution_date")
+        # Use modified date as resolution date for closed issues
+        resolution_date = i.get("modified")
         if creation and resolution_date and status in {"closed", "resolved"}:
             try:
                 start = get_datetime(creation)
