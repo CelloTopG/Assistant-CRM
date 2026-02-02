@@ -26,6 +26,12 @@ def after_install():
 		except Exception as e:
 			frappe.log_error(f"Error ensuring Issue employer link field: {str(e)}", "Assistant CRM Install")
 
+		# Ensure Issue has Branch field for branch-based reporting
+		try:
+			ensure_issue_branch_field()
+		except Exception as e:
+			frappe.log_error(f"Error ensuring Issue branch field: {str(e)}", "Assistant CRM Install")
+
 		# Data Mapping Profile functionality has been deprecated
 
 		# Ensure Issue Platform Source field options cover all omnichannel platforms (e.g. USSD)
@@ -517,6 +523,33 @@ def ensure_issue_employer_link_field():
 			pass
 
 
+def ensure_issue_branch_field():
+	"""Create or ensure Branch Select field on Issue (idempotent)."""
+	try:
+		# Only if Issue DocType exists on this site
+		if not frappe.db.exists("DocType", "Issue"):
+			return
+		from frappe.custom.doctype.custom_field.custom_field import create_custom_field
+
+		field_def = {
+			"fieldname": "custom_branch",
+			"label": "Branch",
+			"fieldtype": "Select",
+			"options": "Head Office\nLusaka\nKitwe\nNdola\nLivingstone\nChipata\nKasama\nSolwezi\nKabwe\nChingola\nMufulira",
+			"insert_after": "employer",
+		}
+		if not frappe.db.exists("Custom Field", {"dt": "Issue", "fieldname": field_def["fieldname"]}):
+			create_custom_field("Issue", field_def)
+			print("✅ Added Issue field: Branch (Select)")
+	except Exception as e:
+		frappe.log_error(f"Error ensuring Issue branch field: {str(e)}", "Assistant CRM Install")
+	finally:
+		try:
+			frappe.clear_cache(doctype="Issue")
+		except Exception:
+			pass
+
+
 def setup_survey_campaign_workflow():
 	"""Ensure Survey Campaign Approval workflow exists and is active."""
 	try:
@@ -638,6 +671,12 @@ def after_migrate():
             ensure_issue_employer_link_field()
         except Exception as e:
             frappe.log_error(f"after_migrate employer field setup error: {str(e)}", "Assistant CRM Install")
+
+        # Ensure Issue Branch field after migrations as well
+        try:
+            ensure_issue_branch_field()
+        except Exception as e:
+            frappe.log_error(f"after_migrate branch field setup error: {str(e)}", "Assistant CRM Install")
 
         # Remove legacy Customer Satisfaction Survey DocType if present
         try:
