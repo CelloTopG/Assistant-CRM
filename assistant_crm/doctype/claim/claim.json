@@ -8,11 +8,15 @@
   "claim_number",
   "status",
   "claim_type",
+  "priority",
   "incident_date",
+  "submitted_date",
   "claimant",
   "employer",
   "branch",
   "amount",
+  "approved_by",
+  "approved_on",
   "amended_from"
  ],
  "fields": [
@@ -70,6 +74,29 @@
    "fieldname": "amount",
    "fieldtype": "Currency",
    "label": "Amount"
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "label": "Priority",
+   "options": "Low\nMedium\nHigh\nUrgent",
+   "default": "Medium"
+  },
+  {
+   "fieldname": "submitted_date",
+   "fieldtype": "Date",
+   "label": "Submitted Date"
+  },
+  {
+   "fieldname": "approved_by",
+   "fieldtype": "Link",
+   "label": "Approved By",
+   "options": "User"
+  },
+  {
+   "fieldname": "approved_on",
+   "fieldtype": "Datetime",
+   "label": "Approved On"
   },
   {
    "fieldname": "amended_from",
