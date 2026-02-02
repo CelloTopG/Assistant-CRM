@@ -32,6 +32,12 @@ def after_install():
 		except Exception as e:
 			frappe.log_error(f"Error ensuring Issue branch field: {str(e)}", "Assistant CRM Install")
 
+		# Ensure Customer has WCFCB-specific fields (PAS Number, NRC, Dependant Code)
+		try:
+			ensure_customer_wcfcb_fields()
+		except Exception as e:
+			frappe.log_error(f"Error ensuring Customer WCFCB fields: {str(e)}", "Assistant CRM Install")
+
 		# Data Mapping Profile functionality has been deprecated
 
 		# Ensure Issue Platform Source field options cover all omnichannel platforms (e.g. USSD)
@@ -550,6 +556,88 @@ def ensure_issue_branch_field():
 			pass
 
 
+def ensure_customer_wcfcb_fields():
+	"""Create or ensure WCFCB-specific fields on Customer (idempotent)."""
+	try:
+		if not frappe.db.exists("DocType", "Customer"):
+			return
+		from frappe.custom.doctype.custom_field.custom_field import create_custom_field
+
+		fields = [
+			{
+				"fieldname": "custom_pas_number",
+				"label": "PAS Number",
+				"fieldtype": "Data",
+				"insert_after": "customer_name",
+			},
+			{
+				"fieldname": "custom_nrc_number",
+				"label": "NRC Number",
+				"fieldtype": "Data",
+				"insert_after": "custom_pas_number",
+			},
+			{
+				"fieldname": "custom_dependant_code",
+				"label": "Dependant Code",
+				"fieldtype": "Data",
+				"insert_after": "custom_nrc_number",
+			},
+		]
+
+		for f in fields:
+			if not frappe.db.exists("Custom Field", {"dt": "Customer", "fieldname": f["fieldname"]}):
+				create_custom_field("Customer", f)
+				print(f"✅ Added Customer field: {f['label']}")
+	except Exception as e:
+		frappe.log_error(f"Error ensuring Customer WCFCB fields: {str(e)}", "Assistant CRM Install")
+	finally:
+		try:
+			frappe.clear_cache(doctype="Customer")
+		except Exception:
+			pass
+
+
+def ensure_customer_wcfcb_fields():
+	"""Create or ensure WCFCB-specific custom fields on Customer (idempotent)."""
+	try:
+		if not frappe.db.exists("DocType", "Customer"):
+			return
+		from frappe.custom.doctype.custom_field.custom_field import create_custom_field
+
+		fields = [
+			{
+				"fieldname": "custom_pas_number",
+				"label": "PAS Number",
+				"fieldtype": "Data",
+				"insert_after": "customer_name",
+			},
+			{
+				"fieldname": "custom_nrc_number",
+				"label": "NRC Number",
+				"fieldtype": "Data",
+				"insert_after": "custom_pas_number",
+			},
+			{
+				"fieldname": "custom_dependant_code",
+				"label": "Dependant Code",
+				"fieldtype": "Data",
+				"insert_after": "custom_nrc_number",
+			},
+		]
+
+		for f in fields:
+			if not frappe.db.exists("Custom Field", {"dt": "Customer", "fieldname": f["fieldname"]}):
+				create_custom_field("Customer", f)
+				print(f"✅ Added Customer field: {f['label']}")
+	except Exception as e:
+		frappe.log_error(f"Error ensuring Customer WCFCB fields: {str(e)}", "Assistant CRM Install")
+	finally:
+		try:
+			frappe.clear_cache(doctype="Customer")
+		except Exception:
+			pass
+
+
 def setup_survey_campaign_workflow():
 	"""Ensure Survey Campaign Approval workflow exists and is active."""
 	try:
@@ -677,6 +765,12 @@ def after_migrate():
             ensure_issue_branch_field()
         except Exception as e:
             frappe.log_error(f"after_migrate branch field setup error: {str(e)}", "Assistant CRM Install")
+
+        # Ensure Customer WCFCB fields after migrations as well
+        try:
+            ensure_customer_wcfcb_fields()
+        except Exception as e:
+            frappe.log_error(f"after_migrate Customer WCFCB fields setup error: {str(e)}", "Assistant CRM Install")
 
         # Remove legacy Customer Satisfaction Survey DocType if present
         try:
