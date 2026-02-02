@@ -111,16 +111,8 @@ def get_data(filters: frappe._dict) -> Tuple[List[Dict[str, Any]], Dict[str, Any
         limit=50000,
     ) or []
 
-    # Get linked issues count
-    issues = frappe.get_all(
-        "Issue",
-        filters={"creation": ["between", [df, dt]]},
-        fields=["name", "custom_conversation_id"],
-        limit=10000,
-    ) or []
-
-    # Build platform aggregation
-    platform_data = _aggregate_by_platform(convs, msgs, issues, df, dt)
+    # Build platform aggregation (linked issues counted from conversation.custom_issue_id)
+    platform_data = _aggregate_by_platform(convs, msgs, df, dt)
 
     # Calculate totals for summary
     totals = _calculate_totals(platform_data)
@@ -131,7 +123,7 @@ def get_data(filters: frappe._dict) -> Tuple[List[Dict[str, Any]], Dict[str, Any
     return data, totals
 
 
-def _aggregate_by_platform(convs, msgs, issues, df, dt) -> Dict[str, Dict[str, Any]]:
+def _aggregate_by_platform(convs, msgs, df, dt) -> Dict[str, Dict[str, Any]]:
     """Aggregate metrics by platform."""
     result: Dict[str, Dict[str, Any]] = {}
 
@@ -214,14 +206,6 @@ def _aggregate_by_platform(convs, msgs, issues, df, dt) -> Dict[str, Dict[str, A
                 bucket["resolution_values"].append(res_hrs)
             except Exception:
                 pass
-
-    # Count issues linked to conversations
-    for issue in issues:
-        conv_link = issue.get("custom_conversation_id")
-        if conv_link and conv_link in conv_names:
-            plat = conv_names[conv_link].get("platform") or "Unknown"
-            if plat in result:
-                result[plat]["linked_issues"] += 1
 
     # Calculate averages and percentiles
     for plat, bucket in result.items():
