@@ -407,6 +407,8 @@ website_route_rules = [
 	{"from_route": "/api/omnichannel/webhook/telegram", "to_route": "assistant_crm.api.realtime_webhooks.telegram_webhook"},
 	# New USSD webhook (synchronous response as text/plain)
 	{"from_route": "/api/omnichannel/webhook/ussd", "to_route": "assistant_crm.api.ussd_integration.ussd_webhook"},
+	# YouTube webhook (PubSubHubbub and custom integrations)
+	{"from_route": "/api/omnichannel/webhook/youtube", "to_route": "assistant_crm.api.realtime_webhooks.youtube_webhook"},
 
 	# Assistant CRM web interface - REMOVED to prevent homepage interference
 	# {"from_route": "/assistant-crm/<path:app_path>", "to_route": "assistant-crm"}

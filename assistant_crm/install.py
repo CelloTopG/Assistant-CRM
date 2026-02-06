@@ -32,6 +32,12 @@ def after_install():
 		except Exception as e:
 			frappe.log_error(f"Error ensuring Issue branch field: {str(e)}", "Assistant CRM Install")
 
+		# Ensure Issue has Unified Inbox integration fields (conversation_id, platform_source, assigned_agent)
+		try:
+			ensure_issue_unified_inbox_fields()
+		except Exception as e:
+			frappe.log_error(f"Error ensuring Issue unified inbox fields: {str(e)}", "Assistant CRM Install")
+
 		# Ensure Customer has WCFCB-specific fields (PAS Number, NRC, Dependant Code)
 		try:
 			ensure_customer_wcfcb_fields()
@@ -556,6 +562,60 @@ def ensure_issue_branch_field():
 			pass
 
 
+def ensure_issue_unified_inbox_fields():
+	"""Create or ensure Unified Inbox integration fields on Issue (idempotent).
+
+	These fields are required for linking Issues to Unified Inbox Conversations:
+	- custom_conversation_id: Links to Unified Inbox Conversation name
+	- custom_platform_source: Tracks which platform the Issue originated from
+	- custom_assigned_agent: Tracks which agent is assigned to the Issue
+	"""
+	try:
+		# Only if Issue DocType exists on this site
+		if not frappe.db.exists("DocType", "Issue"):
+			return
+		from frappe.custom.doctype.custom_field.custom_field import create_custom_field
+
+		fields = [
+			{
+				"fieldname": "custom_conversation_id",
+				"label": "Conversation ID",
+				"fieldtype": "Data",
+				"insert_after": "custom_branch",
+				"read_only": 1,
+				"description": "Linked Unified Inbox Conversation",
+			},
+			{
+				"fieldname": "custom_platform_source",
+				"label": "Platform Source",
+				"fieldtype": "Select",
+				"options": "WhatsApp\nFacebook\nInstagram\nTelegram\nTwitter\nLinkedIn\nTawk.to\nYouTube\nEmail\nPhone\nWebsite Chat\nUSSD",
+				"insert_after": "custom_conversation_id",
+				"description": "The platform this Issue originated from",
+			},
+			{
+				"fieldname": "custom_assigned_agent",
+				"label": "Assigned Agent",
+				"fieldtype": "Link",
+				"options": "User",
+				"insert_after": "custom_platform_source",
+				"description": "Agent assigned to handle this Issue",
+			},
+		]
+
+		for f in fields:
+			if not frappe.db.exists("Custom Field", {"dt": "Issue", "fieldname": f["fieldname"]}):
+				create_custom_field("Issue", f)
+				print(f"✅ Added Issue field: {f['label']}")
+	except Exception as e:
+		frappe.log_error(f"Error ensuring Issue unified inbox fields: {str(e)}", "Assistant CRM Install")
+	finally:
+		try:
+			frappe.clear_cache(doctype="Issue")
+		except Exception:
+			pass
+
+
 def ensure_customer_wcfcb_fields():
 	"""Create or ensure WCFCB-specific fields on Customer (idempotent)."""
 	try:
@@ -765,6 +825,12 @@ def after_migrate():
             ensure_issue_branch_field()
         except Exception as e:
             frappe.log_error(f"after_migrate branch field setup error: {str(e)}", "Assistant CRM Install")
+
+        # Ensure Issue Unified Inbox fields after migrations as well
+        try:
+            ensure_issue_unified_inbox_fields()
+        except Exception as e:
+            frappe.log_error(f"after_migrate unified inbox fields setup error: {str(e)}", "Assistant CRM Install")
 
         # Ensure Customer WCFCB fields after migrations as well
         try:

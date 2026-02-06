@@ -455,6 +455,239 @@ def handle_linkedin_verification():
         return "ok"
 
 
+@frappe.whitelist(allow_guest=True)
+def youtube_webhook():
+    """YouTube webhook handler for PubSubHubbub and custom integrations.
+
+    Supports:
+    - GET: WebSub/PubSubHubbub subscription verification
+    - POST: Incoming notifications (new videos, comments via Make.com, etc.)
+
+    Flow: Webhook → YouTubeIntegration.process_webhook() →
+          Unified Inbox Conversation → Unified Inbox Message → AI Processing
+    """
+    try:
+        # 1) Handle WebSub verification on GET
+        if frappe.request.method == "GET":
+            return handle_youtube_verification()
+
+        # 2) Verify signature on POST (optional, depends on configuration)
+        if not verify_youtube_signature():
+            frappe.throw(_("Invalid webhook signature"), frappe.AuthenticationError)
+
+        # 3) Parse request body - YouTube PubSubHubbub sends Atom XML,
+        #    but Make.com/custom integrations send JSON
+        raw_body = frappe.request.data or b""
+        if isinstance(raw_body, bytes):
+            raw_body = raw_body.decode("utf-8")
+
+        data = {}
+        content_type = frappe.request.headers.get("Content-Type", "")
+
+        if "application/json" in content_type:
+            data = json.loads(raw_body or "{}")
+        elif "application/atom+xml" in content_type or "text/xml" in content_type:
+            # Parse Atom XML from PubSubHubbub
+            data = parse_youtube_atom_feed(raw_body)
+        else:
+            # Try JSON first, fallback to Atom
+            try:
+                data = json.loads(raw_body or "{}")
+            except json.JSONDecodeError:
+                data = parse_youtube_atom_feed(raw_body)
+
+        # 4) Persist via Unified Inbox pipeline
+        from assistant_crm.api.social_media_ports import YouTubeIntegration
+        result = YouTubeIntegration().process_webhook(data)
+
+        # 5) Enqueue async AI processing for the saved conversation
+        try:
+            conversation = (result or {}).get("conversation_id")
+            if conversation:
+                frappe.enqueue(
+                    "assistant_crm.api.unified_inbox_api.process_conversation_with_ai",
+                    conversation_id=conversation,
+                    queue="long",
+                )
+        except Exception as e:
+            frappe.log_error(f"YouTube enqueue AI error: {str(e)}", "YouTube Webhook")
+
+        return {"status": "success"}
+
+    except Exception as e:
+        frappe.log_error(f"YouTube webhook error: {str(e)}", "Real-time Webhooks")
+        return {"status": "error", "message": str(e)}
+
+
+def verify_youtube_signature():
+    """Verify YouTube webhook signature.
+
+    For PubSubHubbub, YouTube sends X-Hub-Signature header with HMAC-SHA1.
+    If no secret configured, allow for easier initial testing.
+    """
+    try:
+        signature = (
+            frappe.request.headers.get("X-Hub-Signature") or
+            frappe.request.headers.get("x-hub-signature") or
+            frappe.request.headers.get("X-YouTube-Signature") or
+            frappe.request.headers.get("x-youtube-signature")
+        )
+
+        # If header missing, allow (verification optional unless configured)
+        if not signature:
+            return True
+
+        settings = frappe.get_single("Social Media Settings")
+        try:
+            secret = settings.get_password("youtube_webhook_secret")
+        except Exception:
+            secret = settings.get("youtube_webhook_secret")
+
+        if not secret:
+            # Allow if not configured
+            return True
+
+        raw_body = frappe.request.data or b""
+        if isinstance(raw_body, str):
+            raw_body = raw_body.encode("utf-8")
+
+        # PubSubHubbub uses SHA1, custom integrations might use SHA256
+        if signature.startswith("sha256="):
+            expected = "sha256=" + hmac.new(
+                secret.encode("utf-8"), raw_body, hashlib.sha256
+            ).hexdigest()
+        else:
+            # Default to SHA1 for PubSubHubbub
+            algo_part = signature.split("=")[0] if "=" in signature else "sha1"
+            if algo_part == "sha1":
+                expected = "sha1=" + hmac.new(
+                    secret.encode("utf-8"), raw_body, hashlib.sha1
+                ).hexdigest()
+            else:
+                expected = signature  # Can't verify unknown algo
+
+        return hmac.compare_digest(signature, expected)
+    except Exception:
+        return True  # Be tolerant in early setup
+
+
+def handle_youtube_verification():
+    """Handle YouTube PubSubHubbub/WebSub subscription verification.
+
+    YouTube sends:
+    - hub.mode: 'subscribe' or 'unsubscribe'
+    - hub.topic: The feed URL being subscribed to
+    - hub.challenge: Random string to echo back
+    - hub.lease_seconds: How long the subscription is valid
+    - hub.verify_token: Optional verification token (if provided during subscription)
+    """
+    try:
+        hub_mode = frappe.request.args.get("hub.mode")
+        hub_challenge = frappe.request.args.get("hub.challenge")
+        hub_verify_token = frappe.request.args.get("hub.verify_token")
+
+        if not hub_challenge:
+            return {"status": "error", "message": "Missing hub.challenge"}
+
+        # Verify token if configured
+        if hub_verify_token:
+            settings = frappe.get_single("Social Media Settings")
+            expected_token = settings.get("webhook_verify_token") or ""
+            if expected_token and hub_verify_token != expected_token:
+                frappe.throw(_("Invalid verify token"), frappe.AuthenticationError)
+
+        # Echo back the challenge for subscription confirmation
+        # Must return plain text, not JSON
+        from werkzeug.wrappers import Response
+        return Response(hub_challenge, content_type='text/plain', status=200)
+
+    except Exception as e:
+        frappe.log_error(f"YouTube verification error: {str(e)}", "YouTube Webhook")
+        from werkzeug.wrappers import Response
+        return Response("Verification failed", content_type='text/plain', status=403)
+
+
+def parse_youtube_atom_feed(xml_content: str) -> dict:
+    """Parse YouTube Atom feed XML into a dictionary for processing.
+
+    YouTube PubSubHubbub sends Atom XML with structure:
+    <feed>
+        <entry>
+            <yt:videoId>VIDEO_ID</yt:videoId>
+            <yt:channelId>CHANNEL_ID</yt:channelId>
+            <title>Video Title</title>
+            <author><name>Channel Name</name></author>
+            <published>2025-01-15T10:00:00+00:00</published>
+            <updated>2025-01-15T10:00:00+00:00</updated>
+        </entry>
+    </feed>
+    """
+    try:
+        import xml.etree.ElementTree as ET
+
+        # Handle namespace prefixes
+        namespaces = {
+            'atom': 'http://www.w3.org/2005/Atom',
+            'yt': 'http://www.youtube.com/xml/schemas/2015',
+        }
+
+        root = ET.fromstring(xml_content)
+
+        entries = []
+
+        # Find all entry elements
+        for entry in root.findall('.//atom:entry', namespaces) or root.findall('.//entry'):
+            entry_data = {}
+
+            # Extract yt:videoId
+            video_id_elem = entry.find('.//yt:videoId', namespaces)
+            if video_id_elem is not None:
+                entry_data['videoId'] = video_id_elem.text
+            else:
+                # Try without namespace
+                for child in entry:
+                    if 'videoId' in child.tag:
+                        entry_data['videoId'] = child.text
+                        break
+
+            # Extract yt:channelId
+            channel_id_elem = entry.find('.//yt:channelId', namespaces)
+            if channel_id_elem is not None:
+                entry_data['channelId'] = channel_id_elem.text
+            else:
+                for child in entry:
+                    if 'channelId' in child.tag:
+                        entry_data['channelId'] = child.text
+                        break
+
+            # Extract title
+            title_elem = entry.find('.//atom:title', namespaces) or entry.find('.//title')
+            if title_elem is not None:
+                entry_data['title'] = title_elem.text
+
+            # Extract author name
+            author_elem = entry.find('.//atom:author/atom:name', namespaces) or entry.find('.//author/name')
+            if author_elem is not None:
+                entry_data['author'] = {'name': author_elem.text}
+
+            # Extract published/updated timestamps
+            published_elem = entry.find('.//atom:published', namespaces) or entry.find('.//published')
+            if published_elem is not None:
+                entry_data['published'] = published_elem.text
+
+            updated_elem = entry.find('.//atom:updated', namespaces) or entry.find('.//updated')
+            if updated_elem is not None:
+                entry_data['updated'] = updated_elem.text
+
+            if entry_data:
+                entries.append(entry_data)
+
+        return {'feed': True, 'entry': entries}
+
+    except Exception as e:
+        frappe.log_error(f"YouTube Atom parse error: {str(e)}", "YouTube Webhook")
+        return {}
+
 
 def verify_twitter_signature():
     """Verify Twitter webhook signature: X-Twitter-Webhooks-Signature = 'sha256=' + base64(HMAC_SHA256(secret, body))."""

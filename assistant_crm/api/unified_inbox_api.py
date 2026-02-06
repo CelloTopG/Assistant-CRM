@@ -246,16 +246,17 @@ def get_conversations():
                 "data": result.get("conversations", [])
             }
         else:
-            # Return demo data on error
             return {
-                "status": "success",
-                "data": get_demo_conversations_data()
+                "status": "error",
+                "message": result.get("message", "Failed to get conversations"),
+                "data": []
             }
     except Exception as e:
         frappe.log_error(f"Error in get_conversations: {str(e)}", "Unified Inbox API Error")
         return {
-            "status": "success",
-            "data": get_demo_conversations_data()
+            "status": "error",
+            "message": str(e),
+            "data": []
         }
 
 
@@ -276,7 +277,7 @@ def search_conversations(q: str = None, limit: int = 50, offset: int = 0):
             base = get_unified_inbox_conversations(limit=limit_i, offset=offset_i)
             if base.get("status") == "success":
                 return {"status": "success", "data": base.get("conversations", [])}
-            return {"status": "success", "data": get_demo_conversations_data()}
+            return {"status": "error", "message": base.get("message", "Failed to get conversations"), "data": []}
 
         like = f"%{kw}%"
 
@@ -355,8 +356,7 @@ def search_conversations(q: str = None, limit: int = 50, offset: int = 0):
         return {"status": "success", "data": rows}
     except Exception as e:
         frappe.log_error(f"Error searching conversations: {str(e)}", "Unified Inbox API Error")
-        # Soft fallback to demo data so UI remains usable
-        return {"status": "success", "data": get_demo_conversations_data()}
+        return {"status": "error", "message": str(e), "data": []}
 
 
 @frappe.whitelist()
@@ -388,75 +388,6 @@ def set_conversation_ai_mode(conversation_name: str, mode: str):
         frappe.log_error(f"Error setting AI mode: {str(e)}", "Unified Inbox API Error")
         return {"status": "error", "message": str(e)}
 
-def get_demo_conversations_data():
-    """Return demo conversations for testing."""
-    return [
-        {
-            "name": "conv-001",
-            "customer_name": "Maria Santos",
-            "customer_phone": "+260977123456",
-            "platform": "WhatsApp",
-            "status": "AI Responded",
-            "priority": "Normal",
-            "last_message_time": "2025-08-27 14:30:00",
-            "last_message_preview": "Thank you for the information. I'll check on your pension payment status right away.",
-            "unread_count": 0,
-            "assigned_agent": None,
-            "escalation_reason": None
-        },
-        {
-            "name": "conv-002",
-            "customer_name": "John Williams",
-            "customer_phone": "+260966987654",
-            "platform": "Facebook",
-            "status": "Agent Assigned",
-            "priority": "High",
-            "last_message_time": "2025-08-27 15:45:00",
-            "last_message_preview": "I need urgent help with my workers compensation claim. It's been pending for weeks.",
-            "unread_count": 2,
-            "assigned_agent": "sarah.johnson@wcfcb.com",
-            "escalation_reason": None
-        },
-        {
-            "name": "conv-003",
-            "customer_name": "Sarah Mwanza",
-            "customer_phone": "+260955123789",
-            "platform": "Instagram",
-            "status": "Escalated",
-            "priority": "Urgent",
-            "last_message_time": "2025-08-27 16:10:00",
-            "last_message_preview": "This is unacceptable! I've been waiting for my pension for 3 months!",
-            "unread_count": 1,
-            "assigned_agent": "lisa.rodriguez@wcfcb.com",
-            "escalation_reason": "urgent"
-        },
-        {
-            "name": "conv-004",
-            "customer_name": "Linda Martinez",
-            "customer_phone": "+260977555666",
-            "platform": "Telegram",
-            "status": "New",
-            "priority": "Normal",
-            "last_message_time": "2025-08-27 16:15:00",
-            "last_message_preview": "Hi, can you check the status of my workers compensation claim?",
-            "unread_count": 1,
-            "assigned_agent": None,
-            "escalation_reason": None
-        },
-        {
-            "name": "conv-005",
-            "customer_name": "Ashley Wilson",
-            "customer_phone": "+260966777888",
-            "platform": "Tawk.to",
-            "status": "New",
-            "priority": "Normal",
-            "last_message_time": "2025-08-27 12:40:00",
-            "last_message_preview": "What time do you close today?",
-            "unread_count": 1,
-            "assigned_agent": None,
-            "escalation_reason": None
-        }
-    ]
 
 @frappe.whitelist()
 def get_messages(conversation_name: str, limit: int = 200, offset: int = 0):
@@ -465,15 +396,9 @@ def get_messages(conversation_name: str, limit: int = 200, offset: int = 0):
     - offset: optional offset for pagination
     """
     try:
-        # Check if this is a demo conversation (starts with 'conv-')
-        if conversation_name and conversation_name.startswith('conv-'):
-            # Return demo messages directly without database lookup
-            return {
-                "status": "success",
-                "data": get_demo_messages_data(conversation_name)
-            }
+        if not conversation_name:
+            return {"status": "error", "message": "Conversation name is required", "data": []}
 
-        # For real conversations, use the database
         result = get_conversation_messages(conversation_name, limit=int(limit), offset=int(offset))
         if result.get("status") == "success":
             return {
@@ -481,189 +406,15 @@ def get_messages(conversation_name: str, limit: int = 200, offset: int = 0):
                 "data": result.get("messages", [])
             }
         else:
-            # Return demo messages as fallback
             return {
-                "status": "success",
-                "data": get_demo_messages_data(conversation_name)
+                "status": "error",
+                "message": result.get("message", "Failed to get messages"),
+                "data": []
             }
     except Exception as e:
         frappe.log_error(f"Error in get_messages: {str(e)}", "Unified Inbox API Error")
-        return {
-            "status": "success",
-            "data": get_demo_messages_data(conversation_name)
-        }
+        return {"status": "error", "message": str(e), "data": []}
 
-def get_demo_agent_name():
-    """Get a real agent name for demo messages."""
-    try:
-        # Try to get available agents
-        agents_response = get_available_agents()
-        if agents_response.get("status") == "success" and agents_response.get("data"):
-            # Use the first available agent
-            first_agent = agents_response["data"][0]
-            return first_agent.get("full_name", first_agent.get("email", "Agent"))
-        else:
-            # Fallback to current user
-            current_user = frappe.get_doc("User", frappe.session.user)
-            return current_user.full_name or current_user.first_name or "Agent"
-    except:
-        return "Customer Service Agent"
-
-def get_demo_messages_data(conversation_name):
-    """Return demo messages for a conversation."""
-    # Get a real agent name for demo messages
-    agent_name = get_demo_agent_name()
-
-    demo_messages = {
-        "conv-001": [
-            {
-                "direction": "Inbound",
-                "message_content": "Hello, I need to check my pension payment status. My NRC is 123456/78/1.",
-                "sender_name": "Maria Santos",
-                "timestamp": "2025-08-27 14:25:00",
-                "ai_confidence": None,
-                "agent_response": False
-            },
-            {
-                "direction": "Outbound",
-                "message_content": "Hello Maria! I can help you check your pension payment status. Let me access your file using your NRC number.",
-                "sender_name": "Anna AI Assistant",
-                "timestamp": "2025-08-27 14:25:02",
-                "ai_confidence": 0.95,
-                "agent_response": False
-            },
-            {
-                "direction": "Outbound",
-                "message_content": "Great news! I found your records. Your pension payment of K2,500 was processed on August 1st, 2025, and should be in your Zanaco account ending in 1234. Is there anything else I can help you with?",
-                "sender_name": "Anna AI Assistant",
-                "timestamp": "2025-08-27 14:25:05",
-                "ai_confidence": 0.92,
-                "agent_response": False
-            }
-        ],
-        "conv-002": [
-            {
-                "direction": "Inbound",
-                "message_content": "I need urgent help with my workers compensation claim. It's been pending for weeks and I haven't received any updates.",
-                "sender_name": "John Williams",
-                "timestamp": "2025-08-27 15:40:00",
-                "ai_confidence": None,
-                "agent_response": False
-            },
-            {
-                "direction": "Outbound",
-                "message_content": "Hello John, I understand your concern about your workers compensation claim. Let me check the status for you right away. Can you please provide your claim reference number?",
-                "sender_name": "Anna AI Assistant",
-                "timestamp": "2025-08-27 15:40:15",
-                "ai_confidence": 0.88,
-                "agent_response": False
-            },
-            {
-                "direction": "Inbound",
-                "message_content": "My claim reference is WC-2025-0789. I was injured at work on July 15th and submitted all the required documents.",
-                "sender_name": "John Williams",
-                "timestamp": "2025-08-27 15:41:00",
-                "ai_confidence": None,
-                "agent_response": False
-            },
-            {
-                "direction": "Outbound",
-                "message_content": "Thank you for providing the reference number. I can see your claim WC-2025-0789 is currently under review by our medical assessment team. Due to the complexity of your case, I'm escalating this to our senior agent Sarah Johnson who will contact you within 24 hours with a detailed update.",
-                "sender_name": "Anna AI Assistant",
-                "timestamp": "2025-08-27 15:42:00",
-                "ai_confidence": 0.75,
-                "agent_response": False
-            },
-            {
-                "direction": "Outbound",
-                "message_content": f"Hi John, this is {agent_name} from WCFCB. I've reviewed your case and I'm pleased to inform you that your claim has been approved. You'll receive K15,000 compensation which will be processed within 3-5 business days. I'll send you the detailed breakdown via email.",
-                "sender_name": agent_name,
-                "timestamp": "2025-08-27 15:45:00",
-                "ai_confidence": None,
-                "agent_response": True
-            }
-        ],
-        "conv-003": [
-            {
-                "direction": "Inbound",
-                "message_content": "This is unacceptable! I've been waiting for my pension for 3 months! Every time I call, you give me a different excuse. I need my money NOW!",
-                "sender_name": "Sarah Mwanza",
-                "timestamp": "2025-08-27 16:05:00",
-                "ai_confidence": None,
-                "agent_response": False
-            },
-            {
-                "direction": "Outbound",
-                "message_content": "I sincerely apologize for the delay and frustration you've experienced, Sarah. This is absolutely not the level of service we strive to provide. Let me immediately escalate your case to our senior team and get this resolved today.",
-                "sender_name": "Anna AI Assistant",
-                "timestamp": "2025-08-27 16:05:30",
-                "ai_confidence": 0.65,
-                "agent_response": False
-            },
-            {
-                "direction": "Inbound",
-                "message_content": "I don't want more promises! I want action! My NRC is 987654/32/1 and I've submitted everything you asked for multiple times!",
-                "sender_name": "Sarah Mwanza",
-                "timestamp": "2025-08-27 16:06:00",
-                "ai_confidence": None,
-                "agent_response": False
-            },
-            {
-                "direction": "Outbound",
-                "message_content": f"Hello Sarah, this is {agent_name}, Senior Customer Relations Manager. I've personally taken over your case and I can see the unacceptable delays. Your pension payment of K3,200 is being processed as an emergency priority and will be in your account by tomorrow morning. I'm also arranging a formal apology and compensation for the inconvenience caused.",
-                "sender_name": agent_name,
-                "timestamp": "2025-08-27 16:10:00",
-                "ai_confidence": None,
-                "agent_response": True
-            }
-        ],
-        "conv-004": [
-            {
-                "direction": "Inbound",
-                "message_content": "Hi, can you check the status of my workers compensation claim? I submitted it 3 weeks ago but haven't heard anything.",
-                "sender_name": "Linda Martinez",
-                "timestamp": "2025-08-27 16:15:00",
-                "ai_confidence": None,
-                "agent_response": False
-            },
-            {
-                "direction": "Outbound",
-                "message_content": "Hello Linda! I'd be happy to help you check your workers compensation claim status. Could you please provide your claim reference number or your NRC number so I can look up your file?",
-                "sender_name": "Anna AI Assistant",
-                "timestamp": "2025-08-27 16:15:15",
-                "ai_confidence": 0.92,
-                "agent_response": False
-            }
-        ],
-        "conv-005": [
-            {
-                "direction": "Inbound",
-                "message_content": "What time do you close today?",
-                "sender_name": "Ashley Wilson",
-                "timestamp": "2025-08-27 12:40:00",
-                "ai_confidence": None,
-                "agent_response": False
-            },
-            {
-                "direction": "Outbound",
-                "message_content": "Hello Ashley! Our customer service hours are Monday to Friday from 8:00 AM to 5:00 PM, and Saturday from 8:00 AM to 1:00 PM. We're closed on Sundays and public holidays. Is there anything else I can help you with today?",
-                "sender_name": "Anna AI Assistant",
-                "timestamp": "2025-08-27 12:40:10",
-                "ai_confidence": 0.98,
-                "agent_response": False
-            },
-            {
-                "direction": "Inbound",
-                "message_content": "Perfect, thank you! I'll visit your office tomorrow morning.",
-                "sender_name": "Ashley Wilson",
-                "timestamp": "2025-08-27 12:41:00",
-                "ai_confidence": None,
-                "agent_response": False
-            }
-        ]
-    }
-
-    return demo_messages.get(conversation_name, [])
 
 @frappe.whitelist()
 def get_conversation_messages(conversation_name: str, limit: int = 50, offset: int = 0):
@@ -749,20 +500,7 @@ def send_message():
         if not message_content or not message_content.strip():
             return {"status": "error", "message": "Message content is required"}
 
-        # Check if this is a demo conversation
-        if conversation_name and conversation_name.startswith('conv-'):
-            # For demo conversations, just return success without database operations
-            return {
-                "status": "success",
-                "message": "Demo message sent successfully",
-                "data": {
-                    "conversation_name": conversation_name,
-                    "message_content": message_content,
-                    "timestamp": frappe.utils.now()
-                }
-            }
-
-        # Get conversation details (for real conversations only) using direct DB fetch (avoid Document save side-effects)
+        # Get conversation details using direct DB fetch (avoid Document save side-effects)
         conv = frappe.db.get_value(
             "Unified Inbox Conversation",
             conversation_name,
@@ -1858,20 +1596,7 @@ def enhanced_assign_conversation():
         if not agent_doc.enabled:
             return {"status": "error", "message": "Selected agent is not active"}
 
-        # Check if this is a demo conversation
-        if conversation_name and conversation_name.startswith('conv-'):
-            # For demo conversations, just return success without database operations
-            return {
-                "status": "success",
-                "message": "Demo conversation assigned successfully",
-                "data": {
-                    "conversation_name": conversation_name,
-                    "assigned_agent": target_agent,
-                    "status": "Agent Assigned"
-                }
-            }
-
-        # Get conversation (for real conversations only)
+        # Get conversation
         conversation = frappe.get_doc("Unified Inbox Conversation", conversation_name)
 
         # Update conversation
@@ -1937,18 +1662,7 @@ def assign_conversation_to_user(doctype, docname, assign_to, description=None):
                 "message": f"User {assign_to} is disabled"
             }
 
-        # Check if this is a demo conversation
-        if docname and docname.startswith('conv-'):
-            # For demo conversations, return success in ERPNext expected format
-            return {
-                "assigned_to": assign_to,
-                "assigned_to_name": user.full_name or user.first_name or user.email,
-                "status": "success",
-                "conversation_name": docname,
-                "assignment_type": "demo"
-            }
-
-        # For real conversations, use ERPNext's assignment system
+        # Use ERPNext's assignment system
         try:
             from frappe.desk.form.assign_to import add as add_assignment
 
@@ -2425,15 +2139,6 @@ def escalate_to_erpnext_issue(conversation_name, issue_id, new_priority, assign_
     """
     try:
         print(f"DEBUG: Escalating Issue {issue_id} for conversation {conversation_name}")
-
-        # Handle demo conversations
-        if conversation_name and conversation_name.startswith('conv-'):
-            return {
-                "status": "success",
-                "message": f"Demo conversation escalated (would escalate Issue {issue_id})",
-                "issue_id": issue_id,
-                "demo_mode": True
-            }
 
         # Get the ERPNext Issue
         if not frappe.db.exists("Issue", issue_id):
@@ -4070,17 +3775,17 @@ def debug_assignment_issue():
 
 # Helper Functions
 def get_agent_status(agent_name):
-    """Get current status of an agent."""
+    """Get current status of an agent based on their active conversation count."""
     try:
-        # For demo purposes, return simulated status
-        demo_statuses = {
-            "sarah.johnson@wcfcb.com": "Available",
-            "mike.chen@wcfcb.com": "Busy",
-            "lisa.rodriguez@wcfcb.com": "Available",
-            "Administrator": "Available"
-        }
-        return demo_statuses.get(agent_name, "Available")
-    except:
+        # Check agent's active conversation count to determine status
+        active_count = frappe.db.count("Unified Inbox Conversation", {
+            "assigned_agent": agent_name,
+            "status": ["in", ["Agent Assigned", "In Progress", "Escalated"]]
+        })
+        if active_count >= 5:
+            return "Busy"
+        return "Available"
+    except Exception:
         return "Available"
 
 
@@ -4113,33 +3818,38 @@ def get_agent_workload_status(agent_name):
 
 
 def get_agent_performance_data(agent_name):
-    """Get performance data for an agent."""
+    """Get performance data for an agent from the database."""
     try:
-        # For demo purposes, return simulated data
-        demo_performance = {
-            "sarah.johnson@wcfcb.com": {
-                "avg_response_time": 45,
-                "satisfaction_score": 4.7,
-                "escalations_handled": 2
-            },
-            "mike.chen@wcfcb.com": {
-                "avg_response_time": 72,
-                "satisfaction_score": 4.3,
-                "escalations_handled": 0
-            },
-            "lisa.rodriguez@wcfcb.com": {
-                "avg_response_time": 38,
-                "satisfaction_score": 4.8,
-                "escalations_handled": 2
-            }
+        # Get agent's assigned conversations with escalations
+        escalations_handled = frappe.db.count(
+            "Unified Inbox Conversation",
+            {"assigned_agent": agent_name, "status": "Escalated"}
+        )
+
+        # Calculate average response time from agent's messages
+        agent_messages = frappe.get_all(
+            "Unified Inbox Message",
+            filters={"sender_name": agent_name, "direction": "Outbound"},
+            fields=["timestamp", "conversation"],
+            limit=100
+        )
+
+        avg_response_time = 60  # Default value in seconds
+        if agent_messages:
+            # In a real implementation, you'd calculate actual response times
+            avg_response_time = 60
+
+        return {
+            "avg_response_time": avg_response_time,
+            "satisfaction_score": 4.0,  # Would need a feedback system to calculate
+            "escalations_handled": escalations_handled or 0
         }
-        return demo_performance.get(agent_name, {
+    except Exception:
+        return {
             "avg_response_time": 60,
             "satisfaction_score": 4.0,
             "escalations_handled": 0
-        })
-    except:
-        return {}
+        }
 
 
 def send_escalation_notification(agent_name, conversation, escalation_reason):
@@ -4425,65 +4135,26 @@ def get_customer_summary():
         if not conversation_name:
             return {"status": "error", "message": "Conversation name is required"}
 
-        # Check if this is a demo conversation
-        if conversation_name and conversation_name.startswith('conv-'):
-            # For demo conversations, return demo customer data
-            demo_conversations = get_demo_conversations_data()
-            demo_conv = next((c for c in demo_conversations if c["name"] == conversation_name), None)
+        # Get conversation details
+        conversation = frappe.get_doc("Unified Inbox Conversation", conversation_name)
 
-            if demo_conv:
-                summary = {
-                    "conversation_info": {
-                        "customer_name": demo_conv["customer_name"],
-                        "platform": demo_conv["platform"],
-                        "status": demo_conv["status"],
-                        "priority": demo_conv["priority"],
-                        "created_at": "2025-08-27 12:00:00",
-                        "last_message_time": demo_conv["last_message_time"]
-                    },
-                    "corebusiness_data": {
-                        "has_data": True,
-                        "customer_info": {
-                            "BENEFICIARY_ID": "BEN123456",
-                            "NRC_NUMBER": "123456/78/1",
-                            "FIRST_NAME": demo_conv["customer_name"].split()[0],
-                            "LAST_NAME": demo_conv["customer_name"].split()[-1],
-                            "PHONE_NUMBER": demo_conv.get("customer_phone", ""),
-                            "EMAIL_ADDRESS": f"{demo_conv['customer_name'].lower().replace(' ', '.')}@email.com",
-                            "EMPLOYER_NAME": "Demo Employer Ltd",
-                            "STATUS": "Active"
-                        }
-                    },
-                    "interaction_history": {
-                        "total_messages": 3,
-                        "ai_responses": 2,
-                        "agent_responses": 1,
-                        "escalations": 0
-                    }
-                }
-            else:
-                summary = {"conversation_info": {}, "corebusiness_data": None, "interaction_history": {}}
-        else:
-            # Get conversation details (for real conversations only)
-            conversation = frappe.get_doc("Unified Inbox Conversation", conversation_name)
-
-            summary = {
-                "conversation_info": {
-                    "customer_name": conversation.customer_name,
-                    "platform": conversation.platform,
-                    "status": conversation.status,
-                    "priority": conversation.priority,
-                    "created_at": conversation.creation,
-                    "last_message_time": conversation.last_message_time
-                },
-                "corebusiness_data": None,
-                "interaction_history": {
-                    "total_messages": 0,
-                    "ai_responses": 0,
-                    "agent_responses": 0,
-                    "escalations": 0
-                }
+        summary = {
+            "conversation_info": {
+                "customer_name": conversation.customer_name,
+                "platform": conversation.platform,
+                "status": conversation.status,
+                "priority": conversation.priority,
+                "created_at": conversation.creation,
+                "last_message_time": conversation.last_message_time
+            },
+            "corebusiness_data": None,
+            "interaction_history": {
+                "total_messages": 0,
+                "ai_responses": 0,
+                "agent_responses": 0,
+                "escalations": 0
             }
+        }
 
         # Get CoreBusiness data if phone number is available
         if conversation.customer_phone:

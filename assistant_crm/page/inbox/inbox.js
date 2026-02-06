@@ -1,4 +1,5 @@
-// Inbox - ERPNext Page JavaScript
+// CRM Inbox - Professional Enterprise UI
+// Unified messaging hub for customer conversations
 
 frappe.pages['inbox'].on_page_load = function(wrapper) {
     var page = frappe.ui.make_app_page({
@@ -7,90 +8,77 @@ frappe.pages['inbox'].on_page_load = function(wrapper) {
         single_column: true
     });
 
-    // Set the page content
+    // Set the page content with professional, clean design
     page.main.html(`
         <div class="inbox-container">
-            <!-- Header -->
-            <div class="page-header d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <h3 class="mb-1">
-                        <i class="fas fa-inbox text-primary me-2"></i>
-                        Inbox
-                    </h3>
-                    <p class="text-muted mb-0">Manage customer conversations across all platforms</p>
-                </div>
-                <div class="d-flex align-items-center">
-                    <span class="badge bg-success me-2" id="connection-status">
-                        <i class="fas fa-circle me-1"></i>Connected
-                    </span>
-                    <button class="btn btn-sm btn-outline-primary" id="refresh-btn">
-                        <i class="fas fa-sync-alt"></i> Refresh
+            <!-- Platform Filters with Refresh -->
+            <div class="platform-filters d-flex justify-content-between align-items-center">
+                <div class="btn-group flex-wrap" role="group" aria-label="Platform filters">
+                    <button type="button" class="btn active" id="filter-all" data-platform="all">
+                        All Channels
+                    </button>
+                    <button type="button" class="btn" id="filter-whatsapp" data-platform="WhatsApp">
+                        <i class="fa fa-whatsapp me-1"></i>WhatsApp
+                    </button>
+                    <button type="button" class="btn" id="filter-facebook" data-platform="Facebook">
+                        <i class="fa fa-facebook me-1"></i>Facebook
+                    </button>
+                    <button type="button" class="btn" id="filter-instagram" data-platform="Instagram">
+                        <i class="fa fa-instagram me-1"></i>Instagram
+                    </button>
+                    <button type="button" class="btn" id="filter-telegram" data-platform="Telegram">
+                        <i class="fa fa-telegram me-1"></i>Telegram
+                    </button>
+                    <button type="button" class="btn" id="filter-twitter" data-platform="Twitter">
+                        <i class="fa fa-twitter me-1"></i>Twitter
+                    </button>
+                    <button type="button" class="btn" id="filter-linkedin" data-platform="LinkedIn">
+                        <i class="fa fa-linkedin me-1"></i>LinkedIn
+                    </button>
+                    <button type="button" class="btn" id="filter-tawk" data-platform="Tawk.to">
+                        <i class="fa fa-headphones me-1"></i>Tawk.to
+                    </button>
+                    <button type="button" class="btn" id="filter-youtube" data-platform="YouTube">
+                        <i class="fa fa-youtube me-1"></i>YouTube
                     </button>
                 </div>
+                <button class="btn btn-sm btn-default" id="refresh-btn" title="Refresh conversations">
+                    <i class="fa fa-refresh"></i>
+                </button>
             </div>
 
-            <!-- Platform Filters -->
-            <div class="platform-filters mb-3">
-                <div class="btn-group" role="group" aria-label="Platform filters">
-                    <button type="button" class="btn btn-outline-secondary active" id="filter-all" data-platform="all">
-                        <i class="fas fa-list me-1"></i>All
-                    </button>
-                    <button type="button" class="btn btn-outline-success" id="filter-whatsapp" data-platform="WhatsApp">
-                        <i class="fab fa-whatsapp me-1"></i>WhatsApp
-                    </button>
-                    <button type="button" class="btn btn-outline-primary" id="filter-facebook" data-platform="Facebook">
-                        <i class="fab fa-facebook me-1"></i>Facebook
-                    </button>
-                    <button type="button" class="btn btn-outline-danger" id="filter-instagram" data-platform="Instagram">
-                        <i class="fab fa-instagram me-1"></i>Instagram
-                    </button>
-                    <button type="button" class="btn btn-outline-info" id="filter-telegram" data-platform="Telegram">
-                        <i class="fab fa-telegram me-1"></i>Telegram
-                    </button>
-                    <button type="button" class="btn btn-outline-primary" id="filter-twitter" data-platform="Twitter">
-                        <i class="fab fa-twitter me-1"></i>Twitter
-                    </button>
-                        <button type="button" class="btn btn-outline-primary" id="filter-linkedin" data-platform="LinkedIn">
-                            <i class="fab fa-linkedin me-1"></i>LinkedIn
-                        </button>
-
-
-                    <button type="button" class="btn btn-outline-dark" id="filter-tawk" data-platform="Tawk.to">
-                        <i class="fas fa-comments me-1"></i>Tawk.to
-                    </button>
-                </div>
-            </div>
-
-            <!-- Main Content -->
-            <div class="row">
+            <!-- Main Content Grid -->
+            <div class="row g-3 mt-0">
                 <!-- Conversations List -->
                 <div class="col-md-4">
                     <div class="card h-100">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <div class="d-flex align-items-center flex-wrap">
-                                <h6 class="mb-0 me-2">
-                                    <i class="fas fa-comments me-2"></i>Conversations
-                                </h6>
-                                <div class="btn-group btn-group-sm me-2" role="group" aria-label="Conversation type filters">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="d-flex align-items-center">
+                                    <i class="fa fa-comments me-2"></i>Conversations
+                                </span>
+                                <span id="conversation-count">0</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="btn-group btn-group-sm" role="group">
                                     <button type="button" class="btn btn-outline-secondary active" id="conv-filter-non-survey" data-convfilter="non_survey">
-                                        <i class="fas fa-comments me-1"></i>Chats
+                                        Chats
                                     </button>
-                                    <button type="button" class="btn btn-outline-success" id="conv-filter-survey" data-convfilter="survey_only">
-                                        <i class="fas fa-poll me-1"></i>Surveys
+                                    <button type="button" class="btn btn-outline-secondary" id="conv-filter-survey" data-convfilter="survey_only">
+                                        Surveys
                                     </button>
                                 </div>
-                                <div class="input-group input-group-sm" style="max-width: 280px;">
-                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                    <input type="text" class="form-control" id="conversation-search" placeholder="Search name, number, or message..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
+                                <div class="input-group input-group-sm flex-grow-1">
+                                    <span class="input-group-text border-0 bg-transparent"><i class="fa fa-search text-muted"></i></span>
+                                    <input type="text" class="form-control" id="conversation-search" placeholder="Search..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
                                 </div>
                             </div>
-                            <span class="badge bg-primary" id="conversation-count">0</span>
                         </div>
                         <div class="card-body p-0">
                             <div class="conversation-list" id="conversation-list">
-                                <div class="text-center p-4 text-muted">
-                                    <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
-                                    <p>Loading conversations...</p>
+                                <div class="text-center p-4">
+                                    <i class="fa fa-spinner fa-spin mb-2"></i>
+                                    <p class="mb-0 small">Loading...</p>
                                 </div>
                             </div>
                         </div>
@@ -100,43 +88,45 @@ frappe.pages['inbox'].on_page_load = function(wrapper) {
                 <!-- Message Area -->
                 <div class="col-md-8">
                     <div class="card h-100">
-                        <!-- Conversation Header -->
+                        <!-- Conversation Header - Clean layout -->
                         <div class="card-header" id="conversation-header" style="display: none;">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h6 class="mb-1" id="customer-name">Customer Name</h6>
-                                    <small class="text-muted">
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <strong id="customer-name">Customer Name</strong>
                                         <span class="platform-badge badge" id="platform-badge">Platform</span>
                                         <span class="status-badge badge" id="status-badge">Status</span>
-                                        <span class="assigned-badge badge bg-info ms-2" id="assigned-badge" style="display: none;">
-                                            <i class="fas fa-user-check"></i> Assigned: <span id="assigned-agent-name">Unassigned</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-info" id="assigned-badge" style="display: none;">
+                                            <i class="fa fa-user me-1"></i><span id="assigned-agent-name">Unassigned</span>
                                         </span>
-                                        <span class="data-source-badge badge bg-success ms-2" id="data-source-badge" style="display: none;">
-                                            <i class="fas fa-database"></i> Live Data
+                                        <span class="badge bg-success" id="data-source-badge" style="display: none;">
+                                            <i class="fa fa-database me-1"></i>Live
                                         </span>
-                                        <span class="badge bg-success ms-2" id="survey-badge" style="display: none;">
-                                            <i class="fas fa-poll"></i> Survey
+                                        <span class="badge bg-success" id="survey-badge" style="display: none;">
+                                            Survey
                                         </span>
-                                    </small>
+                                    </div>
                                 </div>
-                                <div class="btn-group">
-                                    <button class="btn btn-sm btn-outline-info" id="customer-data-btn" style="display: none;">
-                                        <i class="fas fa-user-circle"></i> Data
+                                <div class="btn-group btn-group-sm action-buttons">
+                                    <button class="btn btn-default icon-btn" id="customer-data-btn" style="display: none;" title="View customer data">
+                                        <i class="fa fa-user-circle-o"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-outline-secondary" id="issue-btn" style="display: none;">
-                                        <i class="fas fa-ticket-alt"></i> Ticket
+                                    <button class="btn btn-default icon-btn" id="issue-btn" style="display: none;" title="View ticket">
+                                        <i class="fa fa-ticket"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-outline-primary" id="assign-btn">
-                                        <i class="fas fa-user-plus"></i> Assign
+                                    <button class="btn btn-default icon-btn" id="assign-btn" title="Assign to agent">
+                                        <i class="fa fa-user-plus"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-outline-secondary" id="ai-control-btn">
-                                        <i class="fas fa-robot"></i> AI: Auto
+                                    <button class="btn btn-default icon-btn" id="ai-control-btn" title="AI settings">
+                                        <i class="fa fa-cog"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-outline-warning" id="escalate-btn">
-                                        <i class="fas fa-exclamation-triangle"></i> Escalate Issue
+                                    <button class="btn btn-default icon-btn" id="escalate-btn" title="Escalate issue">
+                                        <i class="fa fa-arrow-up"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-outline-success" id="close-btn">
-                                        <i class="fas fa-check"></i> Close
+                                    <button class="btn btn-default icon-btn" id="close-btn" title="Close conversation">
+                                        <i class="fa fa-check"></i>
                                     </button>
                                 </div>
                             </div>
@@ -146,24 +136,23 @@ frappe.pages['inbox'].on_page_load = function(wrapper) {
                         <div class="card-body p-0">
                             <div class="messages-container" id="messages-container">
                                 <div class="no-conversation text-center">
-                                    <i class="fas fa-comments fa-3x text-muted mb-3"></i>
-                                    <h5 class="text-muted">Select a conversation to start</h5>
-                                    <p class="text-muted">Choose a conversation from the list to view messages and respond to customers</p>
+                                    <i class="fa fa-inbox fa-3x mb-3"></i>
+                                    <h6>Select a conversation</h6>
+                                    <p class="small mb-0">Choose from the list to view and respond</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Message Input -->
+                        <!-- Message Input - Clean -->
                         <div class="card-footer" id="message-input-area" style="display: none;">
                             <div class="input-group">
-                                <input type="text" class="form-control" id="message-input"
-                                       placeholder="Type your message...">
-                                <select id="twitter-reply-mode" class="form-select" style="max-width: 160px; display: none; margin-left: 8px;">
+                                <input type="text" class="form-control" id="message-input" placeholder="Type a message...">
+                                <select id="twitter-reply-mode" class="form-select" style="max-width: 100px; display: none;">
                                     <option value="dm" selected>DM</option>
-                                    <option value="public">Public Reply</option>
+                                    <option value="public">Public</option>
                                 </select>
                                 <button class="btn btn-primary" type="button" id="send-btn">
-                                    <i class="fas fa-paper-plane"></i> Send
+                                    <i class="fa fa-paper-plane"></i>
                                 </button>
                             </div>
                         </div>
@@ -173,151 +162,8 @@ frappe.pages['inbox'].on_page_load = function(wrapper) {
         </div>
     `);
 
-    // Add custom CSS
-    if (!document.getElementById('inbox-css')) {
-        const style = document.createElement('style');
-        style.id = 'inbox-css';
-        style.textContent = `
-            .inbox-container {
-                padding: 20px;
-                background-color: #f8f9fa;
-                min-height: calc(100vh - 100px);
-            }
-
-            .platform-filters {
-                background: white;
-                padding: 15px;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-
-            .platform-filters .btn-group .btn {
-                border-radius: 20px !important;
-                margin-right: 5px;
-                font-size: 0.9em;
-            }
-
-            .platform-filters .btn.active {
-                background-color: #007bff;
-                color: white;
-                border-color: #007bff;
-            }
-
-            .page-header {
-                background: white;
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                margin-bottom: 20px;
-            }
-
-            .conversation-list {
-                height: 600px;
-                overflow-y: auto;
-                background: white;
-                display: block !important;
-                visibility: visible !important;
-            }
-
-            .conversation-item {
-                padding: 15px;
-                border-bottom: 1px solid #eee;
-                cursor: pointer;
-                transition: all 0.2s ease;
-            }
-
-            .conversation-item:hover {
-                background-color: #f8f9fa;
-            }
-
-            .conversation-item.active {
-                background-color: #e3f2fd;
-                border-left: 4px solid #2196f3;
-            }
-
-            .messages-container {
-                height: 500px;
-                overflow-y: auto;
-                background-color: #f8f9fa;
-                padding: 15px;
-                display: flex;
-                flex-direction: column;
-            }
-
-            .message {
-                margin-bottom: 15px;
-                max-width: 70%;
-                display: flex;
-                flex-direction: column;
-            }
-
-            .message.inbound {
-                align-self: flex-start;
-            }
-
-            .message.outbound {
-                align-self: flex-end;
-            }
-
-            .message.ai {
-                align-self: flex-end; /* Show AI replies on the right side */
-            }
-
-            .message-content {
-                padding: 12px 16px;
-                border-radius: 18px;
-                word-wrap: break-word;
-                line-height: 1.4;
-            }
-
-            .message.inbound .message-content {
-                background-color: #e9ecef;
-                color: #333;
-            }
-
-            .message.outbound .message-content {
-                background-color: #007bff;
-                color: white;
-            }
-
-            .message.ai .message-content {
-                background-color: #28a745;
-                color: white;
-                border: 2px solid #20c997;
-            }
-
-            .no-conversation {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                height: 100%;
-                flex-direction: column;
-                color: #6c757d;
-                text-align: center;
-            }
-
-            .platform-badge.WhatsApp { background-color: #25d366 !important; color: white; }
-            .platform-badge.Facebook { background-color: #1877f2 !important; color: white; }
-            .platform-badge.Instagram { background-color: #e4405f !important; color: white; }
-            .platform-badge.Telegram { background-color: #0088cc !important; color: white; }
-            .platform-badge.Twitter { background-color: #1DA1F2 !important; color: white; }
-            .platform-badge.LinkedIn { background-color: #0A66C2 !important; color: white; }
-
-
-            .platform-badge.Tawk\.to { background-color: #6c757d !important; color: white; }
-
-            .status-badge.New { background-color: #6c757d !important; color: white; }
-            .status-badge.AI.Responded { background-color: #28a745 !important; color: white; }
-            .status-badge.Agent.Assigned { background-color: #17a2b8 !important; color: white; }
-            .status-badge.In.Progress { background-color: #ffc107 !important; color: #000; }
-            .status-badge.Escalated { background-color: #dc3545 !important; color: white; }
-            .status-badge.Closed { background-color: #6c757d !important; color: white; }
-        `;
-        document.head.appendChild(style);
-        console.log('Custom CSS injected');
-    } else {
-        console.log('CSS already exists');
-    }
+    // Custom CSS is now in inbox.css - no inline styles needed for professional design
+    // The external stylesheet provides all styling with CSS variables for theming
 
     // Initialize the inbox functionality with a small delay to ensure DOM is ready
     setTimeout(() => {
@@ -356,14 +202,10 @@ class InboxManager {
         }
 
 
-        // Load demo data and conversations
-        this.loadDemoData();
-        console.log('Demo data loaded, conversations:', this.conversations.length);
+        // Initialize empty conversations and load from API
+        this.conversations = [];
 
-        // Render demo data immediately
-        this.renderConversations();
-
-        // Then try to load from API
+        // Load conversations from API
         this.loadConversations();
 
         // Set up periodic refresh with live message fetching
@@ -465,76 +307,6 @@ class InboxManager {
 
     }
 
-    loadDemoData() {
-        this.conversations = [
-            {
-                name: "conv-001",
-                customer_name: "Maria Santos",
-                customer_phone: "+260977123456",
-                platform: "WhatsApp",
-                status: "AI Responded",
-                priority: "Normal",
-                last_message_time: "2025-08-27 14:30:00",
-                last_message_preview: "Thank you for the information. I'll check on your pension payment status right away.",
-                unread_count: 0,
-                assigned_agent: null,
-                escalation_reason: null
-            },
-            {
-                name: "conv-002",
-                customer_name: "John Williams",
-                customer_phone: "+260966987654",
-                platform: "Facebook",
-                status: "Agent Assigned",
-                priority: "High",
-                last_message_time: "2025-08-27 15:45:00",
-                last_message_preview: "I need urgent help with my workers compensation claim. It's been pending for weeks.",
-                unread_count: 2,
-                assigned_agent: "sarah.johnson@wcfcb.com",
-                escalation_reason: null
-            },
-            {
-                name: "conv-003",
-                customer_name: "Sarah Mwanza",
-                customer_phone: "+260955123789",
-                platform: "Instagram",
-                status: "Escalated",
-                priority: "Urgent",
-                last_message_time: "2025-08-27 16:10:00",
-                last_message_preview: "This is unacceptable! I've been waiting for my pension for 3 months!",
-                unread_count: 1,
-                assigned_agent: "lisa.rodriguez@wcfcb.com",
-                escalation_reason: "urgent"
-            },
-            {
-                name: "conv-004",
-                customer_name: "Linda Martinez",
-                customer_phone: "+260977555666",
-                platform: "Telegram",
-                status: "New",
-                priority: "Normal",
-                last_message_time: "2025-08-27 16:15:00",
-                last_message_preview: "Hi, can you check the status of my workers compensation claim?",
-                unread_count: 1,
-                assigned_agent: null,
-                escalation_reason: null
-            },
-            {
-                name: "conv-005",
-                customer_name: "Ashley Wilson",
-                customer_phone: "+260966777888",
-                platform: "Tawk.to",
-                status: "New",
-                priority: "Normal",
-                last_message_time: "2025-08-27 12:40:00",
-                last_message_preview: "What time do you close today?",
-                unread_count: 1,
-                assigned_agent: null,
-                escalation_reason: null
-            }
-        ];
-    }
-
     loadConversations() {
         // Sync with DOM input and route to search only if non-empty
         const el = document.getElementById('conversation-search');
@@ -557,14 +329,12 @@ class InboxManager {
                     this.renderConversations();
                 },
                 error: (error) => {
-                    console.log('Error loading conversations, using demo data:', error);
-                    // Keep the demo data that was already loaded
+                    console.error('Error loading conversations:', error);
                     this.renderConversations();
                 }
             });
         } catch (error) {
-            console.log('Error calling API, using demo data:', error);
-            // Keep the demo data that was already loaded
+            console.error('Error calling API:', error);
             this.renderConversations();
         }
     }
@@ -664,7 +434,7 @@ class InboxManager {
                             <div class="mb-2">
                                 <span class="platform-badge badge ${conv.platform} me-1">${conv.platform}</span>
                                 <span class="status-badge badge ${conv.status.replace(' ', '.')}">${conv.status}</span>
-                                ${(tagHasSurvey || subjHasSurvey || statusHasSurvey) ? '<span class="badge bg-success ms-1"><i class="fas fa-poll me-1"></i>Survey</span>' : ''}
+                                ${(tagHasSurvey || subjHasSurvey || statusHasSurvey) ? '<span class="badge bg-success ms-1"><i class="fa fa-bar-chart me-1"></i>Survey</span>' : ''}
                                 ${conv.priority === 'Urgent' ? '<span class="badge bg-danger ms-1">🚨 URGENT</span>' : ''}
                                 ${conv.priority === 'High' ? '<span class="badge bg-warning ms-1">⚠️ HIGH</span>' : ''}
                             </div>
@@ -722,7 +492,7 @@ class InboxManager {
         $('#platform-badge').text(conversation.platform).attr('class', `platform-badge badge ${conversation.platform}`);
         $('#status-badge').text(conversation.status).attr('class', `status-badge badge ${conversation.status.replace(' ', '.')}`);
         const mode = conversation.ai_mode || 'Auto';
-        $('#ai-control-btn').html(`<i class=\"fas fa-robot\"></i> AI: ${mode}`);
+        $('#ai-control-btn').html(`<i class=\"fa fa-cog\"></i> AI: ${mode}`);
 
         // Reset survey badge; will be set during message render if applicable
         $('#survey-badge').hide();
@@ -863,7 +633,7 @@ class InboxManager {
                             const mode = r.message.mode;
                             const conv = this.conversations.find(c => c.name === this.currentConversation);
                             if (conv) conv.ai_mode = mode;
-                            $('#ai-control-btn').html(`<i class=\"fas fa-robot\"></i> AI: ${mode}`);
+                            $('#ai-control-btn').html(`<i class=\"fa fa-cog\"></i> AI: ${mode}`);
                             dialog.hide();
                             frappe.show_alert({message: `AI mode set to ${mode}`, indicator: 'green'});
                         } else {
@@ -1017,7 +787,7 @@ class InboxManager {
         // Show loading state
         $('#messages-container').html(`
             <div class="text-center p-4">
-                <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                <i class="fa fa-spinner fa-spin fa-2x mb-3"></i>
                 <p>Loading messages...</p>
             </div>
         `);
@@ -1040,7 +810,7 @@ class InboxManager {
                 } else {
                     $('#messages-container').html(`
                         <div class="text-center p-4 text-muted">
-                            <i class="fas fa-comments fa-3x mb-3"></i>
+                            <i class="fa fa-comments fa-3x mb-3"></i>
                             <h5>No messages yet</h5>
                             <p>Start the conversation by sending a message</p>
                         </div>
@@ -1051,7 +821,7 @@ class InboxManager {
                 console.error('Error loading messages:', error);
                 $('#messages-container').html(`
                     <div class="text-center p-4 text-danger">
-                        <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                        <i class="fa fa-exclamation-triangle fa-2x mb-3"></i>
                         <p>Error loading messages</p>
                     </div>
                 `);
@@ -1060,13 +830,18 @@ class InboxManager {
     }
 
     renderMessages() {
+        console.log('DEBUG: renderMessages called, messages count:', this.messages ? this.messages.length : 'undefined');
         const messagesContainer = document.getElementById('messages-container');
-        if (!messagesContainer) return;
+        if (!messagesContainer) {
+            console.error('DEBUG: messagesContainer not found!');
+            return;
+        }
 
-        if (this.messages.length === 0) {
+        if (!this.messages || this.messages.length === 0) {
+            console.log('DEBUG: No messages to render');
             messagesContainer.innerHTML = `
                 <div class="no-conversation text-center">
-                    <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                    <i class="fa fa-comments fa-3x text-muted mb-3"></i>
                     <h5 class="text-muted">No messages yet</h5>
                     <p class="text-muted">Start the conversation by sending a message</p>
                 </div>
@@ -1132,50 +907,35 @@ class InboxManager {
         }
 
 
+        console.log('DEBUG: Sorted messages count:', sorted.length);
+
         const html = sorted.map(msg => {
-            const isAI = msg.sender_name === 'Anna AI Assistant';
-            const isAgent = msg.agent_response;
-            const messageClass = msg.direction === 'Inbound' ? 'inbound' : (isAI ? 'ai' : 'outbound');
+            // Uniform outbound color - no distinction between AI/agent/manual
+            const messageClass = msg.direction === 'Inbound' ? 'inbound' : 'outbound';
 
             return `
                 ${ticketNumber ? `
                     <div class="ticket-number-display mb-2">
                         <small class="badge bg-secondary">
-                            <i class="fas fa-ticket-alt me-1"></i>
+                            <i class="fa fa-ticket me-1"></i>
                             Ticket: ${ticketNumber}
                         </small>
                     </div>
                 ` : ''}
                 <div class="message ${messageClass}">
                     <div class="message-content">
-                        ${isAI ? `<div class="mb-1 text-end"><small class="text-white-50"><i class="fas fa-robot me-1"></i>Anna AI Assistant</small></div>` : ''}
                         ${ (surveyActive && (msg.direction === 'Inbound' || msg.sender_name==='Survey Bot')) ? `<div class="mb-1"><small class="badge bg-success">Survey · ${surveyLabel || ''}</small></div>` : '' }
                         ${msg.message_content}
-                        ${msg.ai_confidence ? `
-                            <div class="ai-metrics mt-2 p-2 bg-light rounded">
-                                <small class="text-muted">
-                                    <i class="fas fa-robot me-1"></i>
-                                    AI Confidence: <strong>${(msg.ai_confidence * 100).toFixed(1)}%</strong>
-                                </small>
-                            </div>
-                        ` : ''}
-                        ${isAgent ? `
-                            <div class="agent-info mt-2 p-2 bg-success bg-opacity-10 rounded">
-                                <small class="text-success">
-                                    <i class="fas fa-user-tie me-1"></i>
-                                    Human Agent Response
-                                </small>
-                            </div>
-                        ` : ''}
                     </div>
                     <small class="text-muted d-block mt-1">
-                        ${isAI ? '<i class="fas fa-robot me-1"></i>' : isAgent ? '<i class="fas fa-user-tie me-1"></i>' : '<i class="fas fa-user me-1"></i>'}
+                        <i class="fa fa-user me-1"></i>
                         ${msg.sender_name || 'Unknown'} • ${this.formatTime(msg.timestamp)}
                     </small>
                 </div>
             `;
         }).join('');
 
+        console.log('DEBUG: Generated HTML length:', html.length);
         messagesContainer.innerHTML = html;
         this.scrollToBottom();
     }
@@ -1206,7 +966,7 @@ class InboxManager {
 
         // Show loading state
         const originalButtonText = sendButton.innerHTML;
-        sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+        sendButton.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Sending...';
         sendButton.disabled = true;
         input.disabled = true;
 
@@ -1482,7 +1242,7 @@ class InboxManager {
         let html = `
             <div class="card mb-3">
                 <div class="card-header">
-                    <h6 class="mb-0"><i class="fas fa-comments me-2"></i>Conversation Information</h6>
+                    <h6 class="mb-0"><i class="fa fa-comments me-2"></i>Conversation Information</h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -1507,7 +1267,7 @@ class InboxManager {
             html += `
                 <div class="card mb-3">
                     <div class="card-header bg-success text-white">
-                        <h6 class="mb-0"><i class="fas fa-database me-2"></i>CoreBusiness Customer Data</h6>
+                        <h6 class="mb-0"><i class="fa fa-database me-2"></i>CoreBusiness Customer Data</h6>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -1529,7 +1289,7 @@ class InboxManager {
         } else {
             html += `
                 <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i>
+                    <i class="fa fa-info-circle me-2"></i>
                     No CoreBusiness data available for this customer.
                 </div>
             `;

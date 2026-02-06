@@ -1,52 +1,185 @@
-/* WCFCB Unified Inbox - ERPNext Page Styles */
+/* CRM Unified Inbox - ERPNext Native Theme */
+/* Design System: Matches Frappe/ERPNext design patterns */
 
+:root {
+    /* ERPNext Core Colors - from espresso/_colors.scss */
+    --crm-primary: #0289f7;  /* ERPNext blue-500 */
+    --crm-primary-dark: #007be0;  /* ERPNext blue-600 */
+    --crm-primary-light: #70b6f0;  /* ERPNext blue-400 */
+    --crm-primary-bg: #edf6fd;  /* ERPNext blue-100 */
+    --crm-primary-subtle: #f7fbfd;  /* ERPNext blue-50 */
+
+    /* Background Colors - ERPNext native */
+    --crm-bg-primary: #f8f8f8;  /* gray-50 */
+    --crm-bg-secondary: #ffffff;
+    --crm-bg-tertiary: #f3f3f3;  /* gray-100 */
+
+    /* Text colors - Higher contrast for readability */
+    --crm-text-primary: #171717;  /* gray-900 */
+    --crm-text-secondary: #383838;  /* gray-800 */
+    --crm-text-muted: #7c7c7c;  /* gray-600 */
+
+    /* Borders - ERPNext native */
+    --crm-border-light: #ededed;  /* gray-200 */
+    --crm-border-medium: #e2e2e2;  /* gray-300 */
+    --crm-border-dark: #c7c7c7;  /* gray-400 */
+
+    /* Status colors - ERPNext native palette */
+    --crm-status-new: #525252;  /* gray-700 */
+    --crm-status-active: #0289f7;  /* blue-500 */
+    --crm-status-success: #30a66d;  /* green-600 */
+    --crm-status-warning: #e79913;  /* amber-500 */
+    --crm-status-danger: #e03636;  /* red-500 */
+    --crm-status-closed: #999999;  /* gray-500 */
+
+    /* Platform indicators - Brand colors with better saturation */
+    --crm-platform-whatsapp: #25D366;
+    --crm-platform-facebook: #1877F2;
+    --crm-platform-instagram: #E4405F;
+    --crm-platform-telegram: #0088cc;
+    --crm-platform-twitter: #1DA1F2;
+    --crm-platform-linkedin: #0A66C2;
+    --crm-platform-tawk: #03a84e;
+    --crm-platform-youtube: #FF0000;
+
+    /* Shadows - ERPNext native */
+    --crm-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --crm-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+    /* Spacing */
+    --crm-radius-sm: 4px;
+    --crm-radius-md: 6px;
+    --crm-radius-lg: 8px;
+}
+
+/* Base container */
+.inbox-container,
 .wcfcb-unified-inbox {
-    padding: 20px;
-    background-color: #f8f9fa;
+    padding: 16px 20px;
+    background-color: var(--crm-bg-primary);
     min-height: calc(100vh - 100px);
 }
 
+/* Page header - minimal status bar */
 .page-header {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
+    background: var(--crm-bg-secondary);
+    padding: 8px 16px;
+    border-radius: var(--crm-radius-lg);
+    box-shadow: var(--crm-shadow-sm);
+    margin-bottom: 12px;
+    border: 1px solid var(--crm-border-light);
 }
 
+/* Connection status - subtle indicator */
+#connection-status {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    font-weight: 500;
+    border-radius: var(--crm-radius-sm);
+}
+
+#connection-status.bg-success {
+    background-color: var(--crm-status-success) !important;
+}
+
+/* Platform filters - streamlined */
+.platform-filters {
+    background: var(--crm-bg-secondary);
+    padding: 12px 16px;
+    border-radius: var(--crm-radius-lg);
+    box-shadow: var(--crm-shadow-sm);
+    border: 1px solid var(--crm-border-light);
+    margin-bottom: 16px;
+}
+
+.platform-filters .btn-group .btn {
+    border-radius: var(--crm-radius-sm) !important;
+    margin-right: 4px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    padding: 6px 12px;
+    border: 1px solid var(--crm-border-medium);
+    background: var(--crm-bg-secondary);
+    color: var(--crm-text-secondary);
+    transition: all 0.15s ease;
+}
+
+.platform-filters .btn-group .btn:hover {
+    background: var(--crm-bg-tertiary);
+    border-color: var(--crm-border-medium);
+}
+
+.platform-filters .btn.active {
+    background-color: var(--crm-primary) !important;
+    color: white !important;
+    border-color: var(--crm-primary) !important;
+}
+
+/* Remove colorful button variants */
+.platform-filters .btn-outline-success,
+.platform-filters .btn-outline-primary,
+.platform-filters .btn-outline-danger,
+.platform-filters .btn-outline-info,
+.platform-filters .btn-outline-dark {
+    color: var(--crm-text-secondary) !important;
+    border-color: var(--crm-border-medium) !important;
+    background: var(--crm-bg-secondary) !important;
+}
+
+.platform-filters .btn-outline-success:hover,
+.platform-filters .btn-outline-primary:hover,
+.platform-filters .btn-outline-danger:hover,
+.platform-filters .btn-outline-info:hover,
+.platform-filters .btn-outline-dark:hover {
+    background: var(--crm-bg-tertiary) !important;
+}
+
+/* Conversation list */
 .conversation-list {
     height: 600px;
     overflow-y: auto;
-    background: white;
+    background: var(--crm-bg-secondary);
 }
 
 .conversation-item {
-    padding: 15px;
-    border-bottom: 1px solid #eee;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--crm-border-light);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.15s ease;
 }
 
 .conversation-item:hover {
-    background-color: #f8f9fa;
+    background-color: var(--crm-bg-tertiary);
 }
 
 .conversation-item.active {
-    background-color: #e3f2fd;
-    border-left: 4px solid #2196f3;
+    background-color: var(--crm-primary-bg);
+    border-left: 3px solid var(--crm-primary);
 }
 
+.conversation-item strong {
+    color: var(--crm-text-primary);
+    font-weight: 600;
+}
+
+.conversation-item .text-muted {
+    color: var(--crm-text-muted) !important;
+    font-size: 0.8125rem;
+}
+
+/* Messages container */
 .messages-container {
     height: 500px;
     overflow-y: auto;
-    background-color: #f8f9fa;
-    padding: 15px;
+    background-color: var(--crm-bg-tertiary);
+    padding: 16px;
     display: flex;
     flex-direction: column;
 }
 
+/* Message bubbles - clean, professional */
 .message {
-    margin-bottom: 15px;
+    margin-bottom: 12px;
     max-width: 70%;
     display: flex;
     flex-direction: column;
@@ -61,49 +194,59 @@
 }
 
 .message.ai {
-    align-self: flex-start;
+    align-self: flex-end;
 }
 
 .message-content {
-    padding: 12px 16px;
-    border-radius: 18px;
+    padding: 10px 14px;
+    border-radius: var(--crm-radius-lg);
     word-wrap: break-word;
-    line-height: 1.4;
+    line-height: 1.5;
+    font-size: 0.875rem;
 }
 
+/* Inbound - light gray, subtle */
 .message.inbound .message-content {
-    background-color: #e9ecef;
-    color: #333;
+    background-color: var(--crm-bg-secondary);
+    color: var(--crm-text-primary);
+    border: 1px solid var(--crm-border-light);
 }
 
+/* Outbound - ERPNext blue, professional */
 .message.outbound .message-content {
-    background-color: #007bff;
+    background-color: var(--crm-primary);
     color: white;
 }
 
+/* AI message - subtle differentiation */
 .message.ai .message-content {
-    background-color: #28a745;
+    background-color: #475569;
     color: white;
-    border: 2px solid #20c997;
+    border: none;
 }
 
 .message.sending {
-    opacity: 0.7;
+    opacity: 0.6;
 }
 
 .sending-indicator {
-    border-left: 3px solid #ffc107;
+    border-left: 2px solid var(--crm-status-warning);
 }
 
+/* AI metrics and agent info - subtle */
 .ai-metrics {
-    background-color: rgba(255, 255, 255, 0.9) !important;
-    border-radius: 6px;
-    font-size: 0.85em;
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    border-radius: var(--crm-radius-sm);
+    font-size: 0.75rem;
+    padding: 6px 8px !important;
+    border: 1px solid var(--crm-border-light);
 }
 
 .agent-info {
-    border-radius: 6px;
-    font-size: 0.85em;
+    border-radius: var(--crm-radius-sm);
+    font-size: 0.75rem;
+    background-color: rgba(16, 185, 129, 0.1) !important;
+    border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .no-conversation {
@@ -112,149 +255,297 @@
     justify-content: center;
     height: 100%;
     flex-direction: column;
-    color: #6c757d;
+    color: var(--crm-text-muted);
     text-align: center;
 }
 
-/* Platform badges */
+.no-conversation i {
+    color: var(--crm-border-medium);
+}
+
+/* Platform badges - muted, professional indicators */
 .platform-badge {
-    font-size: 0.75em;
-    padding: 4px 8px;
-    border-radius: 12px;
+    font-size: 0.6875rem;
+    padding: 3px 8px;
+    border-radius: var(--crm-radius-sm);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
 }
 
-.platform-badge.WhatsApp { 
-    background-color: #25d366 !important; 
-    color: white;
+.platform-badge.WhatsApp {
+    background-color: rgba(37, 211, 102, 0.15) !important;
+    color: #128C7E !important;
+    border: 1px solid rgba(37, 211, 102, 0.3);
 }
 
-.platform-badge.Facebook { 
-    background-color: #1877f2 !important; 
-    color: white;
+.platform-badge.Facebook {
+    background-color: rgba(24, 119, 242, 0.12) !important;
+    color: #1877F2 !important;
+    border: 1px solid rgba(24, 119, 242, 0.25);
 }
 
-.platform-badge.Instagram { 
-    background-color: #e4405f !important; 
-    color: white;
+.platform-badge.Instagram {
+    background-color: rgba(228, 64, 95, 0.12) !important;
+    color: #C13584 !important;
+    border: 1px solid rgba(228, 64, 95, 0.25);
 }
 
-.platform-badge.Telegram { 
-    background-color: #0088cc !important; 
-    color: white;
+.platform-badge.Telegram {
+    background-color: rgba(0, 136, 204, 0.12) !important;
+    color: #0088cc !important;
+    border: 1px solid rgba(0, 136, 204, 0.25);
 }
 
-.platform-badge.Tawk\.to { 
-    background-color: #6c757d !important; 
-    color: white;
+.platform-badge.Twitter {
+    background-color: rgba(29, 161, 242, 0.12) !important;
+    color: #1DA1F2 !important;
+    border: 1px solid rgba(29, 161, 242, 0.25);
 }
 
-/* Status badges */
+.platform-badge.LinkedIn {
+    background-color: rgba(10, 102, 194, 0.12) !important;
+    color: #0A66C2 !important;
+    border: 1px solid rgba(10, 102, 194, 0.25);
+}
+
+.platform-badge.Tawk\.to {
+    background-color: rgba(3, 168, 78, 0.12) !important;
+    color: #03a84e !important;
+    border: 1px solid rgba(3, 168, 78, 0.25);
+}
+
+.platform-badge.YouTube {
+    background-color: rgba(255, 0, 0, 0.1) !important;
+    color: #FF0000 !important;
+    border: 1px solid rgba(255, 0, 0, 0.25);
+}
+
+/* Status badges - consistent, muted */
 .status-badge {
-    font-size: 0.75em;
-    padding: 4px 8px;
-    border-radius: 12px;
+    font-size: 0.6875rem;
+    padding: 3px 8px;
+    border-radius: var(--crm-radius-sm);
+    font-weight: 500;
 }
 
-.status-badge.New { 
-    background-color: #6c757d !important; 
-    color: white;
+.status-badge.New {
+    background-color: rgba(100, 116, 139, 0.15) !important;
+    color: #475569 !important;
 }
 
-.status-badge.AI.Responded { 
-    background-color: #28a745 !important; 
-    color: white;
+.status-badge.AI\.Responded,
+.status-badge.AI.Responded {
+    background-color: rgba(16, 185, 129, 0.15) !important;
+    color: #047857 !important;
 }
 
-.status-badge.Agent.Assigned { 
-    background-color: #17a2b8 !important; 
-    color: white;
+.status-badge.Agent\.Assigned,
+.status-badge.Agent.Assigned {
+    background-color: rgba(14, 165, 233, 0.15) !important;
+    color: #0369a1 !important;
 }
 
-.status-badge.In.Progress { 
-    background-color: #ffc107 !important; 
-    color: #000;
+.status-badge.In\.Progress,
+.status-badge.In.Progress {
+    background-color: rgba(245, 158, 11, 0.15) !important;
+    color: #b45309 !important;
 }
 
-.status-badge.Escalated { 
-    background-color: #dc3545 !important; 
-    color: white;
+.status-badge.Escalated {
+    background-color: rgba(239, 68, 68, 0.15) !important;
+    color: #b91c1c !important;
 }
 
-.status-badge.Closed { 
-    background-color: #6c757d !important; 
-    color: white;
+.status-badge.Closed {
+    background-color: rgba(148, 163, 184, 0.15) !important;
+    color: #64748b !important;
 }
 
-/* Input area */
-.message-input-area {
-    background: white;
-    border-top: 1px solid #dee2e6;
-    padding: 15px;
+/* Input area - clean */
+.message-input-area,
+.card-footer {
+    background: var(--crm-bg-secondary);
+    border-top: 1px solid var(--crm-border-light);
+    padding: 12px 16px;
 }
 
-.message-input-area input:disabled {
-    background-color: #f8f9fa;
+.message-input-area input:disabled,
+#message-input:disabled {
+    background-color: var(--crm-bg-tertiary);
 }
 
-.message-input-area button:disabled {
-    opacity: 0.6;
+.message-input-area button:disabled,
+#send-btn:disabled {
+    opacity: 0.5;
 }
 
-/* Connection status */
-#connection-status {
-    font-size: 0.85em;
-    padding: 6px 12px;
+#message-input {
+    border: 1px solid var(--crm-border-medium);
+    border-radius: var(--crm-radius-md);
+    padding: 8px 12px;
+    font-size: 0.875rem;
 }
 
-/* Card styling */
+#message-input:focus {
+    border-color: var(--crm-primary);
+    box-shadow: 0 0 0 2px rgba(2, 137, 247, 0.15);
+    outline: none;
+}
+
+/* Card styling - minimal shadows */
 .card {
-    border: none;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    border-radius: 8px;
+    border: 1px solid var(--crm-border-light);
+    box-shadow: var(--crm-shadow-sm);
+    border-radius: var(--crm-radius-lg);
 }
 
 .card-header {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
+    background-color: var(--crm-bg-secondary);
+    border-bottom: 1px solid var(--crm-border-light);
     font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--crm-text-primary);
+    padding: 12px 16px;
+}
+
+/* Action buttons - Frappe native styling */
+.action-buttons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.action-buttons .btn {
+    background-color: var(--control-bg, #f3f3f3);
+    color: var(--text-color, #171717);
+    border: none;
+    border-radius: var(--border-radius, 6px);
+    padding: 6px 10px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 28px;
+    transition: background-color 0.15s ease;
+}
+
+.action-buttons .btn:hover {
+    background-color: var(--btn-default-hover-bg, #e2e2e2);
+    color: var(--text-color, #171717);
+}
+
+.action-buttons .btn:active {
+    background-color: var(--control-bg, #f3f3f3);
+    box-shadow: var(--focus-default, 0 0 0 2px rgba(0, 0, 0, 0.1));
+}
+
+.action-buttons .btn i {
+    font-size: 14px;
+    color: var(--text-muted, #7c7c7c);
+}
+
+.action-buttons .btn:hover i {
+    color: var(--crm-primary);
+}
+
+/* Icon button specific styling */
+.btn.icon-btn {
+    min-width: 28px;
+    padding: 0 6px;
+}
+
+/* Send button - Primary action */
+#send-btn {
+    background-color: var(--crm-primary) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: var(--border-radius, 6px) !important;
+    padding: 6px 12px;
+    font-weight: 500;
+}
+
+#send-btn:hover {
+    background-color: var(--crm-primary-dark) !important;
+}
+
+#send-btn i {
+    color: white !important;
+}
+
+.btn-outline-warning {
+    color: var(--crm-status-warning) !important;
+    border-color: var(--crm-status-warning) !important;
+}
+
+.btn-outline-warning:hover {
+    background-color: rgba(231, 153, 19, 0.1) !important;
+}
+
+.btn-outline-success {
+    color: var(--crm-status-success) !important;
+    border-color: var(--crm-status-success) !important;
+}
+
+.btn-outline-success:hover {
+    background-color: rgba(48, 166, 109, 0.1) !important;
+}
+
+.btn-outline-info {
+    color: var(--crm-primary) !important;
+    border-color: var(--crm-primary) !important;
+}
+
+.btn-outline-info:hover {
+    background-color: rgba(2, 137, 247, 0.1) !important;
+}
+
+.btn-outline-danger {
+    color: var(--crm-status-danger) !important;
+    border-color: var(--crm-status-danger) !important;
+}
+
+.btn-outline-danger:hover {
+    background-color: rgba(224, 54, 54, 0.1) !important;
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
+    .inbox-container,
     .wcfcb-unified-inbox {
-        padding: 10px;
+        padding: 12px;
     }
-    
+
     .conversation-list {
-        height: 300px;
+        height: 280px;
     }
-    
+
     .messages-container {
-        height: 400px;
+        height: 380px;
     }
-    
+
     .message {
         max-width: 85%;
     }
-    
+
     .page-header {
-        padding: 15px;
+        padding: 8px 12px;
     }
-    
-    .page-header .d-flex {
-        flex-direction: column;
-        align-items: flex-start !important;
+
+    .platform-filters .btn-group {
+        flex-wrap: wrap;
     }
-    
-    .page-header .btn-group {
-        margin-top: 10px;
+
+    .platform-filters .btn {
+        margin-bottom: 4px;
     }
 }
 
-/* Animation for loading states */
+/* Animation for loading states - subtle */
 @keyframes pulse {
     0% { opacity: 1; }
-    50% { opacity: 0.5; }
+    50% { opacity: 0.6; }
     100% { opacity: 1; }
 }
 
@@ -262,47 +553,103 @@
     animation: pulse 1.5s infinite;
 }
 
-/* Scrollbar styling */
+/* Scrollbar styling - subtle */
 .conversation-list::-webkit-scrollbar,
 .messages-container::-webkit-scrollbar {
-    width: 6px;
+    width: 5px;
 }
 
 .conversation-list::-webkit-scrollbar-track,
 .messages-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
+    background: var(--crm-bg-tertiary);
+    border-radius: 2px;
 }
 
 .conversation-list::-webkit-scrollbar-thumb,
 .messages-container::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
+    background: var(--crm-border-medium);
+    border-radius: 2px;
 }
 
 .conversation-list::-webkit-scrollbar-thumb:hover,
 .messages-container::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
+    background: var(--crm-text-muted);
 }
 
-/* Data source badge */
+/* Data source badge - subtle indicator */
 .data-source-badge {
-    font-size: 0.7em;
-    padding: 3px 6px;
-    border-radius: 10px;
+    font-size: 0.625rem;
+    padding: 2px 6px;
+    border-radius: var(--crm-radius-sm);
+    background-color: rgba(16, 185, 129, 0.15) !important;
+    color: #047857 !important;
 }
 
 /* Button group styling */
 .btn-group .btn {
-    font-size: 0.85em;
-    padding: 6px 12px;
+    font-size: 0.8125rem;
+    padding: 6px 10px;
 }
 
-/* Priority indicators */
+/* Priority indicators - professional */
 .badge.bg-danger {
-    animation: pulse 2s infinite;
+    background-color: rgba(239, 68, 68, 0.15) !important;
+    color: #b91c1c !important;
+    font-weight: 600;
 }
 
 .badge.bg-warning {
+    background-color: rgba(245, 158, 11, 0.15) !important;
+    color: #b45309 !important;
     font-weight: 600;
+}
+
+.badge.bg-success {
+    background-color: rgba(16, 185, 129, 0.15) !important;
+    color: #047857 !important;
+}
+
+.badge.bg-info {
+    background-color: rgba(14, 165, 233, 0.15) !important;
+    color: #0369a1 !important;
+}
+
+.badge.bg-secondary {
+    background-color: rgba(100, 116, 139, 0.15) !important;
+    color: #475569 !important;
+}
+
+.badge.bg-primary {
+    background-color: rgba(59, 130, 246, 0.15) !important;
+    color: #1d4ed8 !important;
+}
+
+/* Conversation count badge */
+#conversation-count {
+    background-color: var(--crm-primary) !important;
+    color: white !important;
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: var(--crm-radius-sm);
+}
+
+/* Search input styling */
+#conversation-search {
+    border: 1px solid var(--crm-border-medium);
+    border-radius: var(--crm-radius-sm);
+    font-size: 0.8125rem;
+    padding: 6px 10px;
+}
+
+#conversation-search:focus {
+    border-color: var(--crm-primary);
+    box-shadow: 0 0 0 2px rgba(2, 137, 247, 0.15);
+    outline: none;
+}
+
+/* Ticket badge */
+.ticket-number-display .badge {
+    background-color: rgba(100, 116, 139, 0.15) !important;
+    color: #475569 !important;
+    font-size: 0.6875rem;
 }

@@ -72,7 +72,18 @@
   "ussd_webhook_secret",
   "ussd_session_timeout_seconds",
   "ussd_default_menu",
-  "ussd_feedback_api_url"
+  "ussd_feedback_api_url",
+  "youtube_section",
+  "youtube_enabled",
+  "youtube_channel_id",
+  "youtube_api_key",
+  "column_break_youtube",
+  "youtube_client_id",
+  "youtube_client_secret",
+  "youtube_access_token",
+  "youtube_refresh_token",
+  "youtube_webhook_secret",
+  "youtube_api_version"
  ],
  "fields": [
   {
@@ -434,6 +445,68 @@
    "label": "USSD Feedback API URL",
    "default": "http://192.168.1.199:9000/api/v1/feedback",
    "description": "Optional polling endpoint for USSD feedback"
+  },
+  {
+   "fieldname": "youtube_section",
+   "fieldtype": "Section Break",
+   "label": "YouTube Integration"
+  },
+  {
+   "default": "0",
+   "fieldname": "youtube_enabled",
+   "fieldtype": "Check",
+   "label": "Enable YouTube"
+  },
+  {
+   "fieldname": "youtube_channel_id",
+   "fieldtype": "Data",
+   "label": "YouTube Channel ID",
+   "description": "Your YouTube channel ID (e.g., UCxxxxxxxxxx)"
+  },
+  {
+   "fieldname": "youtube_api_key",
+   "fieldtype": "Password",
+   "label": "YouTube API Key",
+   "description": "YouTube Data API v3 key for read operations"
+  },
+  {
+   "fieldname": "column_break_youtube",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "youtube_client_id",
+   "fieldtype": "Data",
+   "label": "YouTube OAuth Client ID",
+   "description": "OAuth 2.0 client ID for write operations"
+  },
+  {
+   "fieldname": "youtube_client_secret",
+   "fieldtype": "Password",
+   "label": "YouTube OAuth Client Secret"
+  },
+  {
+   "fieldname": "youtube_access_token",
+   "fieldtype": "Password",
+   "label": "YouTube Access Token",
+   "description": "OAuth 2.0 access token for authenticated API calls"
+  },
+  {
+   "fieldname": "youtube_refresh_token",
+   "fieldtype": "Password",
+   "label": "YouTube Refresh Token",
+   "description": "OAuth 2.0 refresh token for automatic token renewal"
+  },
+  {
+   "fieldname": "youtube_webhook_secret",
+   "fieldtype": "Password",
+   "label": "YouTube Webhook Secret",
+   "description": "Secret for verifying incoming webhook signatures"
+  },
+  {
+   "default": "v3",
+   "fieldname": "youtube_api_version",
+   "fieldtype": "Data",
+   "label": "YouTube API Version"
   }
  ],
  "index_web_pages_for_search": 1,

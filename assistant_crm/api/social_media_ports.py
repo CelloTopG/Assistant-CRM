@@ -2736,6 +2736,640 @@ class LinkedInIntegration(SocialMediaPlatform):
             return {"status": "error", "message": str(e)}
 
 
+class YouTubeIntegration(SocialMediaPlatform):
+    """YouTube Data API v3 integration for comments and live chat messages.
+
+    Supports:
+    - Processing incoming YouTube comments (via PubSubHubbub push notifications)
+    - Processing live chat messages
+    - Replying to comments via the YouTube Data API
+    - Community post comment handling
+
+    Flow: Webhook → Unified Inbox Conversation → Unified Inbox Message → AI Processing → Reply
+    """
+
+    def __init__(self):
+        super().__init__("YouTube")
+        # Diagnostics for last send attempt
+        self.last_request_payload = None
+        self.last_response_status = None
+        self.last_response_text = None
+        self.last_error = None
+
+    def get_platform_credentials(self) -> Dict[str, str]:
+        """Get YouTube credentials from Social Media Settings.
+
+        Required credentials:
+        - youtube_api_key: YouTube Data API key (for read operations)
+        - youtube_client_id: OAuth 2.0 client ID (for write operations like replying)
+        - youtube_client_secret: OAuth 2.0 client secret
+        - youtube_access_token: OAuth 2.0 access token (for authenticated requests)
+        - youtube_refresh_token: OAuth 2.0 refresh token
+        - youtube_channel_id: The channel ID to monitor
+        - youtube_webhook_secret: Secret for verifying webhook signatures
+        """
+        try:
+            settings = frappe.get_single("Social Media Settings")
+
+            def get_pwd(field: str) -> str:
+                """Safely retrieve password field."""
+                try:
+                    return settings.get_password(field) or ""
+                except Exception:
+                    return settings.get(field) or ""
+
+            return {
+                "api_key": settings.get("youtube_api_key") or "",
+                "client_id": settings.get("youtube_client_id") or "",
+                "client_secret": get_pwd("youtube_client_secret"),
+                "access_token": get_pwd("youtube_access_token"),
+                "refresh_token": get_pwd("youtube_refresh_token"),
+                "channel_id": settings.get("youtube_channel_id") or "",
+                "webhook_secret": get_pwd("youtube_webhook_secret"),
+                "api_version": settings.get("youtube_api_version") or "v3",
+            }
+        except Exception:
+            return {
+                "api_key": "",
+                "client_id": "",
+                "client_secret": "",
+                "access_token": "",
+                "refresh_token": "",
+                "channel_id": "",
+                "webhook_secret": "",
+                "api_version": "v3",
+            }
+
+    def check_configuration(self) -> bool:
+        """Check if YouTube is properly configured for receiving and sending messages."""
+        # For receiving: need at least api_key and channel_id
+        # For sending: need access_token (OAuth)
+        has_read = bool(self.credentials.get("api_key")) or bool(self.credentials.get("access_token"))
+        has_channel = bool(self.credentials.get("channel_id"))
+        return has_read and has_channel
+
+    def _refresh_access_token(self) -> Optional[str]:
+        """Refresh the OAuth 2.0 access token using the refresh token.
+        Returns the new access token or None on failure.
+        """
+        try:
+            refresh_token = self.credentials.get("refresh_token")
+            client_id = self.credentials.get("client_id")
+            client_secret = self.credentials.get("client_secret")
+
+            if not all([refresh_token, client_id, client_secret]):
+                return None
+
+            url = "https://oauth2.googleapis.com/token"
+            payload = {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "refresh_token": refresh_token,
+                "grant_type": "refresh_token",
+            }
+
+            resp = requests.post(url, data=payload, timeout=15)
+            if resp.status_code == 200:
+                data = resp.json()
+                new_token = data.get("access_token")
+                if new_token:
+                    # Persist the new token
+                    try:
+                        settings = frappe.get_single("Social Media Settings")
+                        settings.db_set("youtube_access_token", new_token)
+                        self.credentials["access_token"] = new_token
+                    except Exception:
+                        pass
+                    return new_token
+            return None
+        except Exception as e:
+            frappe.log_error(f"YouTube token refresh error: {str(e)}", "YouTube Integration")
+            return None
+
+    def send_message(self, recipient_id: str, message: str, message_type: str = "text") -> bool:
+        """Reply to a YouTube comment or live chat message.
+
+        For comments: recipient_id should be the comment ID (or video_id:comment_id format)
+        For live chat: recipient_id should be the liveChatId
+
+        Uses YouTube Data API v3:
+        - POST https://www.googleapis.com/youtube/v3/comments (for comment replies)
+        - POST https://www.googleapis.com/youtube/v3/liveChat/messages (for live chat)
+        """
+        # Reset diagnostics
+        self.last_request_payload = None
+        self.last_response_status = None
+        self.last_response_text = None
+        self.last_error = None
+
+        try:
+            access_token = (self.credentials.get("access_token") or "").strip()
+            if not access_token:
+                self.last_error = "Missing YouTube OAuth access token"
+                frappe.log_error("Missing YouTube access token for sending", "YouTube Integration")
+                return False
+
+            # Determine if this is a live chat or comment reply based on recipient_id format
+            is_live_chat = recipient_id.startswith("livechat:")
+
+            def do_send(token: str) -> requests.Response:
+                if is_live_chat:
+                    # Live chat message
+                    live_chat_id = recipient_id.replace("livechat:", "")
+                    url = "https://www.googleapis.com/youtube/v3/liveChat/messages"
+                    params = {"part": "snippet"}
+                    payload = {
+                        "snippet": {
+                            "liveChatId": live_chat_id,
+                            "type": "textMessageEvent",
+                            "textMessageDetails": {
+                                "messageText": message[:200]  # Live chat limit
+                            }
+                        }
+                    }
+                else:
+                    # Comment reply
+                    # recipient_id format: parentId (the comment being replied to)
+                    url = "https://www.googleapis.com/youtube/v3/comments"
+                    params = {"part": "snippet"}
+                    payload = {
+                        "snippet": {
+                            "parentId": recipient_id,
+                            "textOriginal": message[:10000]  # Comments can be longer
+                        }
+                    }
+
+                headers = {
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                }
+
+                self.last_request_payload = {"url": url, "params": params, "json": payload}
+                resp = requests.post(url, params=params, json=payload, headers=headers, timeout=30)
+                self.last_response_status = resp.status_code
+                self.last_response_text = resp.text
+                return resp
+
+            # First attempt
+            response = do_send(access_token)
+
+            if response.status_code == 200:
+                self.last_error = None
+                return True
+
+            # If 401/403, try token refresh
+            if response.status_code in (401, 403):
+                new_token = self._refresh_access_token()
+                if new_token:
+                    response = do_send(new_token)
+                    if response.status_code == 200:
+                        self.last_error = None
+                        return True
+
+            # Log failure
+            self.last_error = f"HTTP {response.status_code}: {response.text}"
+            frappe.log_error(
+                f"YouTube send failed: {response.status_code} - {response.text}",
+                "YouTube Integration"
+            )
+            return False
+
+        except Exception as e:
+            self.last_error = str(e)
+            frappe.log_error(f"YouTube send error: {str(e)}", "YouTube Integration")
+            return False
+
+    def process_webhook(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Process YouTube webhook notifications.
+
+        YouTube uses PubSubHubbub (WebSub) for push notifications about:
+        - New video uploads
+        - Video updates
+
+        For comments, we typically need to poll (using poll_youtube_comments),
+        but this method handles any webhook payloads including:
+        - Feed updates from PubSubHubbub
+        - Custom webhook integrations
+        - Make.com forwarded YouTube events
+        """
+        try:
+            processed = 0
+            conversation_id = None
+
+            # Handle different webhook payload formats
+
+            # Format 1: Make.com or custom integration with standardized structure
+            if webhook_data.get("platform") == "YouTube" or webhook_data.get("source") == "youtube":
+                return self._process_standard_webhook(webhook_data)
+
+            # Format 2: PubSubHubbub feed notification (Atom XML converted to dict)
+            if webhook_data.get("feed") or webhook_data.get("entry"):
+                return self._process_pubsubhubbub(webhook_data)
+
+            # Format 3: Direct comment/live chat event (from polling or custom integration)
+            if webhook_data.get("items") or webhook_data.get("comment") or webhook_data.get("liveChatMessage"):
+                return self._process_comment_event(webhook_data)
+
+            # Format 4: Wrapper format with 'data' key
+            if webhook_data.get("data"):
+                inner_data = webhook_data.get("data")
+                if isinstance(inner_data, dict):
+                    return self.process_webhook(inner_data)
+                elif isinstance(inner_data, list):
+                    for item in inner_data:
+                        result = self.process_webhook(item)
+                        if result.get("status") == "success":
+                            processed += 1
+                            conversation_id = conversation_id or result.get("conversation_id")
+
+            # If we couldn't process, log and return
+            if processed == 0:
+                frappe.log_error(
+                    f"Unrecognized YouTube webhook format: {json.dumps(webhook_data)[:500]}",
+                    "YouTube Integration"
+                )
+                return {"status": "skipped", "message": "Unrecognized webhook format"}
+
+            return {"status": "success", "processed": processed, "conversation_id": conversation_id}
+
+        except Exception as e:
+            frappe.log_error(f"YouTube webhook error: {str(e)}", "YouTube Integration")
+            return {"status": "error", "message": str(e)}
+
+    def _process_standard_webhook(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Process standardized webhook payload from Make.com or custom integration.
+
+        Expected format:
+        {
+            "platform": "YouTube",
+            "event_type": "comment" | "live_chat" | "community_post",
+            "video_id": "...",
+            "comment_id": "...",
+            "author_channel_id": "...",
+            "author_name": "...",
+            "text": "...",
+            "timestamp": "..." (ISO 8601 or Unix timestamp),
+            "parent_id": "..." (for replies),
+            "live_chat_id": "..." (for live chat)
+        }
+        """
+        try:
+            event_type = data.get("event_type") or data.get("type") or "comment"
+
+            # Extract message details
+            comment_id = data.get("comment_id") or data.get("id") or ""
+            video_id = data.get("video_id") or ""
+            author_channel_id = data.get("author_channel_id") or data.get("channelId") or ""
+            author_name = data.get("author_name") or data.get("authorDisplayName") or "YouTube User"
+            text = data.get("text") or data.get("textDisplay") or data.get("message") or "[YouTube message]"
+            parent_id = data.get("parent_id") or data.get("parentId") or ""
+            live_chat_id = data.get("live_chat_id") or data.get("liveChatId") or ""
+
+            # Timestamp handling
+            timestamp_str = now()
+            ts_raw = data.get("timestamp") or data.get("publishedAt") or data.get("created_at")
+            if ts_raw:
+                timestamp_str = self._parse_timestamp(ts_raw)
+
+            # For live chat, use live_chat_id as conversation key
+            # For comments, use author_channel_id as conversation key
+            if event_type == "live_chat" and live_chat_id:
+                conversation_key = f"{live_chat_id}:{author_channel_id}"
+                platform_specific_id = f"livechat:{live_chat_id}"
+            else:
+                conversation_key = author_channel_id or comment_id
+                platform_specific_id = author_channel_id
+
+            # Create or find conversation
+            platform_data = {
+                "conversation_id": platform_specific_id,
+                "customer_name": author_name,
+                "customer_platform_id": author_channel_id,
+                "initial_message": text,
+            }
+
+            conversation_id = self.create_unified_inbox_conversation(platform_data)
+
+            if not conversation_id:
+                return {"status": "error", "message": "Failed to create conversation"}
+
+            # Build message ID
+            message_id = comment_id or f"yt:{author_channel_id}:{timestamp_str}"
+
+            # Create message
+            message_data = {
+                "message_id": message_id,
+                "content": text,
+                "sender_name": author_name,
+                "sender_platform_id": author_channel_id,
+                "timestamp": timestamp_str,
+                "direction": "Inbound",
+                "message_type": "text",
+                "metadata": {
+                    "event_type": event_type,
+                    "video_id": video_id,
+                    "comment_id": comment_id,
+                    "parent_id": parent_id,
+                    "live_chat_id": live_chat_id,
+                    "raw": data,
+                },
+            }
+
+            self.create_unified_inbox_message(conversation_id, message_data)
+            self.update_conversation_timestamp(conversation_id, timestamp_str)
+
+            # Create/update Issue
+            try:
+                self.create_issue_for_new_conversation(
+                    conversation_id,
+                    f"[YouTube] {author_name}",
+                    text
+                )
+                self.update_issue_conversation_history(
+                    conversation_id, text, author_name, timestamp_str, direction="Inbound"
+                )
+            except Exception:
+                pass
+
+            return {"status": "success", "conversation_id": conversation_id, "message_id": message_id}
+
+        except Exception as e:
+            frappe.log_error(f"YouTube standard webhook error: {str(e)}", "YouTube Integration")
+            return {"status": "error", "message": str(e)}
+
+    def _process_pubsubhubbub(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Process PubSubHubbub/WebSub feed notification.
+
+        YouTube sends Atom feed updates for subscribed channels.
+        This typically notifies about new videos, not comments.
+        """
+        try:
+            entries = data.get("entry") or []
+            if isinstance(entries, dict):
+                entries = [entries]
+
+            processed = 0
+            for entry in entries:
+                video_id = entry.get("yt:videoId") or entry.get("videoId") or ""
+                channel_id = entry.get("yt:channelId") or entry.get("channelId") or ""
+                title = entry.get("title") or ""
+                author = (entry.get("author") or {}).get("name") or "YouTube Channel"
+                published = entry.get("published") or entry.get("updated") or ""
+
+                if video_id:
+                    # Log the new video notification
+                    frappe.log_error(
+                        f"YouTube PubSubHubbub: New video {video_id} from channel {channel_id}: {title}",
+                        "YouTube Integration Info"
+                    )
+                    # Could trigger comment polling for this video here
+                    processed += 1
+
+            return {"status": "success", "processed": processed, "type": "pubsubhubbub"}
+
+        except Exception as e:
+            frappe.log_error(f"YouTube PubSubHubbub error: {str(e)}", "YouTube Integration")
+            return {"status": "error", "message": str(e)}
+
+    def _process_comment_event(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Process a comment or live chat event from the YouTube Data API format."""
+        try:
+            items = data.get("items") or []
+            if data.get("comment"):
+                items = [data.get("comment")]
+            if data.get("liveChatMessage"):
+                items = [data.get("liveChatMessage")]
+
+            processed = 0
+            conversation_id = None
+
+            for item in items:
+                snippet = item.get("snippet") or item
+
+                # Determine if comment or live chat
+                is_live_chat = bool(snippet.get("liveChatId"))
+
+                if is_live_chat:
+                    author_channel_id = snippet.get("authorChannelId") or ""
+                    author_name = snippet.get("authorDisplayName") or "YouTube User"
+                    text = (snippet.get("textMessageDetails") or {}).get("messageText") or snippet.get("displayMessage") or ""
+                    message_id = item.get("id") or ""
+                    live_chat_id = snippet.get("liveChatId") or ""
+                    platform_specific_id = f"livechat:{live_chat_id}:{author_channel_id}"
+                else:
+                    # Comment
+                    author_channel_id = (snippet.get("authorChannelId") or {}).get("value") or snippet.get("authorChannelId") or ""
+                    author_name = snippet.get("authorDisplayName") or "YouTube User"
+                    text = snippet.get("textDisplay") or snippet.get("textOriginal") or ""
+                    message_id = item.get("id") or ""
+                    platform_specific_id = author_channel_id
+
+                # Timestamp
+                timestamp_str = self._parse_timestamp(snippet.get("publishedAt") or snippet.get("updatedAt") or "")
+
+                # Create conversation
+                platform_data = {
+                    "conversation_id": platform_specific_id,
+                    "customer_name": author_name,
+                    "customer_platform_id": author_channel_id,
+                    "initial_message": text,
+                }
+
+                conversation_id = self.create_unified_inbox_conversation(platform_data)
+                if not conversation_id:
+                    continue
+
+                # Create message
+                message_data = {
+                    "message_id": message_id,
+                    "content": text,
+                    "sender_name": author_name,
+                    "sender_platform_id": author_channel_id,
+                    "timestamp": timestamp_str,
+                    "direction": "Inbound",
+                    "message_type": "text",
+                    "metadata": {"raw": item},
+                }
+
+                if self.create_unified_inbox_message(conversation_id, message_data):
+                    self.update_conversation_timestamp(conversation_id, timestamp_str)
+                    processed += 1
+
+            return {"status": "success", "processed": processed, "conversation_id": conversation_id}
+
+        except Exception as e:
+            frappe.log_error(f"YouTube comment event error: {str(e)}", "YouTube Integration")
+            return {"status": "error", "message": str(e)}
+
+    def _parse_timestamp(self, ts_raw: Any) -> str:
+        """Parse various timestamp formats to Frappe datetime format."""
+        import datetime
+        try:
+            if not ts_raw:
+                return now()
+
+            if isinstance(ts_raw, (int, float)):
+                # Unix timestamp (seconds or milliseconds)
+                ts_int = int(ts_raw)
+                if ts_int > 10**12:
+                    ts_int //= 1000
+                dt = datetime.datetime.utcfromtimestamp(ts_int)
+                return dt.strftime('%Y-%m-%d %H:%M:%S')
+
+            if isinstance(ts_raw, str):
+                # ISO 8601 format (YouTube uses this)
+                # Example: "2025-01-15T10:30:00Z" or "2025-01-15T10:30:00.000Z"
+                ts_raw = ts_raw.replace("Z", "+00:00")
+                try:
+                    dt = datetime.datetime.fromisoformat(ts_raw)
+                    return dt.strftime('%Y-%m-%d %H:%M:%S')
+                except ValueError:
+                    pass
+
+                # Try other common formats
+                for fmt in [
+                    "%Y-%m-%dT%H:%M:%S.%f%z",
+                    "%Y-%m-%dT%H:%M:%S%z",
+                    "%Y-%m-%d %H:%M:%S",
+                ]:
+                    try:
+                        dt = datetime.datetime.strptime(ts_raw, fmt)
+                        return dt.strftime('%Y-%m-%d %H:%M:%S')
+                    except ValueError:
+                        continue
+
+            return now()
+        except Exception:
+            return now()
+
+
+@frappe.whitelist()
+def poll_youtube_comments(video_id: str = None, channel_id: str = None) -> Dict[str, Any]:
+    """Poll YouTube comments for a specific video or channel.
+
+    Uses YouTube Data API v3 to fetch comments and ingest into Unified Inbox.
+    Safe to run repeatedly; relies on comment ID de-duplication.
+
+    Args:
+        video_id: Specific video ID to poll comments for
+        channel_id: Channel ID to poll all recent video comments (if video_id not provided)
+    """
+    try:
+        integ = YouTubeIntegration()
+
+        api_key = (integ.credentials.get("api_key") or "").strip()
+        access_token = (integ.credentials.get("access_token") or "").strip()
+
+        if not (api_key or access_token):
+            return {"status": "skipped", "reason": "YouTube not configured"}
+
+        channel_id = channel_id or integ.credentials.get("channel_id")
+
+        imported = {"comments": 0}
+
+        # Use API key for read-only requests, access token if available
+        headers = {}
+        params = {"key": api_key} if api_key else {}
+        if access_token:
+            headers["Authorization"] = f"Bearer {access_token}"
+
+        # If video_id provided, fetch comments for that video
+        if video_id:
+            video_ids = [video_id]
+        elif channel_id:
+            # Fetch recent videos from channel
+            try:
+                url = "https://www.googleapis.com/youtube/v3/search"
+                search_params = {
+                    **params,
+                    "part": "id",
+                    "channelId": channel_id,
+                    "maxResults": 10,
+                    "order": "date",
+                    "type": "video",
+                }
+                resp = requests.get(url, params=search_params, headers=headers, timeout=15)
+                if resp.status_code == 200:
+                    items = (resp.json() or {}).get("items") or []
+                    video_ids = [item.get("id", {}).get("videoId") for item in items if item.get("id", {}).get("videoId")]
+                else:
+                    video_ids = []
+            except Exception as e:
+                frappe.log_error(f"YouTube video search error: {str(e)}", "YouTube Polling")
+                video_ids = []
+        else:
+            return {"status": "skipped", "reason": "No video_id or channel_id provided"}
+
+        # Fetch comments for each video
+        for vid in video_ids:
+            try:
+                url = "https://www.googleapis.com/youtube/v3/commentThreads"
+                comment_params = {
+                    **params,
+                    "part": "snippet,replies",
+                    "videoId": vid,
+                    "maxResults": 50,
+                    "order": "time",
+                }
+                resp = requests.get(url, params=comment_params, headers=headers, timeout=15)
+                if resp.status_code != 200:
+                    continue
+
+                items = (resp.json() or {}).get("items") or []
+                for item in items:
+                    try:
+                        snippet = (item.get("snippet") or {}).get("topLevelComment", {}).get("snippet") or {}
+                        comment_id = item.get("id") or ""
+                        author_channel_id = (snippet.get("authorChannelId") or {}).get("value") or ""
+                        author_name = snippet.get("authorDisplayName") or "YouTube User"
+                        text = snippet.get("textDisplay") or snippet.get("textOriginal") or ""
+                        published_at = snippet.get("publishedAt") or ""
+
+                        if not (author_channel_id and text):
+                            continue
+
+                        # Create conversation and message
+                        platform_data = {
+                            "conversation_id": author_channel_id,
+                            "customer_name": author_name,
+                            "customer_platform_id": author_channel_id,
+                            "initial_message": text,
+                        }
+
+                        cv = integ.create_unified_inbox_conversation(platform_data)
+                        if not cv:
+                            continue
+
+                        ts_str = integ._parse_timestamp(published_at)
+                        message_data = {
+                            "message_id": comment_id,
+                            "content": text,
+                            "sender_name": author_name,
+                            "sender_platform_id": author_channel_id,
+                            "timestamp": ts_str,
+                            "direction": "Inbound",
+                            "message_type": "text",
+                            "metadata": {"video_id": vid, "raw": item},
+                        }
+
+                        if integ.create_unified_inbox_message(cv, message_data):
+                            integ.update_conversation_timestamp(cv, ts_str)
+                            imported["comments"] += 1
+
+                    except Exception:
+                        continue
+
+            except Exception as e:
+                frappe.log_error(f"YouTube comment fetch error for {vid}: {str(e)}", "YouTube Polling")
+                continue
+
+        return {"status": "success", "imported": imported}
+
+    except Exception as e:
+        frappe.log_error(f"YouTube polling fatal error: {str(e)}", "YouTube Polling")
+        return {"status": "error", "message": str(e)}
+
+
 # Platform factory for easy instantiation
 
 # --- Scheduled polling for Twitter (mentions + DMs) ---
@@ -2913,6 +3547,7 @@ def get_platform_integration(platform_name: str) -> Optional[SocialMediaPlatform
         "Twitter": TwitterIntegration,
         "LinkedIn": LinkedInIntegration,
         "USSD": USSDIntegration,
+        "YouTube": YouTubeIntegration,
     }
 
     platform_class = platforms.get(platform_name)
