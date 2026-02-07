@@ -21,8 +21,7 @@ app_include_css = [
     "/assets/assistant_crm/css/chat_bubble.css"
 ]
 app_include_js = [
-    "/assets/assistant_crm/js/chat_bubble.js",
-    "/assets/assistant_crm/js/employer_rename.js"
+    "/assets/assistant_crm/js/chat_bubble.js"
 ]
 
 # Also include in web pages
