@@ -47,6 +47,8 @@
 
     if (!token) {
       showMessage('Missing token. Please use the survey link provided.', 'error');
+      $btn.style.display = 'none';
+      document.getElementById('desc').style.display = 'none';
       return;
     }
 
@@ -84,11 +86,16 @@
       .then(function(r) {
         if (!r || !r.message) {
           showMessage('Failed to load survey. Please try again later.', 'error');
+          $btn.style.display = 'none';
           return;
         }
         const res = r.message;
         if (!res.success) {
           showMessage(res.message || 'Invalid survey link.', 'error');
+          // Hide submit button when survey is closed/completed or invalid
+          $btn.style.display = 'none';
+          // Update description to indicate survey is not available
+          document.getElementById('desc').style.display = 'none';
           return;
         }
         document.getElementById('title').textContent = res.campaign_label || 'Survey';
@@ -135,6 +142,7 @@
       })
       .catch(function() {
         showMessage('Failed to load survey. Please try again later.', 'error');
+        $btn.style.display = 'none';
       });
 
     $btn.addEventListener('click', function() {

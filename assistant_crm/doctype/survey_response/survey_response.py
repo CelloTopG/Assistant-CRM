@@ -158,7 +158,9 @@ def submit_survey_response(token=None, answers=None, response_id=None):
 			return {'success': False, 'message': 'Invalid or expired link'}
 		response = frappe.get_doc('Survey Response', row.name)
 		if response.status == 'Completed':
-			return {'success': False, 'message': 'Survey already completed'}
+			return {'success': False, 'message': 'This survey has been completed. Thank you for your interest.', 'survey_closed': True}
+		if response.status == 'Closed':
+			return {'success': False, 'message': 'This survey has been closed and is no longer accepting responses.', 'survey_closed': True}
 		# Update response
 		response.answers = json.dumps(answers) if isinstance(answers, (list, dict)) else answers
 		response.status = 'Completed'
@@ -202,7 +204,9 @@ def get_survey_form(token: str = None):
 				pass
 			return {'success': False, 'message': 'Invalid or expired link'}
 		if row.status == 'Completed':
-			return {'success': False, 'message': 'This survey is already completed'}
+			return {'success': False, 'message': 'This survey has been completed. Thank you for your interest.', 'survey_closed': True}
+		if row.status == 'Closed':
+			return {'success': False, 'message': 'This survey has been closed and is no longer accepting responses.', 'survey_closed': True}
 		camp = frappe.get_doc('Survey Campaign', row.campaign)
 		# Gate access when campaign is not active or outside the date range
 		now_dt = frappe.utils.now_datetime()

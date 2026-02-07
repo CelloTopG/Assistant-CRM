@@ -18,17 +18,24 @@ frappe.ui.form.on('Survey Campaign', {
       frm.add_custom_button(__('Preview Recipients'), () => {
         show_preview_dialog(frm);
       });
-      
+
       // Validate Filters Button
       frm.add_custom_button(__('Validate Filters'), async () => {
         await validate_all_filters(frm);
       }, __('Actions'));
-      
+
       // Set filter type options for the grid
       set_filter_type_options_for_grid(frm);
     }
+
+    // Close Survey button - show for submitted campaigns that are not already completed/cancelled
+    if (frm.doc.docstatus === 1 && !['Completed', 'Cancelled'].includes(frm.doc.status)) {
+      frm.add_custom_button(__('Close Survey'), () => {
+        show_close_survey_dialog(frm);
+      }, __('Actions'));
+    }
   },
-  
+
   onload(frm) {
     // Initialize when form loads
     if (frm.doc.docstatus === 0) {
@@ -36,6 +43,41 @@ frappe.ui.form.on('Survey Campaign', {
     }
   }
 });
+
+// ===================================================================
+// CLOSE SURVEY DIALOG
+// ===================================================================
+
+function show_close_survey_dialog(frm) {
+  frappe.confirm(
+    __('Are you sure you want to close this survey? This will invalidate all pending survey links and recipients will no longer be able to respond.'),
+    () => {
+      // On confirm
+      frappe.call({
+        method: 'assistant_crm.assistant_crm.doctype.survey_campaign.survey_campaign.close_survey',
+        args: {
+          campaign_name: frm.doc.name
+        },
+        freeze: true,
+        freeze_message: __('Closing survey...'),
+        callback: (r) => {
+          if (r.message && r.message.success) {
+            frappe.show_alert({
+              message: r.message.message,
+              indicator: 'green'
+            }, 5);
+            frm.reload_doc();
+          } else {
+            frappe.show_alert({
+              message: __('Failed to close survey: ') + (r.message?.error || 'Unknown error'),
+              indicator: 'red'
+            }, 5);
+          }
+        }
+      });
+    }
+  );
+}
 
 // ===================================================================
 // CHILD TABLE EVENTS
@@ -104,98 +146,101 @@ function show_preview_dialog(frm) {
   const d = new frappe.ui.Dialog({
     title: __('Preview Recipients'),
     fields: [
-      { 
-        label: __('Sample Size'), 
-        fieldname: 'limit', 
-        fieldtype: 'Int', 
-        default: 20, 
-        reqd: 1, 
-        description: __('Number of recipients to list (preview only)') 
+      {
+        label: __('Sample Size'),
+        fieldname: 'limit',
+        fieldtype: 'Int',
+        default: 20,
+        reqd: 1,
+        description: __('Number of recipients to preview')
+      },
+      {
+        fieldname: 'results_section',
+        fieldtype: 'Section Break'
+      },
+      {
+        fieldname: 'results_html',
+        fieldtype: 'HTML'
       }
     ],
     primary_action_label: __('Run Preview'),
     primary_action: (values) => {
-      d.set_message(__('Running preview...'));
-      
+      d.fields_dict.results_html.$wrapper.html(`
+        <div style="text-align: center; padding: 20px; color: #888;">
+          <i class="fa fa-spinner fa-spin"></i> ${__('Loading...')}
+        </div>
+      `);
+
       frappe.call({
         method: 'assistant_crm.assistant_crm.doctype.survey_campaign.survey_campaign.preview_recipients_from_doc',
-        args: { 
-          doc: frm.doc, 
-          limit: values.limit || 20 
+        args: {
+          doc: frm.doc,
+          limit: values.limit || 20
         },
         callback: (r) => {
           display_preview_results(d, r);
         },
         error: (err) => {
-          d.set_message(`<span class="text-danger">${__('Failed to run preview')}</span>`);
+          d.fields_dict.results_html.$wrapper.html(`
+            <div style="padding: 15px; color: #e74c3c;">
+              <i class="fa fa-exclamation-circle"></i> ${__('Failed to run preview')}
+            </div>
+          `);
           console.error('Preview error:', err);
         }
       });
     }
   });
-  
+
   d.show();
 }
 
 function display_preview_results(dialog, response) {
   const res = (response && response.message) || {};
   const count = res.count || 0;
-  const safe_max = res.safe_max_target || 100;
-  const channels = res.active_channels || [];
-  const lines = [];
-  
-  lines.push(`<b>${__('Targeted')}:</b> ${count}`);
-  lines.push(`<b>${__('Active Channels')}:</b> ${channels.join(', ') || __('None')}`);
-  
-  // Display warnings
-  if (Array.isArray(res.warnings) && res.warnings.length) {
-    lines.push(`<br/><span class="text-warning"><b>${__('Warnings')}:</b></span>`);
-    res.warnings.forEach(w => {
-      lines.push(`<span class="text-warning">⚠ ${frappe.utils.escape_html(w)}</span>`);
-    });
-  }
-  
-  // Safety threshold warning
-  if (count > safe_max) {
-    lines.push(`<br/><span class="text-danger"><b>${__('Warning')}:</b> Count exceeds safety threshold of ${safe_max}. Submission will be blocked.</span>`);
-  }
-  
-  // Display sample recipients
   const recs = res.recipients || [];
+
+  let html = '';
+
   if (recs.length) {
-    lines.push('<hr/>');
-    lines.push(`<b>${__('Sample Recipients')}:</b>`);
-    lines.push('<table class="table table-bordered table-sm" style="margin-top: 10px;">');
-    lines.push(`<thead><tr><th>${__('Name')}</th><th>${__('Contact Info')}</th><th>${__('Ready Status')}</th></tr></thead><tbody>`);
-    
-    recs.forEach(r => {
-      const name_display = frappe.utils.escape_html([r.first_name, r.last_name].filter(Boolean).join(' ') || r.name);
-      
-      // Build contact info
-      const contact_bits = [];
-      if (r.email_id) contact_bits.push(`📧 ${frappe.utils.escape_html(r.email_id)}`);
-      if (r.mobile_no) contact_bits.push(`📱 ${frappe.utils.escape_html(r.mobile_no)}`);
-      if (r.telegram_chat_id) contact_bits.push(`✈️ ${frappe.utils.escape_html(r.telegram_chat_id)}`);
-      if (r.facebook_psid) contact_bits.push(`📘 ${frappe.utils.escape_html(r.facebook_psid)}`);
-      if (r.instagram_user_id) contact_bits.push(`📷 ${frappe.utils.escape_html(r.instagram_user_id)}`);
-      
-      // Build ready status
-      const ready = r.ready || {};
-      const ready_badges = channels.map(ch => {
-        const is_ready = ready[ch];
-        const color = is_ready ? 'green' : 'red';
-        return `<span class="badge" style="background-color: ${color}; color: white; margin-right: 3px;">${ch}: ${is_ready ? '✓' : '✗'}</span>`;
-      }).join('');
-      
-      lines.push(`<tr><td>${name_display}</td><td>${contact_bits.join('<br/>') || '-'}</td><td>${ready_badges || '-'}</td></tr>`);
+    // Header with count
+    html += `
+      <div style="padding: 15px 0; border-bottom: 1px solid #eee; margin-bottom: 10px;">
+        <span style="font-size: 24px; font-weight: 600; color: #333;">${count}</span>
+        <span style="color: #666; margin-left: 8px;">${count === 1 ? __('recipient') : __('recipients')}</span>
+      </div>
+    `;
+
+    // List of names
+    html += `<div style="max-height: 300px; overflow-y: auto;">`;
+    recs.forEach((r, idx) => {
+      const name = [r.first_name, r.last_name].filter(Boolean).join(' ') || r.name || 'Unknown';
+      html += `
+        <div style="padding: 8px 0; border-bottom: 1px solid #f5f5f5; color: #333;">
+          ${frappe.utils.escape_html(name)}
+        </div>
+      `;
     });
-    
-    lines.push('</tbody></table>');
+    html += `</div>`;
+
+    // Show "and X more" if truncated
+    if (count > recs.length) {
+      html += `
+        <div style="padding: 10px 0; color: #888; font-size: 13px; text-align: center;">
+          ${__('and')} ${count - recs.length} ${__('more')}...
+        </div>
+      `;
+    }
   } else {
-    lines.push(`<br/><span class="text-muted">${__('No recipients found')}</span>`);
+    html = `
+      <div style="padding: 30px; text-align: center; color: #888;">
+        <i class="fa fa-users" style="font-size: 32px; margin-bottom: 10px; display: block;"></i>
+        ${__('No recipients found')}
+      </div>
+    `;
   }
-  
-  dialog.set_message(lines.join(''));
+
+  dialog.fields_dict.results_html.$wrapper.html(html);
 }
 
 // ===================================================================

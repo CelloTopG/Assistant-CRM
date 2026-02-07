@@ -348,12 +348,12 @@ def calculate_response_trends(responses):
 	# Group responses by date
 	from collections import defaultdict
 	daily_responses = defaultdict(int)
-	
+
 	for response in responses:
 		if response.get('response_time'):
 			date = frappe.utils.getdate(response['response_time'])
 			daily_responses[str(date)] += 1
-	
+
 	# Convert to list format
 	trends = []
 	for date, count in sorted(daily_responses.items()):
@@ -361,5 +361,61 @@ def calculate_response_trends(responses):
 			'date': date,
 			'responses': count
 		})
-	
+
 	return trends
+
+
+@frappe.whitelist()
+def close_survey(campaign_name):
+	"""Manually close a survey campaign and invalidate all pending survey links.
+
+	This will:
+	1. Update the campaign status to 'Completed'
+	2. Mark all 'Sent' survey responses as 'Closed' (invalidating their links)
+
+	Args:
+		campaign_name: The name of the Survey Campaign to close
+
+	Returns:
+		dict with success status and counts
+	"""
+	try:
+		# Check permissions
+		if not frappe.has_permission('Survey Campaign', 'write', campaign_name):
+			frappe.throw('You do not have permission to close this survey')
+
+		# Get the campaign
+		campaign = frappe.get_doc('Survey Campaign', campaign_name)
+
+		# Update campaign status to Completed
+		frappe.db.set_value('Survey Campaign', campaign_name, 'status', 'Completed')
+
+		# Find all pending (Sent) survey responses for this campaign and mark them as Closed
+		pending_responses = frappe.get_all(
+			'Survey Response',
+			filters={
+				'campaign': campaign_name,
+				'status': 'Sent'
+			},
+			pluck='name'
+		)
+
+		closed_count = 0
+		for response_name in pending_responses:
+			frappe.db.set_value('Survey Response', response_name, 'status', 'Closed')
+			closed_count += 1
+
+		frappe.db.commit()
+
+		return {
+			'success': True,
+			'message': f'Survey closed successfully. {closed_count} pending response(s) invalidated.',
+			'closed_count': closed_count
+		}
+
+	except Exception as e:
+		frappe.log_error(f"Error closing survey {campaign_name}: {str(e)}")
+		return {
+			'success': False,
+			'error': str(e)
+		}

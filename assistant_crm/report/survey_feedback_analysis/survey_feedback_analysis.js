@@ -17,26 +17,21 @@ frappe.query_reports["Survey Feedback Analysis"] = {
             on_change: function() {
                 let period_type = frappe.query_report.get_filter_value("period_type");
                 if (period_type === "Monthly") {
-                    // Previous month
+                    // Current month (to show recent data)
                     let now = frappe.datetime.get_today();
                     let first_this_month = frappe.datetime.month_start(now);
-                    let last_prev = frappe.datetime.add_days(first_this_month, -1);
-                    let first_prev = frappe.datetime.month_start(last_prev);
-                    frappe.query_report.set_filter_value("date_from", first_prev);
-                    frappe.query_report.set_filter_value("date_to", last_prev);
+                    frappe.query_report.set_filter_value("date_from", first_this_month);
+                    frappe.query_report.set_filter_value("date_to", now);
                 } else if (period_type === "Quarterly") {
-                    // Previous quarter
+                    // Current quarter
                     let now = frappe.datetime.get_today();
                     let m = parseInt(now.split("-")[1], 10);
                     let y = parseInt(now.split("-")[0], 10);
                     let q = Math.floor((m - 1) / 3);
-                    let prev_q = (q + 3) % 4;
-                    let year = q > 0 ? y : y - 1;
-                    let start_month = prev_q * 3 + 1;
-                    let start = `${year}-${('0' + start_month).slice(-2)}-01`;
-                    let end = frappe.datetime.add_days(frappe.datetime.add_months(start, 3), -1);
+                    let start_month = q * 3 + 1;
+                    let start = `${y}-${('0' + start_month).slice(-2)}-01`;
                     frappe.query_report.set_filter_value("date_from", start);
-                    frappe.query_report.set_filter_value("date_to", end);
+                    frappe.query_report.set_filter_value("date_to", now);
                 }
             }
         },
@@ -44,7 +39,7 @@ frappe.query_reports["Survey Feedback Analysis"] = {
             fieldname: "date_from",
             label: __("From Date"),
             fieldtype: "Date",
-            default: frappe.datetime.add_days(frappe.datetime.month_start(), -1),
+            default: frappe.datetime.month_start(),
             reqd: 1
         },
         {
@@ -64,7 +59,7 @@ frappe.query_reports["Survey Feedback Analysis"] = {
             fieldname: "status",
             label: __("Status"),
             fieldtype: "Select",
-            options: "\nSent\nCompleted\nPartial\nBounced"
+            options: "\nSent\nCompleted\nPartial\nBounced\nClosed"
         }
     ],
 
@@ -79,7 +74,7 @@ frappe.query_reports["Survey Feedback Analysis"] = {
             show_sentiment_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("Channel Interactions"), function() {
+        report.page.add_inner_button(__("Channel Distribution"), function() {
             show_channel_chart(report);
         }, __("Charts"));
 
@@ -187,7 +182,7 @@ function show_channel_chart(report) {
         args: { filters: JSON.stringify(report.get_filter_values()) },
         callback: function(r) {
             if (r && r.message) {
-                show_chart_dialog(__("Channel Interactions"), r.message);
+                show_chart_dialog(__("Survey Channel Distribution"), r.message);
             }
         }
     });

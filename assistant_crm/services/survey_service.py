@@ -685,9 +685,11 @@ class SurveyService:
         # Apply beneficiary filtering using ERPNext Contact/Customer (type Individual)
         # Uses CoreBusiness first, then falls back to native ERPNext doctypes
         beneficiary_contacts = set()
+        beneficiary_filter_applied = False
         if beneficiary_filters:
             for bf in beneficiary_filters:
                 if bf['field'] and bf['operator'] and bf['value']:
+                    beneficiary_filter_applied = True
                     try:
                         # Get beneficiary contacts - tries CoreBusiness first, then ERPNext fallback
                         bf_result = self._get_beneficiary_contacts_from_corebusiness(
@@ -697,7 +699,11 @@ class SurveyService:
                     except Exception:
                         pass
 
-            # If beneficiary filters were applied and we have results, add condition
+            # If beneficiary filters were applied but found no matches, return empty
+            if beneficiary_filter_applied and not beneficiary_contacts:
+                return []
+
+            # Add condition for matching contacts
             if beneficiary_contacts:
                 placeholders = ', '.join(['%s'] * len(beneficiary_contacts))
                 conditions.append(f"`tabContact`.name IN ({placeholders})")
@@ -706,9 +712,11 @@ class SurveyService:
         # Apply employer filtering using ERPNext Customer (type Company)
         # Uses CoreBusiness first, then falls back to native ERPNext doctypes
         employer_contacts = set()
+        employer_filter_applied = False
         if employer_filters:
             for ef in employer_filters:
                 if ef['field'] and ef['operator'] and ef['value']:
+                    employer_filter_applied = True
                     try:
                         # Get employer contacts - tries CoreBusiness first, then ERPNext fallback
                         ef_result = self._get_employer_contacts_from_corebusiness(
@@ -718,11 +726,24 @@ class SurveyService:
                     except Exception:
                         pass
 
-            # If employer filters were applied and we have results, add condition
+            # If employer filters were applied but found no matches, return empty
+            if employer_filter_applied and not employer_contacts:
+                return []
+
+            # Add condition for matching contacts
             if employer_contacts:
                 placeholders = ', '.join(['%s'] * len(employer_contacts))
                 conditions.append(f"`tabContact`.name IN ({placeholders})")
                 values.extend(list(employer_contacts))
+
+        # If no filters were applied at all, return empty list - require explicit targeting
+        has_any_filters = bool(
+            conditions or
+            beneficiary_filter_applied or
+            employer_filter_applied
+        )
+        if not has_any_filters:
+            return []
 
         # Build final queries (primary-only first), then fallback to all contacts
         query_primary = base_query_primary + (f" AND {' AND '.join(conditions)}" if conditions else '')
