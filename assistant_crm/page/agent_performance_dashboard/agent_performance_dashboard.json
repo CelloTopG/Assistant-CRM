@@ -1,0 +1,36 @@
+{
+ "content": null,
+ "creation": "2026-02-07 10:00:00",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2026-02-07 10:00:00",
+ "modified_by": "Administrator",
+ "module": "Assistant CRM",
+ "name": "agent-performance-dashboard",
+ "owner": "Administrator",
+ "page_name": "agent-performance-dashboard",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "WCFCB Manager"
+  },
+  {
+   "role": "WCFCB Assistant Admin"
+  },
+  {
+   "role": "WCF Customer Service Officer"
+  },
+  {
+   "role": "WCF Customer Service Assistant"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Agent Performance Dashboard"
+}
+
