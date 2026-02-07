@@ -15,6 +15,9 @@ def load_environment_variables(bootinfo):
     # Call the internal function to do the actual work
     _load_environment_variables_internal()
 
+    # Load Company → Employer translations
+    _load_employer_translations(bootinfo)
+
 
 def load_env_file(file_path):
     """Load environment variables from a file"""
@@ -153,6 +156,92 @@ def refresh_environment_variables():
     except Exception as e:
         frappe.logger().error(f"Error refreshing environment variables: {str(e)}")
         return False, str(e)
+
+
+def _load_employer_translations(bootinfo):
+    """Load Company → Employer translations into boot messages.
+
+    This renames 'Company' to 'Employer' throughout the UI without
+    modifying core ERPNext doctypes.
+    """
+    try:
+        import csv
+
+        # Path to translations file
+        translations_path = os.path.join(
+            os.path.dirname(__file__),
+            "translations",
+            "en.csv"
+        )
+
+        if not os.path.exists(translations_path):
+            return
+
+        # Read translations from CSV
+        translations = {}
+        with open(translations_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                source = row.get('source', '').strip()
+                translated = row.get('translated', '').strip()
+                if source and translated:
+                    translations[source] = translated
+
+        # Add translations to bootinfo messages
+        if hasattr(bootinfo, '__messages'):
+            bootinfo.__messages.update(translations)
+        elif isinstance(bootinfo, dict):
+            if '__messages' not in bootinfo:
+                bootinfo['__messages'] = {}
+            bootinfo['__messages'].update(translations)
+
+        # Also update frappe's translation cache for the current session
+        if hasattr(frappe.local, 'lang'):
+            lang = frappe.local.lang or 'en'
+        else:
+            lang = 'en'
+
+        # Update the translation dictionary in frappe's cache
+        cache_key = f"lang_full_dict::{lang}"
+        lang_dict = frappe.cache().get_value(cache_key) or {}
+        lang_dict.update(translations)
+        frappe.cache().set_value(cache_key, lang_dict)
+
+    except Exception as e:
+        frappe.logger().error(f"Error loading employer translations: {str(e)}")
+
+
+def get_employer_translations():
+    """Get the Company → Employer translations dictionary.
+
+    Can be called from client-side to get translations.
+    """
+    try:
+        import csv
+
+        translations_path = os.path.join(
+            os.path.dirname(__file__),
+            "translations",
+            "en.csv"
+        )
+
+        if not os.path.exists(translations_path):
+            return {}
+
+        translations = {}
+        with open(translations_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                source = row.get('source', '').strip()
+                translated = row.get('translated', '').strip()
+                if source and translated:
+                    translations[source] = translated
+
+        return translations
+
+    except Exception as e:
+        frappe.logger().error(f"Error getting employer translations: {str(e)}")
+        return {}
 
 
 # Auto-load environment variables when module is imported
