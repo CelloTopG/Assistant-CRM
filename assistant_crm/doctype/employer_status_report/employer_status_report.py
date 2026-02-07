@@ -18,16 +18,26 @@ class EmployerStatusReport(Document):
         cases = _aggregate_cases(df, dt)
         top_claims = _aggregate_top_claims(df, dt)
 
-        # Set fields
+        # Set employer status fields
         self.total_employers = summary.get("total_employers", 0)
         self.active_count = summary.get("active", 0)
+        self.inactive_count = summary.get("inactive", 0)
+        self.suspended_count = summary.get("suspended", 0)
+        self.pending_count = summary.get("pending", 0)
+        self.blacklisted_count = summary.get("blacklisted", 0)
         self.compliant_count = summary.get("compliant", 0)
         self.non_compliant_count = summary.get("non_compliant", 0)
         self.overdue_contributions_count = contrib.get("overdue_count", 0)
 
+        # Set contribution fields
         self.total_expected_contributions = contrib.get("expected_total", 0.0)
         self.total_paid_contributions = contrib.get("paid_total", 0.0)
         self.total_outstanding_contributions = contrib.get("outstanding_total", 0.0)
+
+        # Calculate collection rate
+        expected = float(self.total_expected_contributions or 0)
+        paid = float(self.total_paid_contributions or 0)
+        self.collection_rate = (paid / expected * 100) if expected > 0 else 0.0
 
         self.total_cases_logged = cases.get("logged", 0)
         self.total_cases_resolved = cases.get("resolved", 0)
@@ -36,17 +46,20 @@ class EmployerStatusReport(Document):
         # Charts (match Frappe Chart config shape used in Complaints Status Report)
         self.status_chart_json = json.dumps({
             "data": {
-                "labels": ["Active", "Compliant", "Non-Compliant"],
+                "labels": ["Active", "Inactive", "Suspended", "Pending", "Blacklisted"],
                 "datasets": [{
-                    "name": "Employers",
+                    "name": "Employers by Status",
                     "values": [
                         int(self.active_count or 0),
-                        int(self.compliant_count or 0),
-                        int(self.non_compliant_count or 0),
+                        int(self.inactive_count or 0),
+                        int(self.suspended_count or 0),
+                        int(self.pending_count or 0),
+                        int(self.blacklisted_count or 0),
                     ],
                 }],
             },
             "type": "bar",
+            "colors": ["#28a745", "#6c757d", "#ffc107", "#17a2b8", "#dc3545"],
         })
         self.compliance_chart_json = json.dumps({
             "data": {
@@ -108,30 +121,75 @@ class EmployerStatusReport(Document):
 # ---- Aggregators (defensive: handle missing doctypes/fields) ----
 
 def _aggregate_employer_summary(df: date, dt: date) -> Dict[str, int]:
-    """Aggregate employer summary using ERPNext Customer doctype.
+    """Aggregate employer summary using the Employer doctype.
 
-    NOTE: Employer Profile doctype has been removed. Using ERPNext Customer instead.
+    Returns counts for:
+    - total_employers: All employers regardless of status
+    - active: Employers with status = 'Active'
+    - compliant: From Compliance Report doctype (if exists)
+    - non_compliant: From Compliance Report doctype (if exists)
+    - inactive: Employers with status = 'Inactive'
+    - suspended: Employers with status = 'Suspended'
+    - pending: Employers with status = 'Pending Verification'
+    - blacklisted: Employers with status = 'Blacklisted'
     """
-    res = {"total_employers": 0, "active": 0, "compliant": 0, "non_compliant": 0}
+    res = {
+        "total_employers": 0,
+        "active": 0,
+        "compliant": 0,
+        "non_compliant": 0,
+        "inactive": 0,
+        "suspended": 0,
+        "pending": 0,
+        "blacklisted": 0,
+    }
     try:
-        # Use ERPNext Customer doctype (replaces Employer Profile)
-        total = frappe.db.count("Customer", filters={"customer_type": "Company"})
-        # Active (enabled customers)
-        active = frappe.db.count("Customer", filters={"customer_type": "Company", "disabled": 0})
-        # Compliance data comes from Compliance Report doctype
+        if not frappe.db.exists("DocType", "Employer"):
+            return res
+
+        # Total employers (all statuses)
+        total = frappe.db.count("Employer")
+
+        # Count by status
+        active = frappe.db.count("Employer", filters={"status": "Active"})
+        inactive = frappe.db.count("Employer", filters={"status": "Inactive"})
+        suspended = frappe.db.count("Employer", filters={"status": "Suspended"})
+        pending = frappe.db.count("Employer", filters={"status": "Pending Verification"})
+        blacklisted = frappe.db.count("Employer", filters={"status": "Blacklisted"})
+
+        # Compliance data comes from Compliance Report doctype (if exists)
+        # The Compliance Report stores compliant_rules and non_compliant_rules as integers
         compliant = 0
         non_compliant = 0
         if frappe.db.exists("DocType", "Compliance Report"):
-            compliant = frappe.db.count("Compliance Report", filters={"compliance_status": "Compliant"})
-            non_compliant = frappe.db.count("Compliance Report", filters={"compliance_status": "Non-Compliant"})
+            try:
+                # Sum up compliant and non-compliant rules across all reports
+                result = frappe.db.sql("""
+                    SELECT
+                        COALESCE(SUM(compliant_rules), 0) as compliant,
+                        COALESCE(SUM(non_compliant_rules), 0) as non_compliant
+                    FROM `tabCompliance Report`
+                    WHERE docstatus < 2
+                """, as_dict=True)
+                if result:
+                    compliant = int(result[0].get("compliant") or 0)
+                    non_compliant = int(result[0].get("non_compliant") or 0)
+            except Exception:
+                # Field structure may differ - ignore compliance data
+                pass
+
         res.update({
             "total_employers": total or 0,
             "active": active or 0,
             "compliant": compliant or 0,
             "non_compliant": non_compliant or 0,
+            "inactive": inactive or 0,
+            "suspended": suspended or 0,
+            "pending": pending or 0,
+            "blacklisted": blacklisted or 0,
         })
-    except Exception:
-        pass
+    except Exception as e:
+        frappe.log_error(f"Error aggregating employer summary: {e}", "Employer Status Report")
     return res
 
 
@@ -262,35 +320,65 @@ def _aggregate_cases(df: date, dt: date) -> Dict[str, int]:
 
 
 def _aggregate_top_claims(df: date, dt: date, top_n: int = 10) -> List[Dict[str, Any]]:
-    # Best-effort name-based grouping on Claim.employer (Data), ranked by count then amount
+    """Aggregate top employers by claim count and total amount.
+
+    Attempts to join with Employer doctype for proper employer names.
+    Falls back to raw employer field value if join fails or Employer doesn't exist.
+    """
     rows: List[Dict[str, Any]] = []
     try:
         if not frappe.db.exists("DocType", "Claim"):
             return rows
-        sql = (
+
+        # Check if we can join with Employer doctype
+        has_employer_doctype = frappe.db.exists("DocType", "Employer")
+
+        if has_employer_doctype:
+            # Try to join with Employer doctype for proper names
+            sql = """
+                SELECT
+                    COALESCE(e.employer_name, UPPER(TRIM(c.employer)), 'UNKNOWN') as employer_name,
+                    COALESCE(e.employer_code, '') as employer_code,
+                    c.employer as employer_ref,
+                    COUNT(1) as claim_count,
+                    COALESCE(SUM(c.amount), 0) as total_amount
+                FROM `tabClaim` c
+                LEFT JOIN `tabEmployer` e ON c.employer = e.name
+                WHERE (c.submitted_date BETWEEN %s AND %s)
+                  AND IFNULL(c.docstatus, 0) < 2
+                GROUP BY c.employer, e.employer_name, e.employer_code
+                ORDER BY claim_count DESC, total_amount DESC
+                LIMIT %s
             """
-            select
-                upper(trim(coalesce(employer, 'UNKNOWN'))) as employer_key,
-                count(1) as claim_count,
-                coalesce(sum(amount), 0) as total_amount
-            from `tabClaim`
-            where (submitted_date between %s and %s)
-              and ifnull(docstatus,0) < 2
-            group by employer_key
-            order by claim_count desc, total_amount desc
-            limit %s
+        else:
+            # Fallback: no Employer doctype, use raw employer field
+            sql = """
+                SELECT
+                    UPPER(TRIM(COALESCE(employer, 'UNKNOWN'))) as employer_name,
+                    '' as employer_code,
+                    employer as employer_ref,
+                    COUNT(1) as claim_count,
+                    COALESCE(SUM(amount), 0) as total_amount
+                FROM `tabClaim`
+                WHERE (submitted_date BETWEEN %s AND %s)
+                  AND IFNULL(docstatus, 0) < 2
+                GROUP BY employer
+                ORDER BY claim_count DESC, total_amount DESC
+                LIMIT %s
             """
-        )
+
         data = frappe.db.sql(sql, (df, dt, top_n), as_dict=True) or []
-        # JSON-serializable simple rows
+
         for d in data:
             rows.append({
-                "employer": d.get("employer_key"),
+                "employer": d.get("employer_name") or "UNKNOWN",
+                "employer_code": d.get("employer_code") or "",
+                "employer_ref": d.get("employer_ref") or "",
                 "claims": int(d.get("claim_count") or 0),
                 "amount": float(d.get("total_amount") or 0),
             })
-    except Exception:
-        pass
+    except Exception as e:
+        frappe.log_error(f"Error aggregating top claims: {e}", "Employer Status Report")
     return rows
 
 
@@ -301,20 +389,31 @@ def build_report_html(doc: "EmployerStatusReport", top_claims: List[Dict[str, An
     def card(label: str, value: Any, style: str = ""):
         return f"<div style='display:inline-block;margin:6px;padding:10px;border:1px solid #ddd;border-radius:6px{style}'><div style='font-size:12px;color:#666'>{label}</div><div style='font-size:18px;font-weight:600'>{value}</div></div>"
 
-    # Metric cards
-    cards = "".join([
-        card("Total Employers", int(doc.total_employers or 0)),
-        card("Active", int(doc.active_count or 0)),
+    # Employer status cards - all statuses
+    status_cards = "".join([
+        card("Total Employers", int(doc.total_employers or 0), style=";background:#e3f2fd"),
+        card("Active", int(doc.active_count or 0), style=";background:#e8f5e9"),
+        card("Inactive", int(doc.inactive_count or 0), style=";background:#f5f5f5"),
+        card("Suspended", int(doc.suspended_count or 0), style=";background:#fff3e0"),
+        card("Pending", int(doc.pending_count or 0), style=";background:#e3f2fd"),
+        card("Blacklisted", int(doc.blacklisted_count or 0), style=";background:#ffebee"),
+    ])
+
+    # Compliance cards
+    compliance_cards = "".join([
         card("Compliant", int(doc.compliant_count or 0), style=";background:#e8f5e9"),
         card("Non-Compliant", int(doc.non_compliant_count or 0), style=";background:#ffebee"),
         card("Overdue Contributions", int(doc.overdue_contributions_count or 0), style=";background:#fff3e0"),
     ])
 
-    # Contributions summary
+    # Contributions summary with collection rate
+    collection_rate = float(doc.collection_rate or 0)
+    rate_color = "#e8f5e9" if collection_rate >= 80 else ("#fff3e0" if collection_rate >= 50 else "#ffebee")
     contrib_cards = "".join([
         card("Expected", f"{float(doc.total_expected_contributions or 0):,.2f}"),
         card("Paid", f"{float(doc.total_paid_contributions or 0):,.2f}", style=";background:#e8f5e9"),
         card("Outstanding", f"{float(doc.total_outstanding_contributions or 0):,.2f}", style=";background:#ffebee"),
+        card("Collection Rate", f"{collection_rate:.1f}%", style=f";background:{rate_color}"),
     ])
 
     # Cases summary
@@ -356,8 +455,13 @@ def build_report_html(doc: "EmployerStatusReport", top_claims: List[Dict[str, An
         <div style='color:#666;margin-bottom:20px'>Period: {frappe.utils.format_date(doc.date_from)} to {frappe.utils.format_date(doc.date_to)}</div>
 
         <div style='margin-bottom:20px'>
-            <h4 style='margin-bottom:8px'>Employer Summary</h4>
-            {cards}
+            <h4 style='margin-bottom:8px'>Employer Status Breakdown</h4>
+            {status_cards}
+        </div>
+
+        <div style='margin-bottom:20px'>
+            <h4 style='margin-bottom:8px'>Compliance</h4>
+            {compliance_cards}
         </div>
 
         <div style='margin-bottom:20px'>
