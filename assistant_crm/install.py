@@ -20,6 +20,12 @@ def after_install():
 		# Ensure Survey Campaign Workflow exists
 		setup_survey_campaign_workflow()
 
+		# Setup automated notifications for alerts
+		try:
+			setup_automated_notifications()
+		except Exception as e:
+			frappe.log_error(f"Error setting up automated notifications: {str(e)}", "Assistant CRM Install")
+
 		# Ensure Issue has Employer link field for per-employer case linking
 		try:
 			ensure_issue_employer_link_field()
@@ -762,6 +768,163 @@ def setup_survey_campaign_workflow():
 	except Exception as e:
 		frappe.log_error(f"Error ensuring Survey Campaign workflow: {str(e)}", "Assistant CRM Install")
 
+
+def setup_automated_notifications():
+	"""Setup automated notifications using ERPNext's native Notification system.
+
+	Creates notifications for:
+	1. Survey Response Received - when a survey response is completed
+	2. SLA Breach Alert - when Issue SLA is breached
+	3. Certificate Expiry Warning - 30 days before certificate expires
+	4. Payment Delay Alert - when payment is overdue
+	5. Contribution Overdue Alert - when employer contribution is overdue
+	"""
+	try:
+		notifications = [
+			# 1. Survey Response Received
+			{
+				"name": "Survey Response Received",
+				"subject": "New Survey Response: {{ doc.campaign }}",
+				"document_type": "Survey Response",
+				"event": "Value Change",
+				"value_changed": "status",
+				"condition": "doc.status == 'Completed'",
+				"message": """<p>A new survey response has been received.</p>
+<p><strong>Campaign:</strong> {{ doc.campaign }}</p>
+<p><strong>Recipient:</strong> {{ doc.recipient_email or doc.recipient_phone or 'Unknown' }}</p>
+<p><strong>Response Time:</strong> {{ doc.response_time }}</p>
+<p><strong>Sentiment Score:</strong> {{ doc.sentiment_score or 'N/A' }}</p>
+<p><a href="{{ frappe.utils.get_url_to_form('Survey Response', doc.name) }}">View Response</a></p>""",
+				"send_to_all_assignees": 0,
+				"send_system_notification": 1,
+				"recipients": [{"receiver_by_role": "System Manager"}],
+			},
+			# 2. SLA Breach Alert (Issue)
+			{
+				"name": "SLA Breach Alert",
+				"subject": "⚠️ SLA Breached: {{ doc.subject or doc.name }}",
+				"document_type": "Issue",
+				"event": "Value Change",
+				"value_changed": "agreement_status",
+				"condition": "doc.agreement_status in ('Resolution Due', 'Failed')",
+				"message": """<p><strong>SLA Breach Detected!</strong></p>
+<p><strong>Issue:</strong> {{ doc.name }}</p>
+<p><strong>Subject:</strong> {{ doc.subject }}</p>
+<p><strong>Status:</strong> {{ doc.status }}</p>
+<p><strong>SLA Status:</strong> {{ doc.agreement_status }}</p>
+<p><strong>Priority:</strong> {{ doc.priority }}</p>
+<p><strong>Customer:</strong> {{ doc.raised_by or 'Unknown' }}</p>
+<p><a href="{{ frappe.utils.get_url_to_form('Issue', doc.name) }}">View Issue</a></p>""",
+				"send_to_all_assignees": 1,
+				"send_system_notification": 1,
+				"recipients": [{"receiver_by_role": "System Manager"}],
+			},
+			# 3. Certificate Expiry Warning (30 days before)
+			{
+				"name": "Certificate Expiry Warning",
+				"subject": "⚠️ Certificate Expiring Soon: {{ doc.certificate_type }}",
+				"document_type": "Certificate Status",
+				"event": "Days Before",
+				"days_in_advance": 30,
+				"date_changed": "expiry_date",
+				"condition": "doc.certificate_status == 'Valid'",
+				"message": """<p><strong>Certificate Expiry Warning</strong></p>
+<p>The following certificate will expire in 30 days:</p>
+<p><strong>Certificate Type:</strong> {{ doc.certificate_type }}</p>
+<p><strong>Certificate Number:</strong> {{ doc.certificate_number }}</p>
+<p><strong>Expiry Date:</strong> {{ doc.expiry_date }}</p>
+<p><strong>Employer:</strong> {{ doc.employer_name or doc.employer_code or 'N/A' }}</p>
+<p><strong>Employee:</strong> {{ doc.employee_name or doc.employee_number or 'N/A' }}</p>
+<p><a href="{{ frappe.utils.get_url_to_form('Certificate Status', doc.name) }}">View Certificate</a></p>""",
+				"send_to_all_assignees": 0,
+				"send_system_notification": 1,
+				"recipients": [{"receiver_by_role": "System Manager"}],
+			},
+			# 4. Payment Delay Alert
+			{
+				"name": "Payment Delay Alert",
+				"subject": "⚠️ Payment Overdue: {{ doc.name }}",
+				"document_type": "Payment Status",
+				"event": "Days After",
+				"days_in_advance": 1,
+				"date_changed": "expected_completion",
+				"condition": "doc.status in ('Pending', 'Processing')",
+				"message": """<p><strong>Payment Delay Alert</strong></p>
+<p>The following payment is overdue:</p>
+<p><strong>Payment ID:</strong> {{ doc.name }}</p>
+<p><strong>Status:</strong> {{ doc.status }}</p>
+<p><strong>Expected Completion:</strong> {{ doc.expected_completion }}</p>
+<p><strong>Amount:</strong> {{ doc.amount or 'N/A' }}</p>
+<p><a href="{{ frappe.utils.get_url_to_form('Payment Status', doc.name) }}">View Payment</a></p>""",
+				"send_to_all_assignees": 0,
+				"send_system_notification": 1,
+				"recipients": [{"receiver_by_role": "System Manager"}],
+			},
+			# 5. Contribution Overdue Alert
+			{
+				"name": "Contribution Overdue Alert",
+				"subject": "⚠️ Contribution Overdue: {{ doc.employer_name or doc.name }}",
+				"document_type": "Employer Contributions",
+				"event": "Days After",
+				"days_in_advance": 1,
+				"date_changed": "due_date",
+				"condition": "doc.status in ('Pending', 'Overdue')",
+				"message": """<p><strong>Employer Contribution Overdue</strong></p>
+<p>The following contribution is overdue:</p>
+<p><strong>Contribution ID:</strong> {{ doc.name }}</p>
+<p><strong>Employer:</strong> {{ doc.employer_name or 'N/A' }}</p>
+<p><strong>Due Date:</strong> {{ doc.due_date }}</p>
+<p><strong>Status:</strong> {{ doc.status }}</p>
+<p><strong>Outstanding Amount:</strong> {{ doc.outstanding_amount or 'N/A' }}</p>
+<p><a href="{{ frappe.utils.get_url_to_form('Employer Contributions', doc.name) }}">View Contribution</a></p>""",
+				"send_to_all_assignees": 0,
+				"send_system_notification": 1,
+				"recipients": [{"receiver_by_role": "System Manager"}],
+			},
+		]
+
+		for notif_data in notifications:
+			try:
+				# Skip if notification already exists
+				if frappe.db.exists("Notification", notif_data["name"]):
+					print(f"ℹ️  Notification '{notif_data['name']}' already exists, skipping")
+					continue
+
+				# Check if the document type exists
+				if not frappe.db.exists("DocType", notif_data["document_type"]):
+					print(f"⚠️  DocType '{notif_data['document_type']}' not found, skipping notification '{notif_data['name']}'")
+					continue
+
+				# Extract recipients before creating the doc
+				recipients = notif_data.pop("recipients", [])
+
+				# Create notification
+				notif = frappe.get_doc({
+					"doctype": "Notification",
+					"enabled": 1,
+					"channel": "System Notification",
+					**notif_data
+				})
+
+				# Add recipients
+				for r in recipients:
+					notif.append("recipients", r)
+
+				notif.insert(ignore_permissions=True)
+				print(f"✅ Created notification: {notif_data['name']}")
+
+			except Exception as e:
+				frappe.log_error(f"Error creating notification '{notif_data.get('name', 'unknown')}': {str(e)}", "Assistant CRM Install")
+				print(f"⚠️  Could not create notification '{notif_data.get('name', 'unknown')}': {str(e)}")
+
+		frappe.db.commit()
+		print("✅ Automated notifications setup complete")
+
+	except Exception as e:
+		frappe.log_error(f"Error setting up automated notifications: {str(e)}", "Assistant CRM Install")
+		print(f"⚠️  Warning: Could not setup automated notifications: {str(e)}")
+
+
 def before_uninstall():
 	"""Cleanup before app uninstallation"""
 	try:
@@ -878,6 +1041,12 @@ def after_migrate():
             ensure_social_media_settings_seed()
         except Exception as e:
             frappe.log_error(f"after_migrate Social Media Settings seed error: {str(e)}", "Assistant CRM Install")
+
+        # Ensure automated notifications are set up after migrations
+        try:
+            setup_automated_notifications()
+        except Exception as e:
+            frappe.log_error(f"after_migrate automated notifications setup error: {str(e)}", "Assistant CRM Install")
 
     finally:
         try:
