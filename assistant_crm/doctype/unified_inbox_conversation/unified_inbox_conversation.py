@@ -35,7 +35,10 @@ class UnifiedInboxConversation(Document):
             f"New unified inbox conversation created: {self.conversation_id} on {self.platform}",
             "Unified Inbox - Conversation Created"
         )
-        
+
+        # Auto-assign agent from Customer Service roles
+        self.auto_assign_customer_service_agent()
+
         # Trigger AI processing if enabled
         if self.should_process_with_ai_supervising():
             self.trigger_ai_processing()
@@ -280,6 +283,84 @@ class UnifiedInboxConversation(Document):
                 "Unified Inbox - Agent Selection Error",
             )
             return None
+
+    def auto_assign_customer_service_agent(self) -> None:
+        """Auto-assign conversation to users with Customer Service roles.
+
+        This queries users with roles "WCF Customer Service Officer" or
+        "WCF Customer Service Assistant" and assigns the conversation to
+        the least busy agent (one with fewest active conversations).
+        """
+        try:
+            # Skip if already assigned
+            if self.assigned_agent:
+                return
+
+            # Get users with Customer Service roles
+            customer_service_roles = [
+                "WCF Customer Service Officer",
+                "WCF Customer Service Assistant"
+            ]
+
+            # Query users with these roles who are enabled
+            agents = frappe.db.sql("""
+                SELECT DISTINCT u.name as user_id, u.full_name
+                FROM `tabUser` u
+                INNER JOIN `tabHas Role` hr ON hr.parent = u.name
+                WHERE hr.role IN %(roles)s
+                AND u.enabled = 1
+                AND u.name NOT IN ('Administrator', 'Guest')
+                ORDER BY u.full_name
+            """, {"roles": customer_service_roles}, as_dict=True)
+
+            if not agents:
+                frappe.log_error(
+                    "No agents with Customer Service roles found for auto-assignment",
+                    "Unified Inbox - Auto Assignment"
+                )
+                return
+
+            # Count active conversations per agent (least busy assignment)
+            agent_workloads = []
+            for agent in agents:
+                active_count = frappe.db.count(
+                    "Unified Inbox Conversation",
+                    {
+                        "assigned_agent": agent.user_id,
+                        "status": ["not in", ["Resolved", "Closed"]],
+                    },
+                )
+                agent_workloads.append({
+                    "user_id": agent.user_id,
+                    "full_name": agent.full_name,
+                    "active_conversations": active_count
+                })
+
+            # Sort by active conversations (least busy first)
+            agent_workloads.sort(key=lambda x: x["active_conversations"])
+
+            # Assign to the least busy agent
+            selected_agent = agent_workloads[0]["user_id"]
+
+            # Update conversation with assignment
+            self.db_set("assigned_agent", selected_agent)
+            self.db_set("agent_assigned_at", now())
+            self.db_set("status", "Agent Assigned")
+
+            # Notify the assigned agent
+            self.notify_agent_assignment(selected_agent)
+
+            frappe.log_error(
+                f"Auto-assigned conversation {self.conversation_id} to {selected_agent} "
+                f"(workload: {agent_workloads[0]['active_conversations']} active conversations)",
+                "Unified Inbox - Auto Assignment Success"
+            )
+
+        except Exception as e:
+            frappe.log_error(
+                f"Failed to auto-assign customer service agent: {str(e)}",
+                "Unified Inbox - Auto Assignment Error"
+            )
 
     def auto_assign_supervising_agent_if_needed(self) -> None:
         """Ensure every conversation has a supervising agent for oversight.
