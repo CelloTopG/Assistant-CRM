@@ -6,6 +6,7 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "campaign_template",
   "campaign_name",
   "survey_type",
   "is_campaign",
@@ -54,6 +55,14 @@
   "amended_from"
  ],
  "fields": [
+  {
+   "description": "Select a template to auto-populate questions, target audience, and distribution channels",
+   "fieldname": "campaign_template",
+   "fieldtype": "Link",
+   "label": "Use Template",
+   "options": "Survey Campaign Template",
+   "filters": "{\"is_active\": 1}"
+  },
   {
    "fieldname": "campaign_name",
    "fieldtype": "Data",

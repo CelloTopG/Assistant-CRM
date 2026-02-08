@@ -41,6 +41,31 @@ frappe.ui.form.on('Survey Campaign', {
     if (frm.doc.docstatus === 0) {
       set_filter_type_options_for_grid(frm);
     }
+  },
+
+  // Handle template selection for auto-population
+  campaign_template(frm) {
+    if (!frm.doc.campaign_template) {
+      return;
+    }
+
+    // Confirm if form has existing data
+    const has_questions = frm.doc.survey_questions && frm.doc.survey_questions.length > 0;
+    const has_audience = frm.doc.target_audience && frm.doc.target_audience.length > 0;
+    const has_channels = frm.doc.distribution_channels && frm.doc.distribution_channels.length > 0;
+
+    if (has_questions || has_audience || has_channels) {
+      frappe.confirm(
+        __('Applying this template will replace existing questions, target audience, and distribution channels. Continue?'),
+        () => apply_template(frm),
+        () => {
+          // User cancelled - reset template field
+          frm.set_value('campaign_template', '');
+        }
+      );
+    } else {
+      apply_template(frm);
+    }
   }
 });
 
@@ -421,10 +446,103 @@ function set_filter_type_options_for_grid(frm) {
   try {
     const grid = frm.fields_dict['target_audience'];
     if (!grid || !grid.grid) return;
-    
+
     const options = ['Beneficiary', 'Employer', 'Channel', 'Date Range', 'Custom Field'].join('\n');
     grid.grid.update_docfield_property('filter_type', 'options', options);
   } catch (e) {
     console.warn('set_filter_type_options_for_grid failed', e);
   }
+}
+
+// ===================================================================
+// TEMPLATE AUTO-POPULATION
+// ===================================================================
+
+function apply_template(frm) {
+  frappe.call({
+    method: 'assistant_crm.assistant_crm.doctype.survey_campaign_template.survey_campaign_template.get_template_data',
+    args: {
+      template_name: frm.doc.campaign_template
+    },
+    freeze: true,
+    freeze_message: __('Applying template...'),
+    callback: (r) => {
+      if (!r.message || !r.message.success) {
+        frappe.msgprint({
+          title: __('Error'),
+          message: r.message?.error || __('Failed to load template'),
+          indicator: 'red'
+        });
+        frm.set_value('campaign_template', '');
+        return;
+      }
+
+      const data = r.message;
+
+      // Set suggested campaign name if not already set
+      if (data.suggested_campaign_name && !frm.doc.campaign_name) {
+        frm.set_value('campaign_name', data.suggested_campaign_name);
+      }
+
+      // Set survey type from template
+      if (data.default_survey_type) {
+        frm.set_value('survey_type', data.default_survey_type);
+      }
+
+      // Clear and populate survey questions
+      frm.clear_table('survey_questions');
+      (data.questions || []).forEach((q) => {
+        const row = frm.add_child('survey_questions');
+        row.question_text = q.question_text;
+        row.question_type = q.question_type;
+        row.options = q.options;
+        row.is_required = q.is_required;
+        row.order = q.order;
+      });
+
+      // Clear and populate target audience
+      frm.clear_table('target_audience');
+      (data.target_audience || []).forEach((a) => {
+        const row = frm.add_child('target_audience');
+        row.filter_type = a.filter_type;
+        row.filter_field = a.filter_field;
+        row.filter_operator = a.filter_operator;
+        row.filter_value = a.filter_value;
+      });
+
+      // Clear and populate distribution channels
+      frm.clear_table('distribution_channels');
+      (data.distribution_channels || []).forEach((c) => {
+        const row = frm.add_child('distribution_channels');
+        row.channel = c.channel;
+        row.is_active = c.is_active;
+      });
+
+      // Refresh all child tables
+      frm.refresh_field('survey_questions');
+      frm.refresh_field('target_audience');
+      frm.refresh_field('distribution_channels');
+
+      // Show success message with template info
+      let msg = __('Template "{0}" applied successfully.', [data.template_name]);
+      if (data.recommended_for) {
+        msg += '<br><br><b>' + __('Recommended for:') + '</b> ' + data.recommended_for;
+      }
+
+      frappe.msgprint({
+        title: __('Template Applied'),
+        message: msg,
+        indicator: 'green'
+      });
+    },
+    error: (err) => {
+      console.error('Template application error:', err);
+      frappe.msgprint({
+        title: __('Error'),
+        message: __('Failed to apply template. Please try again.'),
+        indicator: 'red'
+      });
+      frm.set_value('campaign_template', '');
+    }
+  });
 }
