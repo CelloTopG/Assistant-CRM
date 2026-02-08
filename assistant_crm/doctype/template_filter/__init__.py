@@ -1,3 +1,0 @@
-# Copyright (c) 2025, WCFCB and contributors
-# For license information, please see license.txt
-

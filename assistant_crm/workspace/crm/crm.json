@@ -1,7 +1,7 @@
 {
  "charts": [],
  "content": "[{\"id\":\"header_shortcuts\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Quick Access</b></span>\",\"col\":12}},{\"id\":\"inbox_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Inbox\",\"col\":3}},{\"id\":\"conversations_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Conversations\",\"col\":3}},{\"id\":\"tickets_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Tickets\",\"col\":3}},{\"id\":\"campaigns_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Campaigns\",\"col\":3}},{\"id\":\"spacer_1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"header_modules\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Modules</b></span>\",\"col\":12}},{\"id\":\"messaging_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Messaging\",\"col\":4}},{\"id\":\"ai_card\",\"type\":\"card\",\"data\":{\"card_name\":\"AI & Automation\",\"col\":4}},{\"id\":\"campaigns_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Campaigns\",\"col\":4}},{\"id\":\"surveys_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Surveys\",\"col\":4}},{\"id\":\"reports_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}},{\"id\":\"settings_card\",\"type\":\"card\",\"data\":{\"card_name\":\"Settings\",\"col\":4}}]",
- "creation": "2026-02-05 10:00:00.000000",
+ "creation": "2026-02-05 10:00:00",
  "custom_blocks": [],
  "docstatus": 0,
  "doctype": "Workspace",
@@ -12,112 +12,6 @@
  "is_hidden": 0,
  "label": "CRM",
  "links": [
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Messaging",
-   "link_count": 5,
-   "onboard": 0,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Inbox",
-   "link_count": 0,
-   "link_to": "inbox",
-   "link_type": "Page",
-   "onboard": 1,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Conversations",
-   "link_count": 0,
-   "link_to": "Unified Inbox Conversation",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Messages",
-   "link_count": 0,
-   "link_to": "Unified Inbox Message",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Tickets",
-   "link_count": 0,
-   "link_to": "Issue",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Employer Dashboard",
-   "link_count": 0,
-   "link_to": "Employer Dashboard",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "AI & Automation",
-   "link_count": 4,
-   "onboard": 0,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "AI Settings",
-   "link_count": 0,
-   "link_to": "Enhanced AI Settings",
-   "link_type": "DocType",
-   "onboard": 1,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "AI Response Feedback",
-   "link_count": 0,
-   "link_to": "AI Response Feedback",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "AI Automation Report",
-   "link_count": 0,
-   "link_to": "AI Automation Report",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Survey Feedback Report",
-   "link_count": 0,
-   "link_to": "Survey Feedback Report",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
   {
    "hidden": 0,
    "is_query_report": 0,
@@ -207,96 +101,6 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Reports",
-   "link_count": 8,
-   "onboard": 0,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Inbox Status Report",
-   "link_count": 0,
-   "link_to": "Inbox Status Report",
-   "link_type": "DocType",
-   "onboard": 1,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 1,
-   "label": "Inbox Status Analysis",
-   "link_count": 0,
-   "link_to": "Inbox Status Analysis",
-   "link_type": "Report",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 1,
-   "label": "Branch Performance Analysis",
-   "link_count": 0,
-   "link_to": "Branch Performance Analysis",
-   "link_type": "Report",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Claims Status Analysis",
-   "link_count": 0,
-   "link_to": "Claims Status Analysis",
-   "link_type": "Report",
-   "report_ref_doctype": "Claim",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 1,
-   "label": "SLA Compliance Analysis",
-   "link_count": 0,
-   "link_to": "SLA Compliance Analysis",
-   "link_type": "Report",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Beneficiary Status Analysis",
-   "link_count": 0,
-   "link_to": "Beneficiary Status Analysis",
-   "link_type": "Report",
-   "report_ref_doctype": "Customer",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 1,
-   "label": "Payout Summary Analysis",
-   "link_count": 0,
-   "link_to": "Payout Summary Analysis",
-   "link_type": "Report",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "System Health Report",
-   "link_count": 0,
-   "link_to": "System Health Report",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
    "label": "Settings",
    "link_count": 4,
    "onboard": 0,
@@ -341,9 +145,188 @@
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Reports",
+   "link_count": 7,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Inbox Status Analysis",
+   "link_count": 0,
+   "link_to": "Inbox Status Analysis",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Branch Performance Analysis",
+   "link_count": 0,
+   "link_to": "Branch Performance Analysis",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Claims Status Analysis",
+   "link_count": 0,
+   "link_to": "Claims Status Analysis",
+   "link_type": "Report",
+   "onboard": 0,
+   "report_ref_doctype": "Claim",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "SLA Compliance Analysis",
+   "link_count": 0,
+   "link_to": "SLA Compliance Analysis",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Beneficiary Status Analysis",
+   "link_count": 0,
+   "link_to": "Beneficiary Status Analysis",
+   "link_type": "Report",
+   "onboard": 0,
+   "report_ref_doctype": "Customer",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Payout Summary Analysis",
+   "link_count": 0,
+   "link_to": "Payout Summary Analysis",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "System Health Report",
+   "link_count": 0,
+   "link_to": "System Health Report",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Messaging",
+   "link_count": 5,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Inbox",
+   "link_count": 0,
+   "link_to": "inbox",
+   "link_type": "Page",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Conversations",
+   "link_count": 0,
+   "link_to": "Unified Inbox Conversation",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Messages",
+   "link_count": 0,
+   "link_to": "Unified Inbox Message",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Tickets",
+   "link_count": 0,
+   "link_to": "Issue",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Performance Dashboard",
+   "link_count": 0,
+   "link_to": "agent-performance-dashboard",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "AI & Automation",
+   "link_count": 3,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "AI Settings",
+   "link_count": 0,
+   "link_to": "Enhanced AI Settings",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "AI Response Feedback",
+   "link_count": 0,
+   "link_to": "AI Response Feedback",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "AI Automation Report",
+   "link_count": 0,
+   "link_to": "AI Automation Report",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2026-02-05 10:00:00.000000",
+ "modified": "2026-02-08 18:43:11.782748",
  "modified_by": "Administrator",
  "module": "Assistant CRM",
  "name": "CRM",
@@ -385,4 +368,3 @@
  ],
  "title": "CRM"
 }
-
