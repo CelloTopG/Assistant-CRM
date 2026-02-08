@@ -75,6 +75,12 @@
    "reqd": 1
   },
   {
+   "fieldname": "default_channels",
+   "fieldtype": "Table",
+   "label": "Default Channels",
+   "options": "Template Channel"
+  },
+  {
    "collapsible": 1,
    "fieldname": "scheduling_section",
    "fieldtype": "Section Break",
