@@ -295,7 +295,8 @@ function suggest_questions(frm) {
       fieldname: 'replace_existing',
       label: __('Replace existing questions'),
       fieldtype: 'Check',
-      default: frm.doc.template_questions?.length ? 0 : 1
+      default: 1,
+      description: __('Uncheck to append questions instead of replacing')
     }
   ],
   (values) => {
