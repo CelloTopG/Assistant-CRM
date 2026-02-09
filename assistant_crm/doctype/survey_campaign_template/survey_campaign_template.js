@@ -206,6 +206,9 @@ function generate_recommended_for(frm, preferences) {
 
 // Show preview dialog for text suggestions
 function show_suggestion_preview(frm, fieldname, field_label, suggestion) {
+  // Trim and normalize whitespace in the suggestion
+  const cleanedSuggestion = suggestion.trim().replace(/\s+/g, ' ');
+
   const dialog = new frappe.ui.Dialog({
     title: __('AI Suggestion Preview'),
     size: 'large',
@@ -216,8 +219,8 @@ function show_suggestion_preview(frm, fieldname, field_label, suggestion) {
         options: `
           <div style="margin-bottom: 15px;">
             <label class="control-label" style="font-weight: bold;">${__('Suggested')} ${field_label}:</label>
-            <div style="background: #f5f7fa; border: 1px solid #d1d8dd; border-radius: 4px; padding: 15px; margin-top: 8px; white-space: pre-wrap;">
-              ${frappe.utils.escape_html(suggestion)}
+            <div style="background: #f5f7fa; border: 1px solid #d1d8dd; border-radius: 4px; padding: 15px; margin-top: 8px; text-align: left; line-height: 1.5;">
+              ${frappe.utils.escape_html(cleanedSuggestion)}
             </div>
           </div>
         `
@@ -225,7 +228,7 @@ function show_suggestion_preview(frm, fieldname, field_label, suggestion) {
     ],
     primary_action_label: __('Apply Suggestion'),
     primary_action: () => {
-      frm.set_value(fieldname, suggestion);
+      frm.set_value(fieldname, cleanedSuggestion);
       frappe.show_alert({ message: __(`${field_label} applied!`), indicator: 'green' }, 3);
       dialog.hide();
     },
