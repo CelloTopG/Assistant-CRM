@@ -61,11 +61,54 @@ function suggest_description(frm) {
     return;
   }
 
+  // Ask user for preferences before generating
+  frappe.prompt([
+    {
+      fieldname: 'tone',
+      label: __('Tone'),
+      fieldtype: 'Select',
+      options: 'Professional\nFriendly\nFormal\nCasual\nTechnical',
+      default: 'Professional',
+      reqd: 1
+    },
+    {
+      fieldname: 'length',
+      label: __('Length'),
+      fieldtype: 'Select',
+      options: 'Short (1-2 sentences)\nMedium (2-3 sentences)\nDetailed (3-4 sentences)',
+      default: 'Medium (2-3 sentences)',
+      reqd: 1
+    },
+    {
+      fieldname: 'focus',
+      label: __('Focus Area'),
+      fieldtype: 'Select',
+      options: 'Purpose & Goals\nBenefits & Value\nProcess & Methodology\nTarget Outcomes',
+      default: 'Purpose & Goals',
+      reqd: 1
+    },
+    {
+      fieldname: 'additional_instructions',
+      label: __('Additional Instructions (Optional)'),
+      fieldtype: 'Small Text',
+      description: __('Any specific requirements or keywords to include')
+    }
+  ],
+  (values) => {
+    generate_description(frm, values);
+  },
+  __('Customize AI Description'),
+  __('Generate')
+  );
+}
+
+function generate_description(frm, preferences) {
   frappe.call({
     method: 'assistant_crm.assistant_crm.doctype.survey_campaign_template.survey_campaign_template.get_ai_description',
     args: {
       template_name: frm.doc.template_name,
-      template_category: frm.doc.template_category || ''
+      template_category: frm.doc.template_category || '',
+      preferences: preferences
     },
     freeze: true,
     freeze_message: __('Generating AI suggestion...'),
@@ -90,12 +133,59 @@ function suggest_recommended_for(frm) {
     return;
   }
 
+  // Ask user for preferences before generating
+  frappe.prompt([
+    {
+      fieldname: 'audience_type',
+      label: __('Primary Audience Type'),
+      fieldtype: 'Select',
+      options: 'Customers\nEmployees\nBeneficiaries\nStakeholders\nGeneral Public\nAll',
+      default: 'Customers',
+      reqd: 1
+    },
+    {
+      fieldname: 'detail_level',
+      label: __('Detail Level'),
+      fieldtype: 'Select',
+      options: 'Brief Overview\nModerate Detail\nComprehensive',
+      default: 'Moderate Detail',
+      reqd: 1
+    },
+    {
+      fieldname: 'include_timing',
+      label: __('Include Best Timing Suggestions'),
+      fieldtype: 'Check',
+      default: 1
+    },
+    {
+      fieldname: 'include_criteria',
+      label: __('Include Selection Criteria'),
+      fieldtype: 'Check',
+      default: 1
+    },
+    {
+      fieldname: 'additional_instructions',
+      label: __('Additional Instructions (Optional)'),
+      fieldtype: 'Small Text',
+      description: __('Any specific audience segments or criteria to consider')
+    }
+  ],
+  (values) => {
+    generate_recommended_for(frm, values);
+  },
+  __('Customize AI Recommendation'),
+  __('Generate')
+  );
+}
+
+function generate_recommended_for(frm, preferences) {
   frappe.call({
     method: 'assistant_crm.assistant_crm.doctype.survey_campaign_template.survey_campaign_template.get_ai_recommended_for',
     args: {
       template_name: frm.doc.template_name,
       template_category: frm.doc.template_category || '',
-      description: frm.doc.description || ''
+      description: frm.doc.description || '',
+      preferences: preferences
     },
     freeze: true,
     freeze_message: __('Generating AI suggestion...'),
@@ -154,7 +244,7 @@ function suggest_questions(frm) {
     return;
   }
 
-  // Ask for number of questions
+  // Ask for question preferences
   frappe.prompt([
     {
       fieldname: 'num_questions',
@@ -165,6 +255,40 @@ function suggest_questions(frm) {
       description: __('How many questions should AI generate? (1-10)')
     },
     {
+      fieldname: 'question_style',
+      label: __('Question Style'),
+      fieldtype: 'Select',
+      options: 'Mixed (Variety of types)\nMostly Rating Questions\nMostly Multiple Choice\nMostly Open-ended Text\nMostly Yes/No',
+      default: 'Mixed (Variety of types)',
+      reqd: 1
+    },
+    {
+      fieldname: 'complexity',
+      label: __('Question Complexity'),
+      fieldtype: 'Select',
+      options: 'Simple & Direct\nModerate\nDetailed & Comprehensive',
+      default: 'Moderate',
+      reqd: 1
+    },
+    {
+      fieldname: 'focus_area',
+      label: __('Focus Area'),
+      fieldtype: 'Select',
+      options: 'Overall Satisfaction\nService Quality\nProduct Feedback\nEmployee Experience\nProcess Improvement\nGeneral Feedback',
+      default: 'Overall Satisfaction',
+      reqd: 1
+    },
+    {
+      fieldname: 'additional_instructions',
+      label: __('Additional Instructions (Optional)'),
+      fieldtype: 'Small Text',
+      description: __('Specific topics or aspects to cover in questions')
+    },
+    {
+      fieldtype: 'Section Break',
+      label: __('Options')
+    },
+    {
       fieldname: 'replace_existing',
       label: __('Replace existing questions'),
       fieldtype: 'Check',
@@ -172,28 +296,29 @@ function suggest_questions(frm) {
     }
   ],
   (values) => {
-    generate_ai_questions(frm, values.num_questions, values.replace_existing);
+    generate_ai_questions(frm, values);
   },
-  __('Generate AI Questions'),
+  __('Customize AI Questions'),
   __('Generate')
   );
 }
 
-function generate_ai_questions(frm, num_questions, replace_existing) {
+function generate_ai_questions(frm, preferences) {
   frappe.call({
     method: 'assistant_crm.assistant_crm.doctype.survey_campaign_template.survey_campaign_template.get_ai_questions',
     args: {
       template_name: frm.doc.template_name,
       template_category: frm.doc.template_category || '',
       description: frm.doc.description || '',
-      num_questions: num_questions
+      num_questions: preferences.num_questions,
+      preferences: preferences
     },
     freeze: true,
     freeze_message: __('Generating AI questions...'),
     callback: (r) => {
       if (r.message && r.message.success) {
         // Show preview dialog before applying
-        show_questions_preview(frm, r.message.questions, replace_existing);
+        show_questions_preview(frm, r.message.questions, preferences.replace_existing);
       } else {
         frappe.msgprint({
           title: __('AI Question Generation Failed'),

@@ -166,12 +166,13 @@ def _call_openai(prompt, max_tokens=500):
 
 
 @frappe.whitelist()
-def get_ai_description(template_name, template_category):
+def get_ai_description(template_name, template_category, preferences=None):
     """Generate AI suggestion for template description.
 
     Args:
         template_name: Name of the template
         template_category: Category of the template
+        preferences: User preferences for the suggestion (tone, length, focus, etc.)
 
     Returns:
         dict with success status and suggestion
@@ -179,14 +180,43 @@ def get_ai_description(template_name, template_category):
     if not template_name:
         return {"success": False, "error": "Template name is required"}
 
-    prompt = f"""Generate a professional, concise description (2-3 sentences) for a survey template with the following details:
+    # Parse preferences if provided as string
+    if preferences and isinstance(preferences, str):
+        preferences = json.loads(preferences)
+
+    # Build preference instructions
+    pref_instructions = ""
+    if preferences:
+        tone = preferences.get('tone', 'Professional')
+        length = preferences.get('length', 'Medium (2-3 sentences)')
+        focus = preferences.get('focus', 'Purpose & Goals')
+        additional = preferences.get('additional_instructions', '')
+
+        # Map length to sentence count
+        length_map = {
+            'Short (1-2 sentences)': '1-2 sentences, under 100 characters',
+            'Medium (2-3 sentences)': '2-3 sentences, under 200 characters',
+            'Detailed (3-4 sentences)': '3-4 sentences, under 300 characters'
+        }
+        length_instruction = length_map.get(length, '2-3 sentences, under 200 characters')
+
+        pref_instructions = f"""
+Tone: {tone}
+Length: {length_instruction}
+Focus: {focus}"""
+
+        if additional:
+            pref_instructions += f"\nAdditional Requirements: {additional}"
+
+    prompt = f"""Generate a description for a survey template with the following details:
 
 Template Name: {template_name}
 Category: {template_category or 'General Survey'}
+{pref_instructions}
 
-The description should explain what the survey measures and its purpose. Keep it under 200 characters."""
+The description should explain what the survey measures and its purpose."""
 
-    suggestion = _call_openai(prompt, max_tokens=150)
+    suggestion = _call_openai(prompt, max_tokens=200)
 
     if suggestion:
         return {"success": True, "suggestion": suggestion}
@@ -195,13 +225,14 @@ The description should explain what the survey measures and its purpose. Keep it
 
 
 @frappe.whitelist()
-def get_ai_recommended_for(template_name, template_category, description=None):
+def get_ai_recommended_for(template_name, template_category, description=None, preferences=None):
     """Generate AI suggestion for recommended audience.
 
     Args:
         template_name: Name of the template
         template_category: Category of the template
         description: Optional description for context
+        preferences: User preferences for the suggestion
 
     Returns:
         dict with success status and suggestion
@@ -209,20 +240,50 @@ def get_ai_recommended_for(template_name, template_category, description=None):
     if not template_name:
         return {"success": False, "error": "Template name is required"}
 
+    # Parse preferences if provided as string
+    if preferences and isinstance(preferences, str):
+        preferences = json.loads(preferences)
+
     context = f"Description: {description}" if description else ""
+
+    # Build preference instructions
+    pref_instructions = ""
+    if preferences:
+        audience_type = preferences.get('audience_type', 'Customers')
+        detail_level = preferences.get('detail_level', 'Moderate Detail')
+        include_timing = preferences.get('include_timing', True)
+        include_criteria = preferences.get('include_criteria', True)
+        additional = preferences.get('additional_instructions', '')
+
+        # Map detail level
+        detail_map = {
+            'Brief Overview': '1-2 sentences',
+            'Moderate Detail': '2-3 sentences',
+            'Comprehensive': '3-4 sentences with specific criteria'
+        }
+        detail_instruction = detail_map.get(detail_level, '2-3 sentences')
+
+        pref_instructions = f"""
+Primary Audience Type: {audience_type}
+Detail Level: {detail_instruction}"""
+
+        if include_timing:
+            pref_instructions += "\nInclude: Best timing/occasions to send this survey"
+        if include_criteria:
+            pref_instructions += "\nInclude: Selection criteria for recipients"
+        if additional:
+            pref_instructions += f"\nAdditional Requirements: {additional}"
 
     prompt = f"""Suggest who this survey template is best suited for (target audience recommendation):
 
 Template Name: {template_name}
 Category: {template_category or 'General Survey'}
 {context}
+{pref_instructions}
 
-Provide a concise recommendation (2-3 sentences) describing:
-1. Who should receive this survey
-2. When is the best time to send it
-Keep it under 250 characters."""
+Provide a recommendation describing who should receive this survey."""
 
-    suggestion = _call_openai(prompt, max_tokens=150)
+    suggestion = _call_openai(prompt, max_tokens=250)
 
     if suggestion:
         return {"success": True, "suggestion": suggestion}
@@ -231,7 +292,7 @@ Keep it under 250 characters."""
 
 
 @frappe.whitelist()
-def get_ai_questions(template_name, template_category, description=None, num_questions=5):
+def get_ai_questions(template_name, template_category, description=None, num_questions=5, preferences=None):
     """Generate AI suggestions for survey questions.
 
     Args:
@@ -239,6 +300,7 @@ def get_ai_questions(template_name, template_category, description=None, num_que
         template_category: Category of the template
         description: Optional description for context
         num_questions: Number of questions to generate (default 5)
+        preferences: User preferences for question style, complexity, focus area
 
     Returns:
         dict with success status and list of question suggestions
@@ -252,13 +314,52 @@ def get_ai_questions(template_name, template_category, description=None, num_que
     except (ValueError, TypeError):
         num_questions = 5
 
+    # Parse preferences if provided as string
+    if preferences and isinstance(preferences, str):
+        preferences = json.loads(preferences)
+
     context = f"Description: {description}" if description else ""
+
+    # Build preference instructions
+    pref_instructions = ""
+    if preferences:
+        question_style = preferences.get('question_style', 'Mixed (Variety of types)')
+        complexity = preferences.get('complexity', 'Moderate')
+        focus_area = preferences.get('focus_area', 'Overall Satisfaction')
+        additional = preferences.get('additional_instructions', '')
+
+        # Map question style to instructions
+        style_map = {
+            'Mixed (Variety of types)': 'Use a variety of question types (Rating, Multiple Choice, Text, Yes/No)',
+            'Mostly Rating Questions': 'Primarily use Rating type questions (at least 70%)',
+            'Mostly Multiple Choice': 'Primarily use Multiple Choice questions (at least 70%)',
+            'Mostly Open-ended Text': 'Primarily use Text type questions (at least 70%)',
+            'Mostly Yes/No': 'Primarily use Yes/No questions (at least 70%)'
+        }
+        style_instruction = style_map.get(question_style, 'Use a variety of question types')
+
+        # Map complexity
+        complexity_map = {
+            'Simple & Direct': 'Keep questions simple, direct, and easy to understand',
+            'Moderate': 'Use moderately detailed questions that are clear but comprehensive',
+            'Detailed & Comprehensive': 'Create detailed, comprehensive questions that cover all aspects'
+        }
+        complexity_instruction = complexity_map.get(complexity, 'Use moderately detailed questions')
+
+        pref_instructions = f"""
+Question Style: {style_instruction}
+Complexity: {complexity_instruction}
+Focus Area: {focus_area}"""
+
+        if additional:
+            pref_instructions += f"\nAdditional Requirements: {additional}"
 
     prompt = f"""Generate {num_questions} professional survey questions for:
 
 Template Name: {template_name}
 Category: {template_category or 'General Survey'}
 {context}
+{pref_instructions}
 
 Return a JSON array with exactly {num_questions} questions. Each question should have:
 - "question_text": The question text
