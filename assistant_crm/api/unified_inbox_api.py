@@ -164,6 +164,32 @@ def _set_issue_employer_link(issue_name: str, customer_info: Optional[Dict[str, 
             pass
 
 
+def _clear_invalid_issue_links(issue_doc):
+    """Clear invalid link field values on Issue to prevent LinkValidationError.
+
+    The Issue doctype has a 'company' field that links to 'Employer' doctype.
+    If the company value doesn't exist in Employer, saving will fail with
+    'Could not find Employer: <value>'. This function validates link fields
+    and clears any invalid references before saving.
+
+    This function is idempotent - safe to call multiple times. It only modifies
+    the in-memory document object and does not persist changes or log unless
+    an actual invalid value is found and cleared.
+    """
+    try:
+        # Check and clear invalid 'company' field (links to Employer)
+        company_val = getattr(issue_doc, "company", None)
+        if company_val and not frappe.db.exists("Employer", company_val):
+            issue_doc.company = None
+
+        # Also check 'employer' custom field (links to Customer)
+        employer_val = getattr(issue_doc, "employer", None)
+        if employer_val and not frappe.db.exists("Customer", employer_val):
+            issue_doc.employer = None
+    except Exception:
+        # Non-fatal: silently ignore errors to avoid blocking save
+        pass
+
 
 @frappe.whitelist()
 def get_unified_inbox_conversations(filters: Dict[str, Any] = None, limit: int = 20, offset: int = 0):
@@ -2031,6 +2057,10 @@ def sync_conversation_issue_status(conversation_name, conversation_status, assig
                 # Assignment might already exist
                 pass
 
+        # Clear invalid link field values to prevent LinkValidationError
+        # The Issue.company field links to "Employer" doctype, which may have invalid/orphaned references
+        _clear_invalid_issue_links(issue_doc)
+
         issue_doc.save(ignore_permissions=True)
 
         # Add comment about status change
@@ -2181,6 +2211,9 @@ This Issue was escalated from the Unified Inbox conversation: {conversation_name
                 print(f"DEBUG: Assigned Issue {issue_id} to {assign_to}")
             except Exception as assign_error:
                 print(f"DEBUG: Assignment error (may already be assigned): {str(assign_error)}")
+
+        # Clear invalid link field values to prevent LinkValidationError
+        _clear_invalid_issue_links(issue_doc)
 
         # Save the Issue
         issue_doc.save(ignore_permissions=True)
