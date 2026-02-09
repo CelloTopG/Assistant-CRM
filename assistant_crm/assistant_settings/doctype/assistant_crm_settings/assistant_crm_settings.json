@@ -13,6 +13,8 @@
   "response_timeout",
   "max_tokens",
   "temperature",
+  "openai_section",
+  "openai_api_key",
   "business_section",
   "wcfcb_contact_phone",
   "wcfcb_contact_email",
@@ -83,6 +85,18 @@
    "fieldtype": "Float",
    "label": "Temperature",
    "precision": "2"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "openai_section",
+   "fieldtype": "Section Break",
+   "label": "OpenAI Configuration (Survey AI Features)"
+  },
+  {
+   "fieldname": "openai_api_key",
+   "fieldtype": "Password",
+   "label": "OpenAI API Key",
+   "description": "API key for Survey Campaign Template AI features (description, recommendations, questions generation)"
   },
   {
    "collapsible": 1,

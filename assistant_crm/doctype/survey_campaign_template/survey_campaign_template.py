@@ -5,19 +5,30 @@ import frappe
 from frappe.model.document import Document
 import json
 
-# OpenAI API configuration - API key should be set in site_config.json as "openai_api_key"
+# OpenAI API configuration
 OPENAI_API_URL = "https://api.openai.com/v1/chat/completions"
 
 
 def get_openai_api_key():
-    """Get OpenAI API key from site configuration.
+    """Get OpenAI API key from Assistant CRM Settings.
 
-    The API key should be set in site_config.json:
-    bench --site <sitename> set-config openai_api_key "your-api-key-here"
+    The API key should be configured in:
+    Setup > Assistant CRM Settings > OpenAI Configuration
     """
-    api_key = frappe.conf.get("openai_api_key")
+    try:
+        settings = frappe.get_single("Assistant CRM Settings")
+        api_key = settings.get_password("openai_api_key") if settings else None
+    except Exception:
+        api_key = None
+
+    # Fallback to site_config for backward compatibility
     if not api_key:
-        frappe.throw("OpenAI API key not configured. Please set 'openai_api_key' in site_config.json")
+        api_key = frappe.conf.get("openai_api_key")
+
+    if not api_key:
+        frappe.throw(
+            "OpenAI API key not configured. Please set it in Setup > Assistant CRM Settings > OpenAI Configuration"
+        )
     return api_key
 
 
