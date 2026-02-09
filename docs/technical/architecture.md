@@ -27,12 +27,11 @@ graph TB
         REPLY[Reply Service]
     end
     
-    subgraph "Integration Layer"
-        OMNI[Omnichannel Router]
-        MAKE[Make.com Integration]
-        CORE[CoreBusiness API]
-        SOCIAL[Social Media APIs]
-    end
+	    subgraph "Integration Layer"
+	        OMNI[Omnichannel Router]
+	        CORE[CoreBusiness API]
+	        SOCIAL[Channel Webhooks (direct integrations)]
+	    end
     
     subgraph "Data Layer"
         FRAPPE_DB[(Frappe Database)]
@@ -56,9 +55,8 @@ graph TB
     CHAT_API --> INTENT
     CHAT_API --> CONTEXT
     
-    WEBHOOK_API --> OMNI
-    OMNI --> MAKE
-    OMNI --> SOCIAL
+	    WEBHOOK_API --> OMNI
+	    OMNI --> SOCIAL
     
     LIVE_API --> CORE
     
@@ -67,10 +65,10 @@ graph TB
     SECURITY --> FRAPPE_DB
     REPLY --> CACHE
     
-    MAKE --> WHATSAPP
-    MAKE --> TELEGRAM
-    MAKE --> FACEBOOK
-    SOCIAL --> SMS
+	    SOCIAL --> WHATSAPP
+	    SOCIAL --> TELEGRAM
+	    SOCIAL --> FACEBOOK
+	    SOCIAL --> SMS
 ```
 
 ## Core Components
@@ -172,8 +170,8 @@ graph TB
   - Facebook Messenger
   - SMS Gateway
 
-#### Make.com Integration
-- **File**: `api/make_com_webhook.py`
+#### Aggregator Integration (legacy, not used)
+- **File**: `(legacy module, no longer present)`
 - **Purpose**: Centralized webhook handler for all social media platforms
 - **Benefits**:
   - Simplified configuration

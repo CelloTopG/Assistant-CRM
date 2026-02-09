@@ -1,7 +1,7 @@
 # WCFCB Assistant CRM - ngrok Webhook Configuration
 
 ## Overview
-This document provides the configuration details for testing Make.com integrations using the ngrok tunnel.
+This document provides the configuration details for testing Assistant CRM webhook integrations using an ngrok tunnel in a development environment.
 
 ## Configuration Details
 
@@ -12,29 +12,19 @@ https://a9d168a9f208.ngrok-free.app
 
 ### Webhook Endpoints
 
-#### Make.com Webhook Endpoint
-- **URL**: `https://a9d168a9f208.ngrok-free.app/api/method/assistant_crm.api.make_com_webhook.make_com_webhook`
-- **Methods**: GET, POST
+#### Omnichannel Webhook Endpoint
+- **URL**: `https://a9d168a9f208.ngrok-free.app/api/method/assistant_crm.api.telegram_webhook.telegram_webhook`
+- **Methods**: POST
 - **Status**: ✅ Active and responding
 
 #### Assistant CRM Application
 - **URL**: `https://a9d168a9f208.ngrok-free.app/app/assistant-crm`
 - **Purpose**: Access the Assistant CRM interface for testing
 
-## Database Configuration
-
-The following settings have been updated in the Social Media Settings:
-
-```python
-# Social Media Settings
-make_com_enabled = 1
-make_com_webhook_url = "https://a9d168a9f208.ngrok-free.app/api/method/assistant_crm.api.make_com_webhook.make_com_webhook"
-```
-
-## Make.com Integration Setup
+## Webhook Integration Setup
 
 ### Webhook Configuration
-1. **Webhook URL**: `https://a9d168a9f208.ngrok-free.app/api/method/assistant_crm.api.make_com_webhook.make_com_webhook`
+1. **Webhook URL**: `https://a9d168a9f208.ngrok-free.app/api/method/assistant_crm.api.telegram_webhook.telegram_webhook`
 2. **Method**: POST
 3. **Content-Type**: application/json
 
@@ -90,7 +80,7 @@ User-Agent: WCFCB-Assistant-CRM/1.0
 ```bash
 curl -H "ngrok-skip-browser-warning: true" \
      -H "User-Agent: WCFCB-Assistant-CRM/1.0" \
-     "https://a9d168a9f208.ngrok-free.app/api/method/assistant_crm.api.make_com_webhook.make_com_webhook"
+     "https://a9d168a9f208.ngrok-free.app/api/method/assistant_crm.api.telegram_webhook.telegram_webhook"
 ```
 
 **Expected Response**: Status 200 with success message
@@ -115,7 +105,7 @@ curl -X POST \
          }
        }
      }' \
-     "https://a9d168a9f208.ngrok-free.app/api/method/assistant_crm.api.make_com_webhook.make_com_webhook"
+     "https://a9d168a9f208.ngrok-free.app/api/method/assistant_crm.api.telegram_webhook.telegram_webhook"
 ```
 
 ### 3. Access Assistant CRM Interface
@@ -172,23 +162,18 @@ Supported event types:
 
 ```bash
 # Check webhook status
-curl -I "https://a9d168a9f208.ngrok-free.app/api/method/assistant_crm.api.make_com_webhook.make_com_webhook"
+curl -I "https://a9d168a9f208.ngrok-free.app/api/method/assistant_crm.api.telegram_webhook.telegram_webhook"
 
 # Test with verbose output
-curl -v "https://a9d168a9f208.ngrok-free.app/api/method/assistant_crm.api.make_com_webhook.make_com_webhook"
+curl -v "https://a9d168a9f208.ngrok-free.app/api/method/assistant_crm.api.telegram_webhook.telegram_webhook"
 ```
-
-## Configuration Files Updated
-
-1. `make_com_integration_config.json` - Updated webhook URL
-2. Social Media Settings (Database) - Updated webhook URL and enabled integration
 
 ## Next Steps
 
-1. Configure your Make.com scenarios with the provided webhook URL
-2. Test message flow from social media platforms through Make.com to Assistant CRM
+1. Configure your messaging channels (e.g. Telegram, WhatsApp, Facebook) with the provided ngrok webhook URL(s)
+2. Test message flow from each channel through Assistant CRM
 3. Monitor webhook activity logs for successful processing
-4. Verify Anna's responses are being sent back through Make.com to the platforms
+4. Verify Anna's responses are being sent back to the originating channel
 
 ---
 

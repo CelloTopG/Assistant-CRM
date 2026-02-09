@@ -162,7 +162,6 @@ LOG_LEVEL=DEBUG
 DEVELOPMENT_MODE=true
 
 # External Services (Development)
-MAKE_COM_WEBHOOK_SECRET=dev_webhook_secret
 NGROK_SUBDOMAIN=your-ngrok-subdomain
 
 # Test Data

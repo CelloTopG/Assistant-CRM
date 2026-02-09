@@ -215,7 +215,6 @@ SECRET_KEY=your_very_long_secret_key_here
 ENCRYPTION_KEY=your_encryption_key_here
 
 # External Integrations
-MAKE_COM_WEBHOOK_SECRET=your_make_com_secret
 COREBUSINESS_API_KEY=your_corebusiness_api_key
 COREBUSINESS_API_URL=https://api.corebusiness.wcfcb.com
 

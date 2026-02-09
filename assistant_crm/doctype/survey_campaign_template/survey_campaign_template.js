@@ -71,8 +71,8 @@ function suggest_description(frm) {
     freeze_message: __('Generating AI suggestion...'),
     callback: (r) => {
       if (r.message && r.message.success) {
-        frm.set_value('description', r.message.suggestion);
-        frappe.show_alert({ message: __('Description generated!'), indicator: 'green' }, 3);
+        // Show preview dialog before applying
+        show_suggestion_preview(frm, 'description', 'Description', r.message.suggestion);
       } else {
         frappe.msgprint({
           title: __('AI Suggestion Failed'),
@@ -101,8 +101,8 @@ function suggest_recommended_for(frm) {
     freeze_message: __('Generating AI suggestion...'),
     callback: (r) => {
       if (r.message && r.message.success) {
-        frm.set_value('recommended_for', r.message.suggestion);
-        frappe.show_alert({ message: __('Recommendation generated!'), indicator: 'green' }, 3);
+        // Show preview dialog before applying
+        show_suggestion_preview(frm, 'recommended_for', 'Recommended For', r.message.suggestion);
       } else {
         frappe.msgprint({
           title: __('AI Suggestion Failed'),
@@ -112,6 +112,40 @@ function suggest_recommended_for(frm) {
       }
     }
   });
+}
+
+// Show preview dialog for text suggestions
+function show_suggestion_preview(frm, fieldname, field_label, suggestion) {
+  const dialog = new frappe.ui.Dialog({
+    title: __('AI Suggestion Preview'),
+    size: 'large',
+    fields: [
+      {
+        fieldtype: 'HTML',
+        fieldname: 'preview_html',
+        options: `
+          <div style="margin-bottom: 15px;">
+            <label class="control-label" style="font-weight: bold;">${__('Suggested')} ${field_label}:</label>
+            <div style="background: #f5f7fa; border: 1px solid #d1d8dd; border-radius: 4px; padding: 15px; margin-top: 8px; white-space: pre-wrap;">
+              ${frappe.utils.escape_html(suggestion)}
+            </div>
+          </div>
+        `
+      }
+    ],
+    primary_action_label: __('Apply Suggestion'),
+    primary_action: () => {
+      frm.set_value(fieldname, suggestion);
+      frappe.show_alert({ message: __(`${field_label} applied!`), indicator: 'green' }, 3);
+      dialog.hide();
+    },
+    secondary_action_label: __('Cancel'),
+    secondary_action: () => {
+      dialog.hide();
+    }
+  });
+
+  dialog.show();
 }
 
 function suggest_questions(frm) {
@@ -158,7 +192,8 @@ function generate_ai_questions(frm, num_questions, replace_existing) {
     freeze_message: __('Generating AI questions...'),
     callback: (r) => {
       if (r.message && r.message.success) {
-        apply_ai_questions(frm, r.message.questions, replace_existing);
+        // Show preview dialog before applying
+        show_questions_preview(frm, r.message.questions, replace_existing);
       } else {
         frappe.msgprint({
           title: __('AI Question Generation Failed'),
@@ -168,6 +203,69 @@ function generate_ai_questions(frm, num_questions, replace_existing) {
       }
     }
   });
+}
+
+// Show preview dialog for questions
+function show_questions_preview(frm, questions, replace_existing) {
+  // Build HTML table for questions preview
+  let questions_html = `
+    <div style="margin-bottom: 15px;">
+      <label class="control-label" style="font-weight: bold;">${__('AI Generated Questions')}:</label>
+      <table class="table table-bordered" style="margin-top: 10px;">
+        <thead>
+          <tr style="background: #f5f7fa;">
+            <th style="width: 5%;">#</th>
+            <th style="width: 50%;">${__('Question')}</th>
+            <th style="width: 20%;">${__('Type')}</th>
+            <th style="width: 15%;">${__('Required')}</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  questions.forEach((q, idx) => {
+    questions_html += `
+      <tr>
+        <td>${idx + 1}</td>
+        <td>${frappe.utils.escape_html(q.question_text)}</td>
+        <td><span class="badge">${q.question_type}</span></td>
+        <td>${q.is_required ? '<i class="fa fa-check text-success"></i> Yes' : '<i class="fa fa-times text-muted"></i> No'}</td>
+      </tr>
+    `;
+  });
+
+  questions_html += `
+        </tbody>
+      </table>
+      <p class="text-muted" style="margin-top: 10px;">
+        <i class="fa fa-info-circle"></i>
+        ${replace_existing ? __('This will replace all existing questions.') : __('These questions will be added to existing ones.')}
+      </p>
+    </div>
+  `;
+
+  const dialog = new frappe.ui.Dialog({
+    title: __('AI Questions Preview'),
+    size: 'extra-large',
+    fields: [
+      {
+        fieldtype: 'HTML',
+        fieldname: 'questions_preview_html',
+        options: questions_html
+      }
+    ],
+    primary_action_label: __('Apply Questions'),
+    primary_action: () => {
+      apply_ai_questions(frm, questions, replace_existing);
+      dialog.hide();
+    },
+    secondary_action_label: __('Cancel'),
+    secondary_action: () => {
+      dialog.hide();
+    }
+  });
+
+  dialog.show();
 }
 
 function apply_ai_questions(frm, questions, replace_existing) {

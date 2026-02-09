@@ -217,25 +217,6 @@ I can help you with:
 }
 ```
 
-### 4. Make.com Integration (Recommended)
-
-Make.com provides centralized management of all social media integrations.
-
-#### Setup Process
-1. Create Make.com account
-2. Create scenarios for each platform
-3. Configure centralized webhook:
-   ```
-   https://your-domain.com/api/omnichannel/webhook/make-com
-   ```
-4. Update **Advanced Social Media Settings** with Make.com configuration
-
-#### Benefits
-- Simplified configuration
-- Enhanced reliability
-- Unified message processing
-- Easier maintenance
-
 ## Knowledge Base Configuration
 
 ### 1. Article Management

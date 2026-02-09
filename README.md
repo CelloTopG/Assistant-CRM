@@ -38,8 +38,6 @@ Add to your `sites/your-site.local/site_config.json`:
   "assistant_crm_telegram_bot_token": "your-telegram-bot-token",
   "assistant_crm_facebook_page_access_token": "your-fb-token",
   "assistant_crm_instagram_access_token": "your-instagram-token",
-  "assistant_crm_make_com_api_key": "your-make-com-key",
-  "assistant_crm_make_com_webhook_secret": "your-webhook-secret",
   "assistant_crm_linkedin_client_secret": "your-linkedin-secret",
   "assistant_crm_linkedin_access_token": "your-linkedin-token",
   "assistant_crm_ussd_api_key": "your-ussd-key"
@@ -78,7 +76,6 @@ INSTAGRAM_ACCESS_TOKEN=your-instagram-token
    - Model selection (gpt-4, etc.)
 
 3. **Social Media Settings**: `/app/social-media-settings`
-   - Make.com credentials
    - Facebook, Instagram, Twitter, LinkedIn tokens
    - USSD configuration
 
@@ -88,7 +85,6 @@ Configure webhooks in your platform dashboards pointing to:
 
 | Platform | Webhook URL |
 |----------|-------------|
-| Make.com | `https://your-domain/api/omnichannel/webhook/make-com` |
 | Telegram | `https://your-domain/api/method/assistant_crm.api.telegram_webhook.telegram_webhook` |
 | WhatsApp | `https://your-domain/api/method/assistant_crm.api.whatsapp_webhook.whatsapp_webhook` |
 | Facebook | `https://your-domain/api/method/assistant_crm.api.facebook_webhook.facebook_webhook` |

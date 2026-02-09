@@ -14,7 +14,6 @@ This guide provides step-by-step instructions for installing WCFCB Assistant CRM
 
 ### Required API Keys
 - **Google Gemini API Key**: For AI functionality
-- **Make.com Account**: For omnichannel integrations (optional)
 - **Ngrok Account**: For webhook testing (development only)
 
 ## Installation Steps
@@ -26,7 +25,7 @@ This guide provides step-by-step instructions for installing WCFCB Assistant CRM
 cd /path/to/your/frappe-bench
 
 # Get the app from repository
-bench get-app https://github.com/your-org/assistant_crm.git
+bench get-app https://github.com/CelloTopG/Assistant-CRM.git
 
 # Install the app on your site
 bench --site your-site install-app assistant_crm
@@ -121,10 +120,7 @@ bench --site your-site execute assistant_crm.install.setup_roles_and_permissions
 2. Configure webhook URL: `https://your-domain.com/api/omnichannel/webhook/telegram`
 3. Update bot token in **Assistant CRM → Social Media Settings**
 
-#### Make.com Integration (Recommended)
-1. Create Make.com scenarios for each platform
-2. Configure centralized webhook: `https://your-domain.com/api/omnichannel/webhook/make-com`
-3. Update Make.com settings in **Assistant CRM → Advanced Social Media Settings**
+<!-- Legacy aggregator-based integration removed: channels are now configured directly via their respective webhooks. -->
 
 ## Troubleshooting
 
