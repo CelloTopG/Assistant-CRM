@@ -58,8 +58,7 @@
    "fieldname": "api_key",
    "fieldtype": "Password",
    "in_list_view": 1,
-   "label": "API Key",
-   "reqd": 1
+   "label": "API Key"
   },
   {
    "default": "gemini-1.5-flash",
@@ -93,10 +92,10 @@
    "label": "OpenAI Configuration (Survey AI Features)"
   },
   {
+   "description": "API key for Survey Campaign Template AI features (description, recommendations, questions generation)",
    "fieldname": "openai_api_key",
    "fieldtype": "Password",
-   "label": "OpenAI API Key",
-   "description": "API key for Survey Campaign Template AI features (description, recommendations, questions generation)"
+   "label": "OpenAI API Key"
   },
   {
    "collapsible": 1,
@@ -202,7 +201,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-07-27 01:16:50.006705",
+ "modified": "2026-02-11 11:28:19.872053",
  "modified_by": "Administrator",
  "module": "Assistant Settings",
  "name": "Assistant CRM Settings",

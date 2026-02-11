@@ -308,9 +308,8 @@
   },
   {
    "fieldname": "default_response_template",
-   "fieldtype": "Link",
-   "label": "Default Response Template",
-   "options": "Message Template"
+   "fieldtype": "Data",
+   "label": "Default Response Template"
   },
   {
    "default": "1",
