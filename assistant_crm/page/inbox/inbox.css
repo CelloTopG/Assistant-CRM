@@ -1,73 +1,22 @@
-/* CRM Unified Inbox - ERPNext Native Theme */
-/* Design System: Matches Frappe/ERPNext design patterns */
-
-:root {
-    /* ERPNext Core Colors - from espresso/_colors.scss */
-    --crm-primary: #0289f7;  /* ERPNext blue-500 */
-    --crm-primary-dark: #007be0;  /* ERPNext blue-600 */
-    --crm-primary-light: #70b6f0;  /* ERPNext blue-400 */
-    --crm-primary-bg: #edf6fd;  /* ERPNext blue-100 */
-    --crm-primary-subtle: #f7fbfd;  /* ERPNext blue-50 */
-
-    /* Background Colors - ERPNext native */
-    --crm-bg-primary: #f8f8f8;  /* gray-50 */
-    --crm-bg-secondary: #ffffff;
-    --crm-bg-tertiary: #f3f3f3;  /* gray-100 */
-
-    /* Text colors - Higher contrast for readability */
-    --crm-text-primary: #171717;  /* gray-900 */
-    --crm-text-secondary: #383838;  /* gray-800 */
-    --crm-text-muted: #7c7c7c;  /* gray-600 */
-
-    /* Borders - ERPNext native */
-    --crm-border-light: #ededed;  /* gray-200 */
-    --crm-border-medium: #e2e2e2;  /* gray-300 */
-    --crm-border-dark: #c7c7c7;  /* gray-400 */
-
-    /* Status colors - ERPNext native palette */
-    --crm-status-new: #525252;  /* gray-700 */
-    --crm-status-active: #0289f7;  /* blue-500 */
-    --crm-status-success: #30a66d;  /* green-600 */
-    --crm-status-warning: #e79913;  /* amber-500 */
-    --crm-status-danger: #e03636;  /* red-500 */
-    --crm-status-closed: #999999;  /* gray-500 */
-
-    /* Platform indicators - Brand colors with better saturation */
-    --crm-platform-whatsapp: #25D366;
-    --crm-platform-facebook: #1877F2;
-    --crm-platform-instagram: #E4405F;
-    --crm-platform-telegram: #0088cc;
-    --crm-platform-twitter: #1DA1F2;
-    --crm-platform-linkedin: #0A66C2;
-    --crm-platform-tawk: #03a84e;
-    --crm-platform-youtube: #FF0000;
-
-    /* Shadows - ERPNext native */
-    --crm-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --crm-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-
-    /* Spacing */
-    --crm-radius-sm: 4px;
-    --crm-radius-md: 6px;
-    --crm-radius-lg: 8px;
-}
+/* CRM Unified Inbox - Uses ERPNext Native Theme Variables */
+/* Design System: Inherits from Frappe/ERPNext CSS variables */
 
 /* Base container */
 .inbox-container,
 .wcfcb-unified-inbox {
     padding: 16px 20px;
-    background-color: var(--crm-bg-primary);
+    background-color: var(--gray-50);
     min-height: calc(100vh - 100px);
 }
 
 /* Page header - minimal status bar */
 .page-header {
-    background: var(--crm-bg-secondary);
+    background: var(--fg-color);
     padding: 8px 16px;
-    border-radius: var(--crm-radius-lg);
-    box-shadow: var(--crm-shadow-sm);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
     margin-bottom: 12px;
-    border: 1px solid var(--crm-border-light);
+    border: 1px solid var(--border-color);
 }
 
 /* Connection status - subtle indicator */
@@ -75,44 +24,44 @@
     font-size: 0.75rem;
     padding: 4px 10px;
     font-weight: 500;
-    border-radius: var(--crm-radius-sm);
+    border-radius: var(--border-radius-sm);
 }
 
 #connection-status.bg-success {
-    background-color: var(--crm-status-success) !important;
+    background-color: var(--green-600) !important;
 }
 
 /* Platform filters - streamlined */
 .platform-filters {
-    background: var(--crm-bg-secondary);
+    background: var(--fg-color);
     padding: 12px 16px;
-    border-radius: var(--crm-radius-lg);
-    box-shadow: var(--crm-shadow-sm);
-    border: 1px solid var(--crm-border-light);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
     margin-bottom: 16px;
 }
 
 .platform-filters .btn-group .btn {
-    border-radius: var(--crm-radius-sm) !important;
+    border-radius: var(--border-radius-sm) !important;
     margin-right: 4px;
     font-size: 0.8125rem;
     font-weight: 500;
     padding: 6px 12px;
-    border: 1px solid var(--crm-border-medium);
-    background: var(--crm-bg-secondary);
-    color: var(--crm-text-secondary);
+    border: 1px solid var(--gray-300);
+    background: var(--fg-color);
+    color: var(--gray-800);
     transition: all 0.15s ease;
 }
 
 .platform-filters .btn-group .btn:hover {
-    background: var(--crm-bg-tertiary);
-    border-color: var(--crm-border-medium);
+    background: var(--gray-100);
+    border-color: var(--gray-300);
 }
 
 .platform-filters .btn.active {
-    background-color: var(--crm-primary) !important;
+    background-color: var(--blue-500) !important;
     color: white !important;
-    border-color: var(--crm-primary) !important;
+    border-color: var(--blue-500) !important;
 }
 
 /* Remove colorful button variants */
@@ -121,9 +70,9 @@
 .platform-filters .btn-outline-danger,
 .platform-filters .btn-outline-info,
 .platform-filters .btn-outline-dark {
-    color: var(--crm-text-secondary) !important;
-    border-color: var(--crm-border-medium) !important;
-    background: var(--crm-bg-secondary) !important;
+    color: var(--gray-800) !important;
+    border-color: var(--gray-300) !important;
+    background: var(--fg-color) !important;
 }
 
 .platform-filters .btn-outline-success:hover,
@@ -131,39 +80,39 @@
 .platform-filters .btn-outline-danger:hover,
 .platform-filters .btn-outline-info:hover,
 .platform-filters .btn-outline-dark:hover {
-    background: var(--crm-bg-tertiary) !important;
+    background: var(--gray-100) !important;
 }
 
 /* Conversation list */
 .conversation-list {
     height: 600px;
     overflow-y: auto;
-    background: var(--crm-bg-secondary);
+    background: var(--fg-color);
 }
 
 .conversation-item {
     padding: 14px 16px;
-    border-bottom: 1px solid var(--crm-border-light);
+    border-bottom: 1px solid var(--border-color);
     cursor: pointer;
     transition: background-color 0.15s ease;
 }
 
 .conversation-item:hover {
-    background-color: var(--crm-bg-tertiary);
+    background-color: var(--gray-100);
 }
 
 .conversation-item.active {
-    background-color: var(--crm-primary-bg);
-    border-left: 3px solid var(--crm-primary);
+    background-color: var(--blue-100);
+    border-left: 3px solid var(--blue-500);
 }
 
 .conversation-item strong {
-    color: var(--crm-text-primary);
+    color: var(--gray-900);
     font-weight: 600;
 }
 
 .conversation-item .text-muted {
-    color: var(--crm-text-muted) !important;
+    color: var(--gray-600) !important;
     font-size: 0.8125rem;
 }
 
@@ -171,7 +120,7 @@
 .messages-container {
     height: 500px;
     overflow-y: auto;
-    background-color: var(--crm-bg-tertiary);
+    background-color: var(--gray-100);
     padding: 16px;
     display: flex;
     flex-direction: column;
@@ -199,7 +148,7 @@
 
 .message-content {
     padding: 10px 14px;
-    border-radius: var(--crm-radius-lg);
+    border-radius: var(--border-radius-lg);
     word-wrap: break-word;
     line-height: 1.5;
     font-size: 0.875rem;
@@ -207,20 +156,20 @@
 
 /* Inbound - light gray, subtle */
 .message.inbound .message-content {
-    background-color: var(--crm-bg-secondary);
-    color: var(--crm-text-primary);
-    border: 1px solid var(--crm-border-light);
+    background-color: var(--fg-color);
+    color: var(--gray-900);
+    border: 1px solid var(--border-color);
 }
 
 /* Outbound - ERPNext blue, professional */
 .message.outbound .message-content {
-    background-color: var(--crm-primary);
+    background-color: var(--blue-500);
     color: white;
 }
 
 /* AI message - subtle differentiation */
 .message.ai .message-content {
-    background-color: #475569;
+    background-color: var(--gray-700);
     color: white;
     border: none;
 }
@@ -230,23 +179,23 @@
 }
 
 .sending-indicator {
-    border-left: 2px solid var(--crm-status-warning);
+    border-left: 2px solid var(--amber-500);
 }
 
 /* AI metrics and agent info - subtle */
 .ai-metrics {
     background-color: rgba(255, 255, 255, 0.95) !important;
-    border-radius: var(--crm-radius-sm);
+    border-radius: var(--border-radius-sm);
     font-size: 0.75rem;
     padding: 6px 8px !important;
-    border: 1px solid var(--crm-border-light);
+    border: 1px solid var(--border-color);
 }
 
 .agent-info {
-    border-radius: var(--crm-radius-sm);
+    border-radius: var(--border-radius-sm);
     font-size: 0.75rem;
-    background-color: rgba(16, 185, 129, 0.1) !important;
-    border: 1px solid rgba(16, 185, 129, 0.2);
+    background-color: var(--green-100) !important;
+    border: 1px solid var(--green-200);
 }
 
 .no-conversation {
@@ -255,19 +204,19 @@
     justify-content: center;
     height: 100%;
     flex-direction: column;
-    color: var(--crm-text-muted);
+    color: var(--gray-600);
     text-align: center;
 }
 
 .no-conversation i {
-    color: var(--crm-border-medium);
+    color: var(--gray-300);
 }
 
 /* Platform badges - muted, professional indicators */
 .platform-badge {
     font-size: 0.6875rem;
     padding: 3px 8px;
-    border-radius: var(--crm-radius-sm);
+    border-radius: var(--border-radius-sm);
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.025em;
@@ -325,54 +274,54 @@
 .status-badge {
     font-size: 0.6875rem;
     padding: 3px 8px;
-    border-radius: var(--crm-radius-sm);
+    border-radius: var(--border-radius-sm);
     font-weight: 500;
 }
 
 .status-badge.New {
-    background-color: rgba(100, 116, 139, 0.15) !important;
-    color: #475569 !important;
+    background-color: var(--gray-100) !important;
+    color: var(--gray-700) !important;
 }
 
 .status-badge.AI\.Responded,
 .status-badge.AI.Responded {
-    background-color: rgba(16, 185, 129, 0.15) !important;
-    color: #047857 !important;
+    background-color: var(--green-100) !important;
+    color: var(--green-700) !important;
 }
 
 .status-badge.Agent\.Assigned,
 .status-badge.Agent.Assigned {
-    background-color: rgba(14, 165, 233, 0.15) !important;
-    color: #0369a1 !important;
+    background-color: var(--blue-100) !important;
+    color: var(--blue-700) !important;
 }
 
 .status-badge.In\.Progress,
 .status-badge.In.Progress {
-    background-color: rgba(245, 158, 11, 0.15) !important;
-    color: #b45309 !important;
+    background-color: var(--amber-100) !important;
+    color: var(--amber-700) !important;
 }
 
 .status-badge.Escalated {
-    background-color: rgba(239, 68, 68, 0.15) !important;
-    color: #b91c1c !important;
+    background-color: var(--red-100) !important;
+    color: var(--red-700) !important;
 }
 
 .status-badge.Closed {
-    background-color: rgba(148, 163, 184, 0.15) !important;
-    color: #64748b !important;
+    background-color: var(--gray-200) !important;
+    color: var(--gray-600) !important;
 }
 
 /* Input area - clean */
 .message-input-area,
 .card-footer {
-    background: var(--crm-bg-secondary);
-    border-top: 1px solid var(--crm-border-light);
+    background: var(--fg-color);
+    border-top: 1px solid var(--border-color);
     padding: 12px 16px;
 }
 
 .message-input-area input:disabled,
 #message-input:disabled {
-    background-color: var(--crm-bg-tertiary);
+    background-color: var(--gray-100);
 }
 
 .message-input-area button:disabled,
@@ -381,31 +330,31 @@
 }
 
 #message-input {
-    border: 1px solid var(--crm-border-medium);
-    border-radius: var(--crm-radius-md);
+    border: 1px solid var(--gray-300);
+    border-radius: var(--border-radius);
     padding: 8px 12px;
     font-size: 0.875rem;
 }
 
 #message-input:focus {
-    border-color: var(--crm-primary);
-    box-shadow: 0 0 0 2px rgba(2, 137, 247, 0.15);
+    border-color: var(--blue-500);
+    box-shadow: 0 0 0 2px var(--blue-100);
     outline: none;
 }
 
 /* Card styling - minimal shadows */
 .card {
-    border: 1px solid var(--crm-border-light);
-    box-shadow: var(--crm-shadow-sm);
-    border-radius: var(--crm-radius-lg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--border-radius-lg);
 }
 
 .card-header {
-    background-color: var(--crm-bg-secondary);
-    border-bottom: 1px solid var(--crm-border-light);
+    background-color: var(--fg-color);
+    border-bottom: 1px solid var(--border-color);
     font-weight: 600;
     font-size: 0.875rem;
-    color: var(--crm-text-primary);
+    color: var(--gray-900);
     padding: 12px 16px;
 }
 
@@ -417,10 +366,10 @@
 }
 
 .action-buttons .btn {
-    background-color: var(--control-bg, #f3f3f3);
-    color: var(--text-color, #171717);
+    background-color: var(--control-bg);
+    color: var(--text-color);
     border: none;
-    border-radius: var(--border-radius, 6px);
+    border-radius: var(--border-radius);
     padding: 6px 10px;
     font-size: 13px;
     display: inline-flex;
@@ -432,22 +381,22 @@
 }
 
 .action-buttons .btn:hover {
-    background-color: var(--btn-default-hover-bg, #e2e2e2);
-    color: var(--text-color, #171717);
+    background-color: var(--btn-default-hover-bg);
+    color: var(--text-color);
 }
 
 .action-buttons .btn:active {
-    background-color: var(--control-bg, #f3f3f3);
-    box-shadow: var(--focus-default, 0 0 0 2px rgba(0, 0, 0, 0.1));
+    background-color: var(--control-bg);
+    box-shadow: var(--checkbox-focus-shadow);
 }
 
 .action-buttons .btn i {
     font-size: 14px;
-    color: var(--text-muted, #7c7c7c);
+    color: var(--gray-600);
 }
 
 .action-buttons .btn:hover i {
-    color: var(--crm-primary);
+    color: var(--blue-500);
 }
 
 /* Icon button specific styling */
@@ -458,16 +407,16 @@
 
 /* Send button - Primary action */
 #send-btn {
-    background-color: var(--crm-primary) !important;
+    background-color: var(--blue-500) !important;
     color: white !important;
     border: none !important;
-    border-radius: var(--border-radius, 6px) !important;
+    border-radius: var(--border-radius) !important;
     padding: 6px 12px;
     font-weight: 500;
 }
 
 #send-btn:hover {
-    background-color: var(--crm-primary-dark) !important;
+    background-color: var(--blue-600) !important;
 }
 
 #send-btn i {
@@ -475,39 +424,39 @@
 }
 
 .btn-outline-warning {
-    color: var(--crm-status-warning) !important;
-    border-color: var(--crm-status-warning) !important;
+    color: var(--amber-500) !important;
+    border-color: var(--amber-500) !important;
 }
 
 .btn-outline-warning:hover {
-    background-color: rgba(231, 153, 19, 0.1) !important;
+    background-color: var(--amber-100) !important;
 }
 
 .btn-outline-success {
-    color: var(--crm-status-success) !important;
-    border-color: var(--crm-status-success) !important;
+    color: var(--green-600) !important;
+    border-color: var(--green-600) !important;
 }
 
 .btn-outline-success:hover {
-    background-color: rgba(48, 166, 109, 0.1) !important;
+    background-color: var(--green-100) !important;
 }
 
 .btn-outline-info {
-    color: var(--crm-primary) !important;
-    border-color: var(--crm-primary) !important;
+    color: var(--blue-500) !important;
+    border-color: var(--blue-500) !important;
 }
 
 .btn-outline-info:hover {
-    background-color: rgba(2, 137, 247, 0.1) !important;
+    background-color: var(--blue-100) !important;
 }
 
 .btn-outline-danger {
-    color: var(--crm-status-danger) !important;
-    border-color: var(--crm-status-danger) !important;
+    color: var(--red-500) !important;
+    border-color: var(--red-500) !important;
 }
 
 .btn-outline-danger:hover {
-    background-color: rgba(224, 54, 54, 0.1) !important;
+    background-color: var(--red-100) !important;
 }
 
 /* Responsive design */
@@ -561,28 +510,28 @@
 
 .conversation-list::-webkit-scrollbar-track,
 .messages-container::-webkit-scrollbar-track {
-    background: var(--crm-bg-tertiary);
+    background: var(--gray-100);
     border-radius: 2px;
 }
 
 .conversation-list::-webkit-scrollbar-thumb,
 .messages-container::-webkit-scrollbar-thumb {
-    background: var(--crm-border-medium);
+    background: var(--gray-300);
     border-radius: 2px;
 }
 
 .conversation-list::-webkit-scrollbar-thumb:hover,
 .messages-container::-webkit-scrollbar-thumb:hover {
-    background: var(--crm-text-muted);
+    background: var(--gray-600);
 }
 
 /* Data source badge - subtle indicator */
 .data-source-badge {
     font-size: 0.625rem;
     padding: 2px 6px;
-    border-radius: var(--crm-radius-sm);
-    background-color: rgba(16, 185, 129, 0.15) !important;
-    color: #047857 !important;
+    border-radius: var(--border-radius-sm);
+    background-color: var(--green-100) !important;
+    color: var(--green-700) !important;
 }
 
 /* Button group styling */
@@ -593,63 +542,63 @@
 
 /* Priority indicators - professional */
 .badge.bg-danger {
-    background-color: rgba(239, 68, 68, 0.15) !important;
-    color: #b91c1c !important;
+    background-color: var(--red-100) !important;
+    color: var(--red-700) !important;
     font-weight: 600;
 }
 
 .badge.bg-warning {
-    background-color: rgba(245, 158, 11, 0.15) !important;
-    color: #b45309 !important;
+    background-color: var(--amber-100) !important;
+    color: var(--amber-700) !important;
     font-weight: 600;
 }
 
 .badge.bg-success {
-    background-color: rgba(16, 185, 129, 0.15) !important;
-    color: #047857 !important;
+    background-color: var(--green-100) !important;
+    color: var(--green-700) !important;
 }
 
 .badge.bg-info {
-    background-color: rgba(14, 165, 233, 0.15) !important;
-    color: #0369a1 !important;
+    background-color: var(--blue-100) !important;
+    color: var(--blue-700) !important;
 }
 
 .badge.bg-secondary {
-    background-color: rgba(100, 116, 139, 0.15) !important;
-    color: #475569 !important;
+    background-color: var(--gray-200) !important;
+    color: var(--gray-700) !important;
 }
 
 .badge.bg-primary {
-    background-color: rgba(59, 130, 246, 0.15) !important;
-    color: #1d4ed8 !important;
+    background-color: var(--blue-100) !important;
+    color: var(--blue-700) !important;
 }
 
 /* Conversation count badge */
 #conversation-count {
-    background-color: var(--crm-primary) !important;
+    background-color: var(--blue-500) !important;
     color: white !important;
     font-size: 0.75rem;
     padding: 3px 8px;
-    border-radius: var(--crm-radius-sm);
+    border-radius: var(--border-radius-sm);
 }
 
 /* Search input styling */
 #conversation-search {
-    border: 1px solid var(--crm-border-medium);
-    border-radius: var(--crm-radius-sm);
+    border: 1px solid var(--gray-300);
+    border-radius: var(--border-radius-sm);
     font-size: 0.8125rem;
     padding: 6px 10px;
 }
 
 #conversation-search:focus {
-    border-color: var(--crm-primary);
-    box-shadow: 0 0 0 2px rgba(2, 137, 247, 0.15);
+    border-color: var(--blue-500);
+    box-shadow: 0 0 0 2px var(--blue-100);
     outline: none;
 }
 
 /* Ticket badge */
 .ticket-number-display .badge {
-    background-color: rgba(100, 116, 139, 0.15) !important;
-    color: #475569 !important;
+    background-color: var(--gray-200) !important;
+    color: var(--gray-700) !important;
     font-size: 0.6875rem;
 }
