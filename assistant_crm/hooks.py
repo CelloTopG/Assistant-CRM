@@ -199,88 +199,83 @@ doc_events = {
 # }
 
 # Twitter polling every 10 minutes and escalation sweep hourly + Claims/Complaints reports emailers
+# Using short wrapper paths from assistant_crm.tasks to avoid exceeding Scheduled Job Type method column length
 scheduler_events = {
     "cron": {
         "*/10 * * * *": [
-            "assistant_crm.api.social_media_ports.poll_twitter_inbox"
+            "assistant_crm.tasks.poll_twitter"
         ],
         "0 * * * *": [
-            "assistant_crm.api.unified_inbox_api.sweep_escalate_inactive_conversations"
+            "assistant_crm.tasks.sweep_escalations"
         ],
         # USSD session cleanup every 6 hours
         "0 */6 * * *": [
-            "assistant_crm.api.ussd_integration.cleanup_expired_ussd_sessions"
+            "assistant_crm.tasks.cleanup_ussd"
         ],
         # Daily Claims Status Report at 07:15
         "15 7 * * *": [
-            "assistant_crm.assistant_crm.doctype.claims_status_report.claims_status_report.schedule_daily_claims_status_reports"
+            "assistant_crm.tasks.daily_claims"
         ],
         # Weekly Claims Status Report every Monday at 07:30
         "30 7 * * 1": [
-            "assistant_crm.assistant_crm.doctype.claims_status_report.claims_status_report.schedule_weekly_claims_status_reports"
+            "assistant_crm.tasks.weekly_claims"
         ],
         # Weekly Complaints Status Report every Monday at 07:45
         "45 7 * * 1": [
-            "assistant_crm.assistant_crm.doctype.complaints_status_report.complaints_status_report.schedule_weekly_complaints_status_reports"
+            "assistant_crm.tasks.weekly_complaints"
         ],
         # Monthly Complaints Status Report on the 1st day at 07:35
         "35 7 1 * *": [
-            "assistant_crm.assistant_crm.doctype.complaints_status_report.complaints_status_report.schedule_monthly_complaints_status_reports"
+            "assistant_crm.tasks.monthly_complaints"
         ],
         # Monthly SLA Compliance Report on the 1st day at 08:05
         "5 8 1 * *": [
-            "assistant_crm.assistant_crm.doctype.sla_compliance_report.sla_compliance_report.schedule_monthly_sla_compliance_reports"
+            "assistant_crm.tasks.monthly_sla"
         ],
-
         # Payout Summary Report: check 1st business day each weekday at 07:00
         "0 7 * * 1-5": [
-            "assistant_crm.assistant_crm.doctype.payout_summary_report.payout_summary_report.schedule_monthly_payout_summary"
-        ]
-        ,
+            "assistant_crm.tasks.monthly_payout"
+        ],
         # Beneficiary Status Report: check 1st business day each weekday at 07:15 and send Excel+PDF to Finance
         "15 7 * * 1-5": [
-            "assistant_crm.assistant_crm.doctype.beneficiary_status_report.beneficiary_status_report.schedule_monthly_beneficiary_status_reports"
+            "assistant_crm.tasks.monthly_beneficiary"
         ],
         # AI Automation Report - check 1st business day each weekday at 07:45
         "45 7 * * 1-5": [
-            "assistant_crm.assistant_crm.doctype.ai_automation_report.ai_automation_report.schedule_monthly_ai_automation_reports"
+            "assistant_crm.tasks.monthly_ai_automation"
         ],
-
-
         # Employer Status Report - Monthly on the 1st at 07:25
         "25 7 1 * *": [
-            "assistant_crm.assistant_crm.doctype.employer_status_report.employer_status_report.schedule_monthly_employer_status_reports"
+            "assistant_crm.tasks.monthly_employer"
         ],
         # Employer Status Report - Quarterly on Jan/Apr/Jul/Oct 1st at 07:35
         "35 7 1 1,4,7,10 *": [
-            "assistant_crm.assistant_crm.doctype.employer_status_report.employer_status_report.schedule_quarterly_employer_status_reports"
+            "assistant_crm.tasks.quarterly_employer"
         ],
         # Branch Performance Report - Monthly: check 1st business day each weekday at 07:55
         "55 7 * * 1-5": [
-            "assistant_crm.assistant_crm.doctype.branch_performance_report.branch_performance_report.schedule_monthly_branch_performance_reports"
+            "assistant_crm.tasks.monthly_branch"
         ],
         # Branch Performance Report - Quarterly: on Jan/Apr/Jul/Oct 1st at 08:05 for previous quarter
         "5 8 1 1,4,7,10 *": [
-            "assistant_crm.assistant_crm.doctype.branch_performance_report.branch_performance_report.schedule_quarterly_branch_performance_reports"
+            "assistant_crm.tasks.quarterly_branch"
         ],
         # Inbox Status Report - Weekly every Monday at 08:00 (calendar week aligned)
         "0 8 * * 1": [
-            "assistant_crm.assistant_crm.doctype.inbox_status_report.inbox_status_report.schedule_weekly_inbox_status_reports"
+            "assistant_crm.tasks.weekly_inbox"
         ],
         # Inbox Status Report - Monthly on the 1st at 08:15 (previous full month)
         "15 8 1 * *": [
-            "assistant_crm.assistant_crm.doctype.inbox_status_report.inbox_status_report.schedule_monthly_inbox_status_reports"
+            "assistant_crm.tasks.monthly_inbox"
         ],
-
         # Survey Feedback Report - Monthly on the 1st at 07:20
         "20 7 1 * *": [
-            "assistant_crm.assistant_crm.doctype.survey_feedback_report.survey_feedback_report.schedule_monthly_survey_feedback_reports"
+            "assistant_crm.tasks.monthly_survey"
         ],
         # Survey Feedback Report - Quarterly on Jan/Apr/Jul/Oct 1st at 07:30
         "30 7 1 1,4,7,10 *": [
-            "assistant_crm.assistant_crm.doctype.survey_feedback_report.survey_feedback_report.schedule_quarterly_survey_feedback_reports"
+            "assistant_crm.tasks.quarterly_survey"
         ],
-
     }
 }
 
