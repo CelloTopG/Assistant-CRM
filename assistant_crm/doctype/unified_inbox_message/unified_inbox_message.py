@@ -442,13 +442,23 @@ class UnifiedInboxMessage(Document):
         if confidence < 0.7:
             self.db_set("requires_escalation", 1)
 
-            # Update conversation
-            conversation_doc = frappe.get_doc(
-                "Unified Inbox Conversation", self.conversation
-            )
-            conversation_doc.escalate_to_human_agent(
-                f"Low AI confidence: {confidence}"
-            )
+            # Update conversation – use the valid enum value expected by
+            # the Escalation Workflow doctype instead of a free-text string.
+            try:
+                conversation_doc = frappe.get_doc(
+                    "Unified Inbox Conversation", self.conversation
+                )
+                conversation_doc.escalate_to_human_agent("low_confidence")
+            except Exception as esc_err:
+                # Never let escalation failures crash the caller – the AI
+                # response should still be persisted and sent.
+                try:
+                    frappe.log_error(
+                        f"Escalation after low confidence failed: {str(esc_err)}"[:500],
+                        "Unified Inbox - Escalation Error"[:140],
+                    )
+                except Exception:
+                    pass
 
     def set_agent_response(
         self,

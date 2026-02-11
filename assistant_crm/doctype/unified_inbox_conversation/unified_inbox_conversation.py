@@ -242,10 +242,13 @@ class UnifiedInboxConversation(Document):
                 self.db_set("escalation_reason", "No agents available")
 
         except Exception as e:
-            frappe.log_error(
-                f"Failed to escalate conversation: {str(e)}",
-                "Unified Inbox - Escalation Error",
-            )
+            try:
+                frappe.log_error(
+                    f"Failed to escalate conversation: {str(e)}"[:2000],
+                    "Escalation Error"[:140],
+                )
+            except Exception:
+                pass
 
     def find_available_agent(self) -> Optional[str]:
         """Find an available agent for assignment.
@@ -425,7 +428,13 @@ class UnifiedInboxConversation(Document):
             escalation_doc.insert(ignore_permissions=True)
             
         except Exception as e:
-            frappe.log_error(f"Failed to create escalation record: {str(e)}", "Unified Inbox - Escalation Record Error")
+            try:
+                frappe.log_error(
+                    f"Failed to create escalation record: {str(e)}"[:2000],
+                    "Escalation Record Error"[:140],
+                )
+            except Exception:
+                pass
     
     def notify_agent_assignment(self, agent: str):
         """Notify agent of new conversation assignment."""
