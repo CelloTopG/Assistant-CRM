@@ -22,6 +22,7 @@
    "fieldname": "session_id",
    "fieldtype": "Data",
    "label": "Session ID",
+   "length": 100,
    "reqd": 1,
    "unique": 1
   },

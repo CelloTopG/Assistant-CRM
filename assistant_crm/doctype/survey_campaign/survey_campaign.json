@@ -68,6 +68,7 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Campaign Name",
+   "length": 140,
    "reqd": 1,
    "unique": 1
   },

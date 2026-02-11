@@ -86,6 +86,7 @@
    "fieldname": "response_token",
    "fieldtype": "Data",
    "label": "Response Token",
+   "length": 100,
    "read_only": 1,
    "hidden": 1,
    "unique": 1

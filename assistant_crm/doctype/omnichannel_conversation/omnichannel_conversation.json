@@ -37,6 +37,7 @@
    "fieldname": "conversation_id",
    "fieldtype": "Data",
    "label": "Conversation ID",
+   "length": 100,
    "unique": 1,
    "reqd": 1
   },

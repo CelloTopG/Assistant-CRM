@@ -41,6 +41,7 @@
    "fieldname": "test_name",
    "fieldtype": "Data",
    "label": "Test Name",
+   "length": 140,
    "reqd": 1,
    "unique": 1
   },

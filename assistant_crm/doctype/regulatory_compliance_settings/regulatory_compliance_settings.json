@@ -35,6 +35,7 @@
    "fieldname": "name",
    "fieldtype": "Data",
    "label": "Name",
+   "length": 140,
    "reqd": 1,
    "unique": 1
   },

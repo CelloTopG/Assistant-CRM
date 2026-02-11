@@ -39,6 +39,7 @@
    "fieldname": "certificate_number",
    "fieldtype": "Data",
    "label": "Certificate Number",
+   "length": 100,
    "reqd": 1,
    "unique": 1
   },
