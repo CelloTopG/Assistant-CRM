@@ -419,8 +419,8 @@ def get_user_role(user_id):
 
 def get_login_url(required_role):
     """Get appropriate login URL based on role"""
-
-    base_url = frappe.utils.get_url()
+    from assistant_crm.utils import get_public_url
+    base_url = get_public_url()
 
     if required_role == "Employer":
         return f"{base_url}/employers/login"

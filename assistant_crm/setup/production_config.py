@@ -215,7 +215,8 @@ def setup_webhooks():
     
     try:
         # Get site URL for webhook configuration
-        site_url = frappe.utils.get_url()
+        from assistant_crm.utils import get_public_url
+        site_url = get_public_url()
         webhook_url = f"{site_url}/api/method/assistant_crm.api.corebusiness_webhooks.corebusiness_webhook"
         
         print(f"📡 Webhook URL: {webhook_url}")

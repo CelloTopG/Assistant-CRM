@@ -60,8 +60,7 @@
    "fieldname": "campaign_template",
    "fieldtype": "Link",
    "label": "Use Template",
-   "options": "Survey Campaign Template",
-   "filters": "{\"is_active\": 1}"
+   "options": "Survey Campaign Template"
   },
   {
    "fieldname": "campaign_name",
@@ -147,6 +146,7 @@
    "default": "0",
    "fieldname": "estimated_reach",
    "fieldtype": "Int",
+   "hidden": 1,
    "label": "Estimated Reach"
   },
   {
@@ -223,12 +223,12 @@
    "default": "1",
    "fieldname": "auto_close",
    "fieldtype": "Check",
-   "hidden": 1,
    "label": "Auto Close"
   },
   {
    "fieldname": "follow_up_section",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "label": "Follow-up Settings"
   },
   {
@@ -359,7 +359,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-10-29 09:21:18.689253",
+ "modified": "2026-02-12 21:25:50.038107",
  "modified_by": "Administrator",
  "module": "Assistant CRM",
  "name": "Survey Campaign",

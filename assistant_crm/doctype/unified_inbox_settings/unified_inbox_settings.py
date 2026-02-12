@@ -3,7 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import get_url
+from assistant_crm.utils import get_public_url
 
 
 class UnifiedInboxSettings(Document):
@@ -21,8 +21,8 @@ class UnifiedInboxSettings(Document):
     
     def generate_webhook_urls(self):
         """Generate webhook URLs for platforms."""
-        base_url = get_url()
-        
+        base_url = get_public_url()
+
         # Tawk.to webhook URL
         self.tawk_to_webhook_url = f"{base_url}/api/method/assistant_crm.api.tawk_to_integration.tawk_to_webhook"
     
@@ -195,11 +195,11 @@ def sync_platform_webhooks():
         results = {}
         
         # Generate webhook URLs
-        base_url = get_url()
-        
+        base_url = get_public_url()
+
         # Social media webhook URL
         social_webhook_url = f"{base_url}/api/method/assistant_crm.api.social_media_ports.social_media_webhook"
-        
+
         # Tawk.to webhook URL
         tawk_webhook_url = f"{base_url}/api/method/assistant_crm.api.tawk_to_integration.tawk_to_webhook"
         

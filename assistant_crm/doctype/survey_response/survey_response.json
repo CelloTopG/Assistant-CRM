@@ -2,7 +2,7 @@
  "actions": [],
  "allow_rename": 1,
  "autoname": "naming_series:",
- "creation": "2025-01-28 10:30:00.000000",
+ "creation": "2025-01-28 10:30:00",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -31,15 +31,25 @@
   {
    "fieldname": "campaign",
    "fieldtype": "Link",
+   "in_filter": 1,
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
    "label": "Campaign",
    "options": "Survey Campaign",
+   "read_only": 1,
    "reqd": 1
   },
   {
    "fieldname": "recipient_id",
    "fieldtype": "Link",
+   "in_filter": 1,
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
    "label": "Recipient",
-   "options": "Contact"
+   "options": "Contact",
+   "read_only": 1
   },
   {
    "fieldname": "recipient_email",
@@ -52,16 +62,22 @@
    "label": "Recipient Phone"
   },
   {
+   "default": "Sent",
    "fieldname": "status",
    "fieldtype": "Select",
+   "in_filter": 1,
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
    "label": "Status",
    "options": "Sent\nCompleted\nPartial\nBounced\nClosed",
-   "default": "Sent"
+   "read_only": 1
   },
   {
    "fieldname": "sent_time",
    "fieldtype": "Datetime",
-   "label": "Sent Time"
+   "label": "Sent Time",
+   "read_only": 1
   },
   {
    "fieldname": "response_time",
@@ -70,11 +86,11 @@
    "read_only": 1
   },
   {
+   "description": "JSON data containing survey responses",
    "fieldname": "answers",
    "fieldtype": "JSON",
-   "label": "Answers",
-   "description": "JSON data containing survey responses",
-   "hidden": 1
+   "hidden": 1,
+   "label": "Answers"
   },
   {
    "fieldname": "answers_display",
@@ -85,10 +101,10 @@
   {
    "fieldname": "response_token",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Response Token",
    "length": 100,
    "read_only": 1,
-   "hidden": 1,
    "unique": 1
   },
   {
@@ -99,15 +115,15 @@
    "read_only": 1
   },
   {
+   "default": "0",
    "fieldname": "reminder_count",
    "fieldtype": "Int",
-   "label": "Reminder Count",
-   "default": "0"
+   "label": "Reminder Count"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-28 10:30:00.000000",
+ "modified": "2026-02-12 22:14:10.922048",
  "modified_by": "Administrator",
  "module": "Assistant CRM",
  "name": "Survey Response",
@@ -148,6 +164,7 @@
    "share": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

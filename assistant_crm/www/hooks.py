@@ -162,7 +162,8 @@ def generate_canonical_url(request_path):
     """
     Generate canonical URL for the current page.
     """
-    base_url = frappe.utils.get_url()
+    from assistant_crm.utils import get_public_url
+    base_url = get_public_url()
     canonical = f"{base_url}{request_path}"
     
     # Remove query parameters for canonical URL

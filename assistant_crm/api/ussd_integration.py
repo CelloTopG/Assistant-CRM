@@ -416,7 +416,8 @@ def ussd_webhook():
 
     # Run the normal AI pipeline synchronously so survey logic and analytics apply
     try:
-        from assistant_crm.api import unified_inbox_api as inbox_api
+        import importlib
+        inbox_api = importlib.import_module("assistant_crm.api.unified_inbox_api")
         inbox_api.process_message_with_ai(inbound_msg_id)
     except Exception as e:
         frappe.log_error(f"USSD AI processing error: {str(e)}", "USSD Integration")

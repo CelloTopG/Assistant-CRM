@@ -26,8 +26,10 @@ from frappe import _
 from frappe.utils import now, get_datetime, time_diff_in_seconds
 from typing import Dict, Any, Optional, List
 import time
-from assistant_crm.api.social_media_ports import get_platform_integration
-from assistant_crm.api.tawk_to_integration import TawkToIntegration
+from assistant_crm.utils import get_public_url
+# NOTE: Do NOT import from social_media_ports or tawk_to_integration at the top level.
+# These modules import from unified_inbox_api, creating a circular dependency.
+# Instead, import them locally inside the functions that need them.
 
 import re
 
@@ -2823,7 +2825,7 @@ def fetch_instagram_messages():
             "recent_messages": len(recent_messages),
             "conversations": recent_conversations,
             "messages": recent_messages,
-            "webhook_url": f"{frappe.utils.get_url()}/api/method/assistant_crm.api.social_media_ports.social_media_webhook",
+            "webhook_url": f"{get_public_url()}/api/method/assistant_crm.api.social_media_ports.social_media_webhook",
             "note": "Messages will appear via webhook when sent to Instagram account"
         }
 
@@ -3016,7 +3018,7 @@ def test_instagram_webhook_endpoint():
         print("DEBUG: Testing Instagram webhook endpoint")
 
         # Test the social media webhook endpoint directly
-        webhook_url = f"{frappe.utils.get_url()}/api/method/assistant_crm.api.social_media_ports.social_media_webhook"
+        webhook_url = f"{get_public_url()}/api/method/assistant_crm.api.social_media_ports.social_media_webhook"
 
         # Create sample Instagram webhook payload
         import datetime
@@ -3105,7 +3107,7 @@ def get_instagram_webhook_config():
     Get Instagram webhook configuration details for Facebook Developers setup.
     """
     try:
-        webhook_url = f"{frappe.utils.get_url()}/api/method/assistant_crm.api.social_media_ports.social_media_webhook"
+        webhook_url = f"{get_public_url()}/api/method/assistant_crm.api.social_media_ports.social_media_webhook"
         verify_token = "wcfcb_instagram_webhook_verify_token_2025"
 
         return {
@@ -3255,7 +3257,7 @@ def get_instagram_info():
                 "polling_available": True
             },
             "setup_info": {
-                "webhook_url": f"{frappe.utils.get_url()}/api/method/assistant_crm.api.social_media_ports.social_media_webhook",
+                "webhook_url": f"{get_public_url()}/api/method/assistant_crm.api.social_media_ports.social_media_webhook",
                 "webhook_events": ["messages"],
                 "api_documentation": "https://developers.facebook.com/docs/messenger-platform/"
             }
@@ -3621,7 +3623,7 @@ def get_instagram_setup_instructions():
         access_token = instagram.credentials.get("access_token", "")
         api_version = instagram.credentials.get("api_version", "v18.0")
 
-        webhook_url = f"{frappe.utils.get_url()}/api/method/assistant_crm.api.social_media_ports.social_media_webhook"
+        webhook_url = f"{get_public_url()}/api/method/assistant_crm.api.social_media_ports.social_media_webhook"
 
         instructions = {
             "status": "success",

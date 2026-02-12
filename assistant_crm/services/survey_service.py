@@ -996,7 +996,8 @@ WCFCB Team
         """Generate unique survey link using per-response token.
         Build a robust URL that avoids double slashes and overly long/fragile paths.
         """
-        site_url = (frappe.utils.get_url() or '').rstrip('/')
+        from assistant_crm.utils import get_public_url
+        site_url = get_public_url()
         try:
             token = frappe.db.get_value('Survey Response', response_id, 'response_token')
         except Exception:

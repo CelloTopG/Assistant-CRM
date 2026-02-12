@@ -227,8 +227,9 @@ def setup_telegram_webhook():
     try:
         telegram = TelegramService()
         
-        # Get site URL and construct webhook URL
-        site_url = frappe.utils.get_url()
+        # Get public-facing URL and construct webhook URL
+        from assistant_crm.utils import get_public_url
+        site_url = get_public_url()
         webhook_url = f"{site_url}/api/method/assistant_crm.api.telegram_webhook.telegram_webhook"
         
         result = telegram.set_webhook(webhook_url)

@@ -9,6 +9,22 @@ Utility functions for testing and deployment validation.
 import json
 import frappe
 
+
+def get_public_url():
+    """Return the public-facing base URL for external links (surveys, webhooks, etc.).
+
+    Resolution order:
+    1. Site config key ``assistant_crm_public_base_url``  (e.g. "https://clone.exn1.uk")
+    2. ``frappe.utils.get_url()`` as a fallback (may return localhost in dev).
+
+    The returned URL never has a trailing slash.
+    """
+    conf = frappe.conf or {}
+    public_url = (conf.get("assistant_crm_public_base_url") or "").strip().rstrip("/")
+    if public_url:
+        return public_url
+    return (frappe.utils.get_url() or "").rstrip("/")
+
 def test_live_data_deployment():
     """Test the live data integration deployment."""
     print("🚀 TESTING ASSISTANT CRM LIVE DATA DEPLOYMENT")

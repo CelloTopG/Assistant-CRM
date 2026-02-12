@@ -179,12 +179,24 @@ class SocialMediaPlatform(ABC):
             conversation_doc.insert(ignore_permissions=True)
 
             # Automatically generate ERPNext Issue for new conversation
-            self.create_issue_for_new_conversation(conversation_doc.name, platform_data)
+            # Wrapped in its own try/except so issue creation failure
+            # doesn't prevent the conversation from being returned
+            try:
+                self.create_issue_for_new_conversation(conversation_doc.name, platform_data)
+            except Exception as issue_err:
+                # Log but don't propagate — the conversation was already created
+                frappe.log_error(
+                    message=f"Issue creation failed for {conversation_doc.name}: {str(issue_err)}",
+                    title="Auto Issue Creation Error"
+                )
 
             return conversation_doc.name
 
         except Exception as e:
-            frappe.log_error(f"Error creating conversation for {self.platform_name}: {str(e)}", "Social Media Integration Error")
+            frappe.log_error(
+                message=f"Error creating conversation for {self.platform_name}: {str(e)}",
+                title="Social Media Integration Error"
+            )
             return None
 
     def _normalize_platform_message_id(self, raw_id: Optional[str]) -> Optional[str]:
@@ -255,8 +267,10 @@ class SocialMediaPlatform(ABC):
     def create_issue_for_new_conversation(self, conversation_name: str, platform_data: Dict[str, Any]):
         """Create ERPNext Issue for new conversation automatically."""
         try:
-            # Import here to avoid circular imports
-            import assistant_crm.api.unified_inbox_api as inbox_api
+            # Use importlib to avoid circular import issues between
+            # social_media_ports and unified_inbox_api
+            import importlib
+            inbox_api = importlib.import_module("assistant_crm.api.unified_inbox_api")
 
             customer_name = platform_data.get("customer_name", "Unknown Customer")
             initial_message = platform_data.get("initial_message", "New customer inquiry")
@@ -281,7 +295,10 @@ class SocialMediaPlatform(ABC):
 
         except Exception as e:
             print(f"DEBUG: Error creating Issue for conversation {conversation_name}: {str(e)}")
-            frappe.log_error(f"Error creating Issue for {self.platform_name} conversation {conversation_name}: {str(e)}", "Auto Issue Creation Error")
+            frappe.log_error(
+                message=f"Error creating Issue for {self.platform_name} conversation {conversation_name}: {str(e)}",
+                title="Auto Issue Creation Error"
+            )
 
     def update_conversation_timestamp(self, conversation_name: str, timestamp_str: str):
         """Update conversation's last_message_time with the actual message timestamp."""

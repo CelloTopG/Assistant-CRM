@@ -793,8 +793,8 @@ def twitter_register_webhook(webhook_url: str = None):
         if not webhook_url:
             webhook_url = (settings.get("twitter_webhook_url") or "").strip()
         if not webhook_url:
-            from frappe.utils import get_url
-            webhook_url = f"{get_url()}/api/omnichannel/webhook/twitter"
+            from assistant_crm.utils import get_public_url
+            webhook_url = f"{get_public_url()}/api/omnichannel/webhook/twitter"
 
         # Build OAuth 1.0a header
         import time, uuid, hmac, hashlib, base64, urllib.parse as urlparse
