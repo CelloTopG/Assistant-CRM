@@ -412,7 +412,8 @@ class SurveyService:
                 })
                 survey_response.insert()
 
-                # Try channels in configured order until one succeeds for this recipient
+                # Try ALL active channels for this recipient (skip failures, continue to next)
+                recipient_delivered = False
                 for channel in (campaign.distribution_channels or []):
                     if not channel.is_active:
                         continue
@@ -436,26 +437,25 @@ class SurveyService:
                             ok = bool(res and isinstance(res, dict) and res.get('ok')) if isinstance(res, dict) else bool(res)
                             if ok:
                                 channel_stats[ch_name]['success'] += 1
-                                delivered_count += 1
-                                break  # Only send via first successful channel
-                            # Record failure reason if available
-                            reason = None
-                            if isinstance(res, dict):
-                                reason = res.get('reason') or (res.get('send_result') or {}).get('error_details', {}).get('policy') or (res.get('send_result') or {}).get('message')
-                            reason = reason or 'send_failed'
-                            channel_stats[ch_name]['failures'] += 1
-                            channel_stats[ch_name]['reasons'][reason] = channel_stats[ch_name]['reasons'].get(reason, 0) + 1
+                                recipient_delivered = True
+                            else:
+                                # Record failure reason if available
+                                reason = None
+                                if isinstance(res, dict):
+                                    reason = res.get('reason') or (res.get('send_result') or {}).get('error_details', {}).get('policy') or (res.get('send_result') or {}).get('message')
+                                reason = reason or 'send_failed'
+                                channel_stats[ch_name]['failures'] += 1
+                                channel_stats[ch_name]['reasons'][reason] = channel_stats[ch_name]['reasons'].get(reason, 0) + 1
                         except Exception as _exc:
-                            # Fall back to standard invite on failure path
                             channel_stats[ch_name]['failures'] += 1
                             channel_stats[ch_name]['reasons']['exception'] = channel_stats[ch_name]['reasons'].get('exception', 0) + 1
+                        continue  # Conversational channel handled; move to next channel
 
-                    # Fallback: standard invite (email/SMS/unsupported socials)
+                    # Standard invite for non-conversational channels (Email, SMS, etc.)
                     success = self.send_survey_invitation(recipient, campaign, ch_name, survey_response.name)
                     if success:
                         channel_stats[ch_name]['success'] += 1
-                        delivered_count += 1
-                        break  # Only send via first successful channel
+                        recipient_delivered = True
                     else:
                         # Classify common failure reasons for non-conversational paths
                         reason = 'not_supported'
@@ -465,6 +465,9 @@ class SurveyService:
                             reason = 'no_mobile'
                         channel_stats[ch_name]['failures'] += 1
                         channel_stats[ch_name]['reasons'][reason] = channel_stats[ch_name]['reasons'].get(reason, 0) + 1
+
+                if recipient_delivered:
+                    delivered_count += 1
 
             # Update campaign statistics without full save (submitted docs are immutable)
             try:
