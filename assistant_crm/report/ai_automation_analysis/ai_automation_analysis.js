@@ -11,33 +11,11 @@ frappe.query_reports["AI Automation Analysis"] = {
             fieldname: "period_type",
             label: __("Period Type"),
             fieldtype: "Select",
-            options: "Monthly\nQuarterly\nCustom",
+            options: assistant_crm.report_utils.period_type_options,
             default: "Monthly",
             reqd: 1,
-            on_change: function() {
-                let period_type = frappe.query_report.get_filter_value("period_type");
-                if (period_type === "Monthly") {
-                    // Previous month
-                    let now = frappe.datetime.get_today();
-                    let first_this_month = frappe.datetime.month_start(now);
-                    let last_prev = frappe.datetime.add_days(first_this_month, -1);
-                    let first_prev = frappe.datetime.month_start(last_prev);
-                    frappe.query_report.set_filter_value("date_from", first_prev);
-                    frappe.query_report.set_filter_value("date_to", last_prev);
-                } else if (period_type === "Quarterly") {
-                    // Previous quarter
-                    let now = frappe.datetime.get_today();
-                    let m = parseInt(now.split("-")[1], 10);
-                    let y = parseInt(now.split("-")[0], 10);
-                    let q = Math.floor((m - 1) / 3);
-                    let prev_q = (q + 3) % 4;
-                    let year = q > 0 ? y : y - 1;
-                    let start_month = prev_q * 3 + 1;
-                    let start = `${year}-${('0' + start_month).slice(-2)}-01`;
-                    let end = frappe.datetime.add_days(frappe.datetime.add_months(start, 3), -1);
-                    frappe.query_report.set_filter_value("date_from", start);
-                    frappe.query_report.set_filter_value("date_to", end);
-                }
+            on_change: function () {
+                assistant_crm.report_utils.handle_period_change();
             }
         },
         {
@@ -68,43 +46,43 @@ frappe.query_reports["AI Automation Analysis"] = {
         }
     ],
 
-    onload: function(report) {
+    onload: function (report) {
         // Add Antoine AI button
-        report.page.add_inner_button(__("Ask Antoine"), function() {
+        report.page.add_inner_button(__("Ask Antoine"), function () {
             show_antoine_dialog(report);
         }, __("AI Insights"));
 
         // Add chart buttons
-        report.page.add_inner_button(__("Automation Status"), function() {
+        report.page.add_inner_button(__("Automation Status"), function () {
             show_automation_status_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("After-Hours Tickets"), function() {
+        report.page.add_inner_button(__("After-Hours Tickets"), function () {
             show_after_hours_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("Document Validation"), function() {
+        report.page.add_inner_button(__("Document Validation"), function () {
             show_document_validation_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("Data Quality Issues"), function() {
+        report.page.add_inner_button(__("Data Quality Issues"), function () {
             show_data_quality_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("AI Failures"), function() {
+        report.page.add_inner_button(__("AI Failures"), function () {
             show_ai_failures_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("System Health"), function() {
+        report.page.add_inner_button(__("System Health"), function () {
             show_system_health_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("Automation Trend"), function() {
+        report.page.add_inner_button(__("Automation Trend"), function () {
             show_trend_chart(report);
         }, __("Charts"));
     },
 
-    formatter: function(value, row, column, data, default_formatter) {
+    formatter: function (value, row, column, data, default_formatter) {
         value = default_formatter(value, row, column, data);
 
         if (column.fieldname === "execution_status" && data) {
@@ -150,7 +128,7 @@ function show_antoine_dialog(report) {
             }
         ],
         primary_action_label: __("Ask Antoine"),
-        primary_action: function(values) {
+        primary_action: function (values) {
             let $response = d.$wrapper.find(".antoine-response");
             $response.html('<div class="text-muted"><i class="fa fa-spinner fa-spin"></i> Antoine is analyzing automation data...</div>');
 
@@ -160,11 +138,11 @@ function show_antoine_dialog(report) {
                     filters: JSON.stringify(report.get_filter_values()),
                     query: values.query
                 },
-                callback: function(r) {
+                callback: function (r) {
                     let answer = (r && r.message && r.message.insights) || "No response received.";
                     $response.html(`<div style="white-space:pre-wrap;">${answer}</div>`);
                 },
-                error: function() {
+                error: function () {
                     $response.html('<div class="text-danger">Error getting AI insights. Please try again.</div>');
                 }
             });
@@ -177,7 +155,7 @@ function show_automation_status_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.ai_automation_analysis.ai_automation_analysis.get_automation_status_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Automation Status"), r.message);
             }
@@ -189,7 +167,7 @@ function show_after_hours_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.ai_automation_analysis.ai_automation_analysis.get_after_hours_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("After-Hours Tickets by Platform"), r.message);
             }
@@ -201,7 +179,7 @@ function show_document_validation_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.ai_automation_analysis.ai_automation_analysis.get_document_validation_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Document Validation Status"), r.message);
             }
@@ -213,7 +191,7 @@ function show_data_quality_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.ai_automation_analysis.ai_automation_analysis.get_data_quality_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Data Quality Issues"), r.message);
             }
@@ -225,7 +203,7 @@ function show_ai_failures_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.ai_automation_analysis.ai_automation_analysis.get_ai_failures_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("AI Failures by Reason"), r.message);
             }
@@ -237,7 +215,7 @@ function show_system_health_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.ai_automation_analysis.ai_automation_analysis.get_system_health_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             console.log("System health chart response:", r);
             if (r && r.message) {
                 show_chart_dialog(__("System Health"), r.message);
@@ -245,7 +223,7 @@ function show_system_health_chart(report) {
                 frappe.msgprint(__("No data available for system health chart"));
             }
         },
-        error: function(err) {
+        error: function (err) {
             console.error("System health chart error:", err);
             frappe.msgprint(__("Error loading system health chart"));
         }
@@ -256,7 +234,7 @@ function show_trend_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.ai_automation_analysis.ai_automation_analysis.get_automation_trend_chart",
         args: { filters: JSON.stringify(report.get_filter_values()), months: 6 },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Automation Trend (Last 6 Months)"), r.message);
             }
@@ -278,7 +256,7 @@ function show_chart_dialog(title, chart_data) {
     d.show();
 
     // Use setTimeout to ensure DOM is ready before rendering chart
-    setTimeout(function() {
+    setTimeout(function () {
         // Build chart options based on chart type
         let chart_options = {
             data: chart_data.data,

@@ -11,28 +11,11 @@ frappe.query_reports["Survey Feedback Analysis"] = {
             fieldname: "period_type",
             label: __("Period Type"),
             fieldtype: "Select",
-            options: "Monthly\nQuarterly\nCustom",
+            options: assistant_crm.report_utils.period_type_options,
             default: "Monthly",
             reqd: 1,
-            on_change: function() {
-                let period_type = frappe.query_report.get_filter_value("period_type");
-                if (period_type === "Monthly") {
-                    // Current month (to show recent data)
-                    let now = frappe.datetime.get_today();
-                    let first_this_month = frappe.datetime.month_start(now);
-                    frappe.query_report.set_filter_value("date_from", first_this_month);
-                    frappe.query_report.set_filter_value("date_to", now);
-                } else if (period_type === "Quarterly") {
-                    // Current quarter
-                    let now = frappe.datetime.get_today();
-                    let m = parseInt(now.split("-")[1], 10);
-                    let y = parseInt(now.split("-")[0], 10);
-                    let q = Math.floor((m - 1) / 3);
-                    let start_month = q * 3 + 1;
-                    let start = `${y}-${('0' + start_month).slice(-2)}-01`;
-                    frappe.query_report.set_filter_value("date_from", start);
-                    frappe.query_report.set_filter_value("date_to", now);
-                }
+            on_change: function () {
+                assistant_crm.report_utils.handle_period_change();
             }
         },
         {
@@ -63,35 +46,35 @@ frappe.query_reports["Survey Feedback Analysis"] = {
         }
     ],
 
-    onload: function(report) {
+    onload: function (report) {
         // Add Antoine AI button
-        report.page.add_inner_button(__("Ask Antoine"), function() {
+        report.page.add_inner_button(__("Ask Antoine"), function () {
             show_antoine_dialog(report);
         }, __("AI Insights"));
 
         // Add chart buttons
-        report.page.add_inner_button(__("Sentiment Distribution"), function() {
+        report.page.add_inner_button(__("Sentiment Distribution"), function () {
             show_sentiment_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("Channel Distribution"), function() {
+        report.page.add_inner_button(__("Channel Distribution"), function () {
             show_channel_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("Survey Trend"), function() {
+        report.page.add_inner_button(__("Survey Trend"), function () {
             show_trend_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("Top Campaigns"), function() {
+        report.page.add_inner_button(__("Top Campaigns"), function () {
             show_campaign_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("Platform Response Rates"), function() {
+        report.page.add_inner_button(__("Platform Response Rates"), function () {
             show_platform_rr_chart(report);
         }, __("Charts"));
     },
 
-    formatter: function(value, row, column, data, default_formatter) {
+    formatter: function (value, row, column, data, default_formatter) {
         value = default_formatter(value, row, column, data);
 
         if (column.fieldname === "sentiment_label" && data) {
@@ -141,7 +124,7 @@ function show_antoine_dialog(report) {
             }
         ],
         primary_action_label: __("Ask Antoine"),
-        primary_action: function(values) {
+        primary_action: function (values) {
             let $response = d.$wrapper.find(".antoine-response");
             $response.html('<div class="text-muted"><i class="fa fa-spinner fa-spin"></i> Antoine is analyzing survey data...</div>');
 
@@ -151,11 +134,11 @@ function show_antoine_dialog(report) {
                     filters: JSON.stringify(report.get_filter_values()),
                     query: values.query
                 },
-                callback: function(r) {
+                callback: function (r) {
                     let answer = (r && r.message && r.message.insights) || "No response received.";
                     $response.html(`<div style="white-space:pre-wrap;">${answer}</div>`);
                 },
-                error: function() {
+                error: function () {
                     $response.html('<div class="text-danger">Error getting AI insights. Please try again.</div>');
                 }
             });
@@ -168,7 +151,7 @@ function show_sentiment_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.survey_feedback_analysis.survey_feedback_analysis.get_sentiment_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Sentiment Distribution"), r.message);
             }
@@ -180,7 +163,7 @@ function show_channel_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.survey_feedback_analysis.survey_feedback_analysis.get_channel_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Survey Channel Distribution"), r.message);
             }
@@ -192,7 +175,7 @@ function show_trend_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.survey_feedback_analysis.survey_feedback_analysis.get_survey_trend_chart",
         args: { filters: JSON.stringify(report.get_filter_values()), months: 6 },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Survey Trend (Last 6 Months)"), r.message);
             }
@@ -204,7 +187,7 @@ function show_campaign_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.survey_feedback_analysis.survey_feedback_analysis.get_campaign_performance_chart",
         args: { filters: JSON.stringify(report.get_filter_values()), limit: 10 },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Top Campaigns by Response Rate"), r.message);
             }
@@ -216,7 +199,7 @@ function show_platform_rr_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.survey_feedback_analysis.survey_feedback_analysis.get_response_rate_by_platform",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Response Rates by Platform"), r.message);
             }

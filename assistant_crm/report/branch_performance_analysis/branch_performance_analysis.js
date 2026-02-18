@@ -11,21 +11,11 @@ frappe.query_reports["Branch Performance Analysis"] = {
             fieldname: "period_type",
             label: __("Period Type"),
             fieldtype: "Select",
-            options: "Monthly\nQuarterly\nCustom",
+            options: assistant_crm.report_utils.period_type_options,
             default: "Monthly",
             reqd: 1,
-            on_change: function() {
-                let period_type = frappe.query_report.get_filter_value("period_type");
-                if (period_type === "Monthly") {
-                    frappe.query_report.set_filter_value("date_from", frappe.datetime.month_start());
-                    frappe.query_report.set_filter_value("date_to", frappe.datetime.get_today());
-                } else if (period_type === "Quarterly") {
-                    let today = frappe.datetime.get_today();
-                    let month = new Date(today).getMonth();
-                    let qStart = new Date(new Date(today).getFullYear(), Math.floor(month / 3) * 3, 1);
-                    frappe.query_report.set_filter_value("date_from", frappe.datetime.obj_to_str(qStart));
-                    frappe.query_report.set_filter_value("date_to", frappe.datetime.get_today());
-                }
+            on_change: function () {
+                assistant_crm.report_utils.handle_period_change();
             }
         },
         {
@@ -70,27 +60,27 @@ frappe.query_reports["Branch Performance Analysis"] = {
         }
     ],
 
-    onload: function(report) {
+    onload: function (report) {
         // Add Antoine AI button
-        report.page.add_inner_button(__("Ask Antoine"), function() {
+        report.page.add_inner_button(__("Ask Antoine"), function () {
             show_antoine_dialog(report);
         }, __("AI Insights"));
 
         // Add additional chart buttons
-        report.page.add_inner_button(__("SLA by Branch"), function() {
+        report.page.add_inner_button(__("SLA by Branch"), function () {
             show_sla_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("Regional Comparison"), function() {
+        report.page.add_inner_button(__("Regional Comparison"), function () {
             show_regional_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("6-Month Trend"), function() {
+        report.page.add_inner_button(__("6-Month Trend"), function () {
             show_trend_chart(report);
         }, __("Charts"));
     },
 
-    formatter: function(value, row, column, data, default_formatter) {
+    formatter: function (value, row, column, data, default_formatter) {
         value = default_formatter(value, row, column, data);
 
         if (column.fieldname === "sla_percent" && data) {
@@ -135,7 +125,7 @@ function show_antoine_dialog(report) {
             }
         ],
         primary_action_label: __("Ask Antoine"),
-        primary_action: function(values) {
+        primary_action: function (values) {
             let $response = d.$wrapper.find(".antoine-response");
             $response.html('<div class="text-muted"><i class="fa fa-spinner fa-spin"></i> Antoine is analyzing branch data...</div>');
 
@@ -145,11 +135,11 @@ function show_antoine_dialog(report) {
                     filters: JSON.stringify(report.get_filter_values()),
                     query: values.query
                 },
-                callback: function(r) {
+                callback: function (r) {
                     let answer = (r && r.message && r.message.insights) || "No response received.";
                     $response.html(`<div style="white-space:pre-wrap;">${answer}</div>`);
                 },
-                error: function() {
+                error: function () {
                     $response.html('<div class="text-danger">Error getting AI insights. Please try again.</div>');
                 }
             });
@@ -164,7 +154,7 @@ function show_sla_chart(report) {
         args: {
             filters: JSON.stringify(report.get_filter_values())
         },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("SLA Compliance by Branch"), r.message);
             }
@@ -178,7 +168,7 @@ function show_regional_chart(report) {
         args: {
             filters: JSON.stringify(report.get_filter_values())
         },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Regional Comparison"), r.message);
             }
@@ -193,7 +183,7 @@ function show_trend_chart(report) {
             filters: JSON.stringify(report.get_filter_values()),
             months: 6
         },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("6-Month Trend"), r.message);
             }

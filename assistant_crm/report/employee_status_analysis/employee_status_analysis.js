@@ -11,15 +11,11 @@ frappe.query_reports["Employee Status Analysis"] = {
             fieldname: "period_type",
             label: __("Period Type"),
             fieldtype: "Select",
-            options: "Monthly\nCustom",
+            options: assistant_crm.report_utils.period_type_options,
             default: "Monthly",
             reqd: 1,
-            on_change: function() {
-                let period_type = frappe.query_report.get_filter_value("period_type");
-                if (period_type === "Monthly") {
-                    frappe.query_report.set_filter_value("date_from", frappe.datetime.month_start());
-                    frappe.query_report.set_filter_value("date_to", frappe.datetime.get_today());
-                }
+            on_change: function () {
+                assistant_crm.report_utils.handle_period_change();
             }
         },
         {
@@ -53,7 +49,7 @@ frappe.query_reports["Employee Status Analysis"] = {
             label: __("Department"),
             fieldtype: "Link",
             options: "Department",
-            get_query: function() {
+            get_query: function () {
                 let company = frappe.query_report.get_filter_value("company");
                 if (company) {
                     return { filters: { company: company } };
@@ -80,31 +76,31 @@ frappe.query_reports["Employee Status Analysis"] = {
         }
     ],
 
-    onload: function(report) {
+    onload: function (report) {
         // Add Antoine AI button
-        report.page.add_inner_button(__("Ask Antoine"), function() {
+        report.page.add_inner_button(__("Ask Antoine"), function () {
             show_antoine_dialog(report);
         }, __("AI Insights"));
 
         // Add additional chart buttons
-        report.page.add_inner_button(__("Gender Chart"), function() {
+        report.page.add_inner_button(__("Gender Chart"), function () {
             show_gender_chart();
         }, __("Charts"));
 
-        report.page.add_inner_button(__("Status Chart"), function() {
+        report.page.add_inner_button(__("Status Chart"), function () {
             show_status_chart();
         }, __("Charts"));
 
-        report.page.add_inner_button(__("Department Chart"), function() {
+        report.page.add_inner_button(__("Department Chart"), function () {
             show_department_chart();
         }, __("Charts"));
 
-        report.page.add_inner_button(__("Trend Chart"), function() {
+        report.page.add_inner_button(__("Trend Chart"), function () {
             show_trend_chart();
         }, __("Charts"));
     },
 
-    formatter: function(value, row, column, data, default_formatter) {
+    formatter: function (value, row, column, data, default_formatter) {
         value = default_formatter(value, row, column, data);
 
         if (column.fieldname === "status" && data) {
@@ -156,7 +152,7 @@ function show_antoine_dialog(report) {
             }
         ],
         primary_action_label: __("Ask Antoine"),
-        primary_action: function(values) {
+        primary_action: function (values) {
             let $response = d.$wrapper.find(".antoine-response");
             $response.html('<div class="text-muted"><i class="fa fa-spinner fa-spin"></i> Antoine is thinking...</div>');
 
@@ -166,11 +162,11 @@ function show_antoine_dialog(report) {
                     filters: JSON.stringify(report.get_filter_values()),
                     query: values.query
                 },
-                callback: function(r) {
+                callback: function (r) {
                     let answer = (r && r.message && r.message.insights) || "No response received.";
                     $response.html(`<div style="white-space:pre-wrap;">${answer}</div>`);
                 },
-                error: function() {
+                error: function () {
                     $response.html('<div class="text-danger">Error getting AI insights. Please try again.</div>');
                 }
             });
@@ -182,7 +178,7 @@ function show_antoine_dialog(report) {
 function show_gender_chart() {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.employee_status_analysis.employee_status_analysis.get_gender_chart",
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Employees by Gender"), r.message);
             }
@@ -193,7 +189,7 @@ function show_gender_chart() {
 function show_status_chart() {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.employee_status_analysis.employee_status_analysis.get_status_chart",
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Employees by Status"), r.message);
             }
@@ -204,7 +200,7 @@ function show_status_chart() {
 function show_department_chart() {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.employee_status_analysis.employee_status_analysis.get_department_chart",
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Top 10 Departments by Employee Count"), r.message);
             }
@@ -216,7 +212,7 @@ function show_trend_chart() {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.employee_status_analysis.employee_status_analysis.get_trend_chart",
         args: { months: 6 },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Employee Trend (Last 6 Months)"), r.message);
             }

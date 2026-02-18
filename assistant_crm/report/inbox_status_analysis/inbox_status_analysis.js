@@ -11,21 +11,11 @@ frappe.query_reports["Inbox Status Analysis"] = {
             fieldname: "period_type",
             label: __("Period Type"),
             fieldtype: "Select",
-            options: "Weekly\nMonthly\nCustom",
+            options: assistant_crm.report_utils.period_type_options,
             default: "Weekly",
             reqd: 1,
-            on_change: function() {
-                let period_type = frappe.query_report.get_filter_value("period_type");
-                if (period_type === "Weekly") {
-                    let today = frappe.datetime.get_today();
-                    let dayOfWeek = new Date(today).getDay();
-                    let monday = frappe.datetime.add_days(today, -(dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-                    frappe.query_report.set_filter_value("date_from", monday);
-                    frappe.query_report.set_filter_value("date_to", today);
-                } else if (period_type === "Monthly") {
-                    frappe.query_report.set_filter_value("date_from", frappe.datetime.month_start());
-                    frappe.query_report.set_filter_value("date_to", frappe.datetime.get_today());
-                }
+            on_change: function () {
+                assistant_crm.report_utils.handle_period_change();
             }
         },
         {
@@ -68,35 +58,35 @@ frappe.query_reports["Inbox Status Analysis"] = {
         }
     ],
 
-    onload: function(report) {
+    onload: function (report) {
         // Add Antoine AI button
-        report.page.add_inner_button(__("Ask Antoine"), function() {
+        report.page.add_inner_button(__("Ask Antoine"), function () {
             show_antoine_dialog(report);
         }, __("AI Insights"));
 
         // Add chart buttons
-        report.page.add_inner_button(__("Platform Distribution"), function() {
+        report.page.add_inner_button(__("Platform Distribution"), function () {
             show_platform_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("AI vs Human"), function() {
+        report.page.add_inner_button(__("AI vs Human"), function () {
             show_ai_vs_human_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("Status Distribution"), function() {
+        report.page.add_inner_button(__("Status Distribution"), function () {
             show_status_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("8-Week Trend"), function() {
+        report.page.add_inner_button(__("8-Week Trend"), function () {
             show_trend_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("Response Times"), function() {
+        report.page.add_inner_button(__("Response Times"), function () {
             show_response_time_chart(report);
         }, __("Charts"));
     },
 
-    formatter: function(value, row, column, data, default_formatter) {
+    formatter: function (value, row, column, data, default_formatter) {
         value = default_formatter(value, row, column, data);
 
         if (column.fieldname === "escalated" && data && parseInt(data.escalated) > 0) {
@@ -145,7 +135,7 @@ function show_antoine_dialog(report) {
             }
         ],
         primary_action_label: __("Ask Antoine"),
-        primary_action: function(values) {
+        primary_action: function (values) {
             let $response = d.$wrapper.find(".antoine-response");
             $response.html('<div class="text-muted"><i class="fa fa-spinner fa-spin"></i> Antoine is analyzing inbox data...</div>');
 
@@ -155,11 +145,11 @@ function show_antoine_dialog(report) {
                     filters: JSON.stringify(report.get_filter_values()),
                     query: values.query
                 },
-                callback: function(r) {
+                callback: function (r) {
                     let answer = (r && r.message && r.message.insights) || "No response received.";
                     $response.html(`<div style="white-space:pre-wrap;">${answer}</div>`);
                 },
-                error: function() {
+                error: function () {
                     $response.html('<div class="text-danger">Error getting AI insights. Please try again.</div>');
                 }
             });
@@ -172,7 +162,7 @@ function show_platform_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.inbox_status_analysis.inbox_status_analysis.get_platform_distribution_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Platform Distribution"), r.message);
             }
@@ -184,7 +174,7 @@ function show_ai_vs_human_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.inbox_status_analysis.inbox_status_analysis.get_ai_vs_human_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("AI vs Human Handling"), r.message);
             }
@@ -196,7 +186,7 @@ function show_status_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.inbox_status_analysis.inbox_status_analysis.get_status_distribution_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Status Distribution"), r.message);
             }
@@ -208,7 +198,7 @@ function show_trend_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.inbox_status_analysis.inbox_status_analysis.get_trend_chart",
         args: { filters: JSON.stringify(report.get_filter_values()), weeks: 8 },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("8-Week Trend"), r.message);
             }
@@ -220,7 +210,7 @@ function show_response_time_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.inbox_status_analysis.inbox_status_analysis.get_response_time_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Response Times by Platform"), r.message);
             }

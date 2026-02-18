@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import frappe
 from frappe import _
 from frappe.utils import getdate, get_datetime
+from assistant_crm.report.report_utils import get_period_dates
 
 
 # Business Hours Configuration
@@ -133,16 +134,10 @@ def get_columns() -> List[Dict[str, Any]]:
 
 def get_data(filters: Dict) -> Tuple[List[Dict], Dict]:
     """Fetch and process data for the report."""
-    date_from = getdate(filters.get("date_from"))
-    date_to = getdate(filters.get("date_to"))
-
-    if not date_from or not date_to:
-        today = getdate()
-        first_this_month = today.replace(day=1)
-        last_prev_month = first_this_month - timedelta(days=1)
-        first_prev_month = last_prev_month.replace(day=1)
-        date_from = first_prev_month
-        date_to = last_prev_month
+    # Ensure date filters
+    get_period_dates(filters)
+    date_from = getdate(filters.date_from)
+    date_to = getdate(filters.date_to)
 
     # Build conversation filters
     conv_filters = {"creation": ["between", [date_from, date_to]]}

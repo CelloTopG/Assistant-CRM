@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import frappe
 from frappe.utils import getdate, add_days, flt
+from assistant_crm.report.report_utils import get_period_dates
 
 # Claim lifecycle statuses (from Claim doctype)
 LIFECYCLE_STATUSES = [
@@ -47,7 +48,7 @@ CLAIM_TYPES = [
 def execute(filters: Optional[Dict[str, Any]] = None) -> Tuple:
     """Main entry point for Script Report."""
     filters = frappe._dict(filters or {})
-    _ensure_dates(filters)
+    get_period_dates(filters)
 
     columns = get_columns()
     data, summary_data = get_data(filters)
@@ -57,25 +58,6 @@ def execute(filters: Optional[Dict[str, Any]] = None) -> Tuple:
     return columns, data, None, chart, report_summary, False
 
 
-def _ensure_dates(filters: frappe._dict):
-    """Infer dates based on period_type when missing."""
-    period_type = filters.get("period_type", "Weekly")
-
-    if period_type == "Monthly":
-        today = getdate()
-        first_this_month = date(today.year, today.month, 1)
-        last_prev_month = first_this_month - timedelta(days=1)
-        first_prev_month = date(last_prev_month.year, last_prev_month.month, 1)
-        filters.date_from = filters.get("date_from") or first_prev_month
-        filters.date_to = filters.get("date_to") or last_prev_month
-    elif period_type == "Weekly":
-        today = getdate()
-        filters.date_from = filters.get("date_from") or add_days(today, -6)
-        filters.date_to = filters.get("date_to") or today
-    else:  # Custom
-        if not filters.get("date_from") or not filters.get("date_to"):
-            filters.date_to = getdate()
-            filters.date_from = add_days(filters.date_to, -6)
 
 
 def get_columns() -> List[Dict[str, Any]]:

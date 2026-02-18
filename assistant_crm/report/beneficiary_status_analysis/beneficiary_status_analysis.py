@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import frappe
 from frappe.utils import getdate, add_months, get_first_day, get_last_day
+from assistant_crm.report.report_utils import get_period_dates
 
 
 def execute(filters: Optional[Dict[str, Any]] = None) -> Tuple:
@@ -19,13 +20,7 @@ def execute(filters: Optional[Dict[str, Any]] = None) -> Tuple:
     filters = frappe._dict(filters or {})
 
     # Ensure date filters
-    if not filters.get("date_from") or not filters.get("date_to"):
-        if filters.get("period_type") == "Monthly":
-            filters.date_from = get_first_day(getdate())
-            filters.date_to = getdate()
-        else:
-            filters.date_to = getdate()
-            filters.date_from = frappe.utils.add_days(filters.date_to, -29)
+    get_period_dates(filters)
 
     columns = get_columns()
     data, counts = get_data(filters)

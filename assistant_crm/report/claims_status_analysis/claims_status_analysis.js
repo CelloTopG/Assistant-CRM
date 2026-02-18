@@ -11,23 +11,11 @@ frappe.query_reports["Claims Status Analysis"] = {
             fieldname: "period_type",
             label: __("Period Type"),
             fieldtype: "Select",
-            options: "Weekly\nMonthly\nCustom",
+            options: assistant_crm.report_utils.period_type_options,
             default: "Weekly",
             reqd: 1,
-            on_change: function() {
-                let period_type = frappe.query_report.get_filter_value("period_type");
-                if (period_type === "Monthly") {
-                    let now = frappe.datetime.get_today();
-                    let first_this_month = frappe.datetime.month_start(now);
-                    let last_prev = frappe.datetime.add_days(first_this_month, -1);
-                    let first_prev = frappe.datetime.month_start(last_prev);
-                    frappe.query_report.set_filter_value("date_from", first_prev);
-                    frappe.query_report.set_filter_value("date_to", last_prev);
-                } else if (period_type === "Weekly") {
-                    let now = frappe.datetime.get_today();
-                    frappe.query_report.set_filter_value("date_from", frappe.datetime.add_days(now, -6));
-                    frappe.query_report.set_filter_value("date_to", now);
-                }
+            on_change: function () {
+                assistant_crm.report_utils.handle_period_change();
             }
         },
         {
@@ -64,39 +52,39 @@ frappe.query_reports["Claims Status Analysis"] = {
         }
     ],
 
-    onload: function(report) {
+    onload: function (report) {
         // Add Antoine AI button
-        report.page.add_inner_button(__("Ask Antoine"), function() {
+        report.page.add_inner_button(__("Ask Antoine"), function () {
             show_antoine_dialog(report);
         }, __("AI Insights"));
 
         // Add chart buttons
-        report.page.add_inner_button(__("By Status"), function() {
+        report.page.add_inner_button(__("By Status"), function () {
             show_status_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("By Type"), function() {
+        report.page.add_inner_button(__("By Type"), function () {
             show_type_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("Outcome"), function() {
+        report.page.add_inner_button(__("Outcome"), function () {
             show_outcome_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("Amount by Type"), function() {
+        report.page.add_inner_button(__("Amount by Type"), function () {
             show_amount_by_type_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("By Employer"), function() {
+        report.page.add_inner_button(__("By Employer"), function () {
             show_employer_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("Trend"), function() {
+        report.page.add_inner_button(__("Trend"), function () {
             show_trend_chart(report);
         }, __("Charts"));
     },
 
-    formatter: function(value, row, column, data, default_formatter) {
+    formatter: function (value, row, column, data, default_formatter) {
         value = default_formatter(value, row, column, data);
 
         if (column.fieldname === "status" && data) {
@@ -145,7 +133,7 @@ function show_antoine_dialog(report) {
             }
         ],
         primary_action_label: __("Ask Antoine"),
-        primary_action: function(values) {
+        primary_action: function (values) {
             let $response = d.$wrapper.find(".antoine-response");
             $response.html('<div class="text-muted"><i class="fa fa-spinner fa-spin"></i> Antoine is analyzing claims data...</div>');
 
@@ -155,11 +143,11 @@ function show_antoine_dialog(report) {
                     filters: JSON.stringify(report.get_filter_values()),
                     query: values.query
                 },
-                callback: function(r) {
+                callback: function (r) {
                     let answer = (r && r.message && r.message.insights) || "No response received.";
                     $response.html(`<div style="white-space:pre-wrap;">${answer}</div>`);
                 },
-                error: function() {
+                error: function () {
                     $response.html('<div class="text-danger">Error getting AI insights. Please try again.</div>');
                 }
             });
@@ -172,7 +160,7 @@ function show_status_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.claims_status_analysis.claims_status_analysis.get_status_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Claims by Status"), r.message);
             }
@@ -184,7 +172,7 @@ function show_type_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.claims_status_analysis.claims_status_analysis.get_type_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Claims by Type"), r.message);
             }
@@ -196,7 +184,7 @@ function show_outcome_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.claims_status_analysis.claims_status_analysis.get_outcome_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Claims Outcome Distribution"), r.message);
             }
@@ -208,7 +196,7 @@ function show_amount_by_type_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.claims_status_analysis.claims_status_analysis.get_amount_by_type_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Claim Amounts by Type"), r.message);
             }
@@ -220,7 +208,7 @@ function show_employer_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.claims_status_analysis.claims_status_analysis.get_employer_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Top Employers by Claims"), r.message);
             }
@@ -232,7 +220,7 @@ function show_trend_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.claims_status_analysis.claims_status_analysis.get_trend_chart",
         args: { filters: JSON.stringify(report.get_filter_values()), windows: 8 },
-        callback: function(r) {
+        callback: function (r) {
             if (r && r.message) {
                 show_chart_dialog(__("Claims Trend"), r.message);
             }
@@ -257,7 +245,7 @@ function show_chart_dialog(title, chart_data) {
         return;
     }
 
-    setTimeout(function() {
+    setTimeout(function () {
         let chart_options = {
             data: chart_data.data,
             type: chart_data.type || "bar",

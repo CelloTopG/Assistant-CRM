@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import frappe
 from frappe import _
 from frappe.utils import getdate, flt, fmt_money
+from assistant_crm.report.report_utils import get_period_dates
 
 from assistant_crm.services.corebusiness_integration_service import CoreBusinessIntegrationService
 
@@ -150,28 +151,8 @@ def get_data(filters: Dict) -> Tuple[List[Dict], Dict]:
 
 def _get_date_range(filters: Dict) -> Tuple[date, date]:
     """Get date range from filters."""
-    period_type = filters.get("period_type", "Monthly")
-
-    if period_type == "Monthly":
-        month = filters.get("month")
-        year = filters.get("year")
-        if month and year:
-            month_idx = MONTHS.index(month) + 1 if month in MONTHS else 1
-            first_day = frappe.utils.get_first_day(date(int(year), month_idx, 1))
-            last_day = frappe.utils.get_last_day(first_day)
-            return first_day, last_day
-        else:
-            # Default to previous month
-            today = getdate()
-            prev = frappe.utils.add_months(today, -1)
-            first_day = frappe.utils.get_first_day(prev)
-            last_day = frappe.utils.get_last_day(first_day)
-            return first_day, last_day
-    else:
-        # Custom date range
-        date_from = getdate(filters.get("date_from")) if filters.get("date_from") else getdate()
-        date_to = getdate(filters.get("date_to")) if filters.get("date_to") else getdate()
-        return date_from, date_to
+    get_period_dates(filters)
+    return getdate(filters.date_from), getdate(filters.date_to)
 
 
 def _init_summary_data() -> Dict:

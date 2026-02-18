@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import frappe
 from frappe.utils import getdate, get_datetime, add_days, add_months, get_first_day, get_last_day, now_datetime
+from assistant_crm.report.report_utils import get_period_dates
 
 # Supported platforms for channel analysis
 PLATFORMS = [
@@ -28,19 +29,7 @@ def execute(filters: Optional[Dict[str, Any]] = None) -> Tuple:
     filters = frappe._dict(filters or {})
 
     # Ensure date filters
-    if not filters.get("date_from") or not filters.get("date_to"):
-        period = filters.get("period_type") or "Weekly"
-        if period == "Monthly":
-            filters.date_from = get_first_day(getdate())
-            filters.date_to = getdate()
-        elif period == "Weekly":
-            today = getdate()
-            monday = add_days(today, -today.weekday())
-            filters.date_from = monday
-            filters.date_to = today
-        else:
-            filters.date_to = getdate()
-            filters.date_from = add_days(filters.date_to, -6)
+    get_period_dates(filters)
 
     columns = get_columns()
     data, summary = get_data(filters)

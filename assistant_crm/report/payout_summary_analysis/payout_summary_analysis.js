@@ -11,10 +11,12 @@ frappe.query_reports["Payout Summary Analysis"] = {
             fieldname: "period_type",
             label: __("Period Type"),
             fieldtype: "Select",
-            options: "Monthly\nCustom",
+            options: assistant_crm.report_utils.period_type_options,
             default: "Monthly",
             reqd: 1,
-            on_change: function() {
+            on_change: function () {
+                assistant_crm.report_utils.handle_period_change();
+
                 let period_type = frappe.query_report.get_filter_value("period_type");
                 if (period_type === "Monthly") {
                     // Show month/year, hide dates
@@ -65,36 +67,36 @@ frappe.query_reports["Payout Summary Analysis"] = {
         }
     ],
 
-    onload: function(report) {
+    onload: function (report) {
         // Add Antoine AI button
-        report.page.add_inner_button(__("Ask Antoine"), function() {
+        report.page.add_inner_button(__("Ask Antoine"), function () {
             show_antoine_dialog(report);
         }, __("AI Insights"));
 
         // Add chart buttons
-        report.page.add_inner_button(__("Overview"), function() {
+        report.page.add_inner_button(__("Overview"), function () {
             show_overview_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("By Employer"), function() {
+        report.page.add_inner_button(__("By Employer"), function () {
             show_employer_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("By Benefit Type"), function() {
+        report.page.add_inner_button(__("By Benefit Type"), function () {
             show_benefit_type_chart(report);
         }, __("Charts"));
 
-        report.page.add_inner_button(__("Exceptions"), function() {
+        report.page.add_inner_button(__("Exceptions"), function () {
             show_exception_chart(report);
         }, __("Charts"));
 
         // Add PDF button
-        report.page.add_inner_button(__("Download PDF"), function() {
+        report.page.add_inner_button(__("Download PDF"), function () {
             download_pdf(report);
         }, __("Actions"));
     },
 
-    formatter: function(value, row, column, data, default_formatter) {
+    formatter: function (value, row, column, data, default_formatter) {
         value = default_formatter(value, row, column, data);
 
         if (column.fieldname === "exception_codes" && data && data.exception_codes) {
@@ -132,7 +134,7 @@ function get_previous_month() {
     let now = new Date();
     now.setMonth(now.getMonth() - 1);
     let months = ["January", "February", "March", "April", "May", "June",
-                  "July", "August", "September", "October", "November", "December"];
+        "July", "August", "September", "October", "November", "December"];
     return months[now.getMonth()];
 }
 
@@ -178,7 +180,7 @@ function show_antoine_dialog(report) {
             }
         ],
         primary_action_label: __("Ask"),
-        primary_action: function() {
+        primary_action: function () {
             let query = d.get_value("query");
             if (!query) {
                 frappe.msgprint(__("Please enter a question."));
@@ -200,7 +202,7 @@ function show_antoine_dialog(report) {
                     filters: JSON.stringify(report.get_filter_values()),
                     query: query
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.insights) {
                         d.fields_dict.response_html.$wrapper.html(`
                             <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #5e64ff;">
@@ -215,7 +217,7 @@ function show_antoine_dialog(report) {
                         `);
                     }
                 },
-                error: function() {
+                error: function () {
                     d.fields_dict.response_html.$wrapper.html(`
                         <div class="alert alert-danger">
                             ${__("An error occurred. Please try again later.")}
@@ -244,7 +246,7 @@ function show_overview_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.payout_summary_analysis.payout_summary_analysis.get_overview_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r.message) {
                 show_chart_dialog(__("Payout Overview"), r.message);
             }
@@ -256,7 +258,7 @@ function show_employer_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.payout_summary_analysis.payout_summary_analysis.get_employer_breakdown_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r.message) {
                 show_chart_dialog(__("Payouts by Employer"), r.message);
             }
@@ -268,7 +270,7 @@ function show_benefit_type_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.payout_summary_analysis.payout_summary_analysis.get_benefit_type_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r.message) {
                 show_chart_dialog(__("Payouts by Benefit Type"), r.message);
             }
@@ -280,7 +282,7 @@ function show_exception_chart(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.payout_summary_analysis.payout_summary_analysis.get_exception_chart",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r.message) {
                 show_chart_dialog(__("Exception Breakdown"), r.message);
             }
@@ -303,7 +305,7 @@ function show_chart_dialog(title, chart_data) {
     d.show();
 
     // Render chart after dialog is shown
-    setTimeout(function() {
+    setTimeout(function () {
         let chart_wrapper = d.fields_dict.chart_html.$wrapper;
         chart_wrapper.html('<div id="payout-chart" style="height: 400px;"></div>');
 
@@ -346,7 +348,7 @@ function download_pdf(report) {
     frappe.call({
         method: "assistant_crm.assistant_crm.report.payout_summary_analysis.payout_summary_analysis.generate_pdf",
         args: { filters: JSON.stringify(report.get_filter_values()) },
-        callback: function(r) {
+        callback: function (r) {
             if (r.message && r.message.file_url) {
                 frappe.show_alert({
                     message: __("PDF generated successfully!"),
@@ -358,7 +360,7 @@ function download_pdf(report) {
                 frappe.msgprint(__("Failed to generate PDF. Please try again."));
             }
         },
-        error: function() {
+        error: function () {
             frappe.msgprint(__("An error occurred while generating PDF."));
         }
     });

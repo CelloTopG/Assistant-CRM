@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import frappe
 from frappe.utils import getdate, get_first_day, get_last_day, now_datetime, formatdate
+from assistant_crm.report.report_utils import get_period_dates
 
 # Supported survey distribution channels
 SURVEY_CHANNELS = ["Email", "WhatsApp", "SMS", "Facebook", "Instagram", "Telegram", "Twitter", "LinkedIn"]
@@ -32,7 +33,7 @@ SENT_THRESHOLDS = {
 def execute(filters: Optional[Dict[str, Any]] = None) -> Tuple:
     """Main entry point for Script Report."""
     filters = frappe._dict(filters or {})
-    _ensure_dates(filters)
+    get_period_dates(filters)
 
     columns = get_columns()
     data, summary_data = get_data(filters)
@@ -42,28 +43,6 @@ def execute(filters: Optional[Dict[str, Any]] = None) -> Tuple:
     return columns, data, None, chart, report_summary, False
 
 
-def _ensure_dates(filters: frappe._dict):
-    """Infer dates based on period_type when missing."""
-    period_type = filters.get("period_type", "Monthly")
-
-    if period_type == "Monthly":
-        # Default to current month (not previous month) to show recent data
-        today = getdate()
-        first_this_month = date(today.year, today.month, 1)
-        filters.date_from = filters.get("date_from") or first_this_month
-        filters.date_to = filters.get("date_to") or today
-    elif period_type == "Quarterly":
-        # Default to current quarter
-        today = getdate()
-        q = (today.month - 1) // 3
-        start_month = q * 3 + 1
-        quarter_start = date(today.year, start_month, 1)
-        filters.date_from = filters.get("date_from") or quarter_start
-        filters.date_to = filters.get("date_to") or today
-    else:  # Custom
-        if not filters.get("date_from") or not filters.get("date_to"):
-            filters.date_to = getdate()
-            filters.date_from = frappe.utils.add_days(filters.date_to, -29)
 
 
 def get_columns() -> List[Dict[str, Any]]:
@@ -346,7 +325,7 @@ def get_report_summary(summary: Dict[str, Any]) -> List[Dict[str, Any]]:
 def get_ai_insights(filters: str, query: str) -> Dict[str, Any]:
     """Return Antoine-style insights for the Survey Feedback Analysis report."""
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters or {})
-    _ensure_dates(filters)
+    get_period_dates(filters)
 
     df = getdate(filters.date_from)
     dt = getdate(filters.date_to)
@@ -422,7 +401,7 @@ def get_ai_insights(filters: str, query: str) -> Dict[str, Any]:
 def get_sentiment_chart(filters: str) -> Dict[str, Any]:
     """Get sentiment distribution chart data."""
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters or {})
-    _ensure_dates(filters)
+    get_period_dates(filters)
     _, summary = get_data(filters)
 
     return {
@@ -445,7 +424,7 @@ def get_sentiment_chart(filters: str) -> Dict[str, Any]:
 def get_channel_chart(filters: str) -> Dict[str, Any]:
     """Get channel distribution chart data from Survey Distribution Channel."""
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters or {})
-    _ensure_dates(filters)
+    get_period_dates(filters)
     _, summary = get_data(filters)
 
     channel_breakdown = summary.get("channel_breakdown", {})
@@ -520,7 +499,7 @@ def get_survey_trend_chart(filters: str, months: int = 6) -> Dict[str, Any]:
 def get_campaign_performance_chart(filters: str, limit: int = 10) -> Dict[str, Any]:
     """Get top campaigns by response rate."""
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters or {})
-    _ensure_dates(filters)
+    get_period_dates(filters)
     df = getdate(filters.date_from)
     dt = getdate(filters.date_to)
 
@@ -549,7 +528,7 @@ def get_campaign_performance_chart(filters: str, limit: int = 10) -> Dict[str, A
 def get_response_rate_by_platform(filters: str) -> Dict[str, Any]:
     """Get response rates broken down by platform/channel."""
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters or {})
-    _ensure_dates(filters)
+    get_period_dates(filters)
     df = getdate(filters.date_from)
     dt = getdate(filters.date_to)
 

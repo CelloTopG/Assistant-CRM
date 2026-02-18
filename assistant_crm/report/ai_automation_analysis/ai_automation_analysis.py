@@ -21,6 +21,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import frappe
 from frappe import _
 from frappe.utils import getdate, get_first_day, get_last_day, now_datetime, get_datetime, cint, flt
+from assistant_crm.report.report_utils import get_period_dates
 
 # Business hours definition (configurable via CRM Settings)
 BUSINESS_START = time(8, 0)
@@ -35,7 +36,7 @@ def execute(filters: Optional[Dict[str, Any]] = None) -> Tuple:
         Tuple of (columns, data, message, chart, report_summary, skip_total_row)
     """
     filters = frappe._dict(filters or {})
-    _ensure_dates(filters)
+    get_period_dates(filters)
 
     columns = get_columns()
     data, summary_data = get_data(filters)
@@ -45,36 +46,6 @@ def execute(filters: Optional[Dict[str, Any]] = None) -> Tuple:
     return columns, data, None, chart, report_summary, False
 
 
-def _ensure_dates(filters: frappe._dict):
-    """Infer dates based on period_type when missing."""
-    period_type = filters.get("period_type", "Monthly")
-
-    if period_type == "Monthly":
-        today = getdate()
-        first_this_month = date(today.year, today.month, 1)
-        last_prev_month = first_this_month - timedelta(days=1)
-        first_prev_month = date(last_prev_month.year, last_prev_month.month, 1)
-        filters.date_from = filters.get("date_from") or first_prev_month
-        filters.date_to = filters.get("date_to") or last_prev_month
-    elif period_type == "Quarterly":
-        today = getdate()
-        q = (today.month - 1) // 3
-        prev_q = (q - 1) % 4
-        year = today.year if q > 0 else today.year - 1
-        start_month = prev_q * 3 + 1
-        quarter_start = date(year, start_month, 1)
-        quarter_end = date(year, start_month + 2, 1)
-        quarter_end = (
-            date(quarter_end.year, quarter_end.month + 1, 1) - timedelta(days=1)
-            if quarter_end.month < 12
-            else date(quarter_end.year, 12, 31)
-        )
-        filters.date_from = filters.get("date_from") or quarter_start
-        filters.date_to = filters.get("date_to") or quarter_end
-    else:  # Custom
-        if not filters.get("date_from") or not filters.get("date_to"):
-            filters.date_to = getdate()
-            filters.date_from = frappe.utils.add_days(filters.date_to, -29)
 
 
 def get_columns() -> List[Dict[str, Any]]:

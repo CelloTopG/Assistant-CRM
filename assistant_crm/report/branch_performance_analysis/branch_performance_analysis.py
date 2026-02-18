@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import frappe
 from frappe.utils import getdate, get_datetime, add_months, get_first_day, get_last_day
+from assistant_crm.report.report_utils import get_period_dates
 
 # Import SLA aggregation for within/breached counts
 from assistant_crm.assistant_crm.doctype.sla_compliance_report.sla_compliance_report import (
@@ -33,18 +34,7 @@ def execute(filters: Optional[Dict[str, Any]] = None) -> Tuple:
     filters = frappe._dict(filters or {})
 
     # Ensure date filters
-    if not filters.get("date_from") or not filters.get("date_to"):
-        if filters.get("period_type") == "Monthly":
-            filters.date_from = get_first_day(getdate())
-            filters.date_to = getdate()
-        elif filters.get("period_type") == "Quarterly":
-            today = getdate()
-            month = ((today.month - 1) // 3) * 3 + 1
-            filters.date_from = today.replace(month=month, day=1)
-            filters.date_to = today
-        else:
-            filters.date_to = getdate()
-            filters.date_from = frappe.utils.add_days(filters.date_to, -29)
+    get_period_dates(filters)
 
     columns = get_columns()
     data, summary = get_data(filters)
