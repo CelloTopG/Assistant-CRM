@@ -1,204 +1,204 @@
 {
- "actions": [],
- "allow_rename": 1,
- "creation": "2025-07-22 12:00:00.000000",
- "doctype": "DocType",
- "engine": "InnoDB",
- "field_order": [
-  "agent_user",
-  "agent_name",
-  "status",
-  "availability_section",
-	 "available_channels",
-	 "routing_branch",
-	 "max_concurrent_chats",
-  "current_active_chats",
-  "auto_assignment_enabled",
-  "performance_section",
-  "total_messages_handled",
-  "average_response_time",
-  "customer_satisfaction_score",
-  "last_activity",
-  "settings_section",
-  "preferred_language",
-  "working_hours_start",
-  "working_hours_end",
-  "timezone",
-  "notification_preferences"
- ],
- "fields": [
-  {
-   "fieldname": "agent_user",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Agent User",
-   "options": "User",
-   "reqd": 1,
-   "unique": 1
-  },
-  {
-   "fetch_from": "agent_user.full_name",
-   "fieldname": "agent_name",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Agent Name",
-   "read_only": 1
-  },
-  {
-   "default": "Available",
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Status",
-   "options": "Available\nBusy\nAway\nOffline"
-  },
-  {
-   "fieldname": "availability_section",
-   "fieldtype": "Section Break",
-   "label": "Availability Settings"
-  },
-  {
-   "default": "Website Chat, WhatsApp, Facebook, Telegram",
-   "fieldname": "available_channels",
-   "fieldtype": "Data",
-   "label": "Available Channels"
-  },
-	 {
-	  "default": "Both",
-	  "fieldname": "routing_branch",
-	  "fieldtype": "Select",
-	  "label": "Routing Branch",
-	  "options": "Unified Inbox\nOmnichannel\nBoth"
-	 },
-  {
-   "default": "5",
-   "fieldname": "max_concurrent_chats",
-   "fieldtype": "Int",
-   "label": "Max Concurrent Chats"
-  },
-  {
-   "default": "0",
-   "fieldname": "current_active_chats",
-   "fieldtype": "Int",
-   "label": "Current Active Chats",
-   "read_only": 1
-  },
-  {
-   "default": "1",
-   "fieldname": "auto_assignment_enabled",
-   "fieldtype": "Check",
-   "label": "Auto Assignment Enabled"
-  },
-  {
-   "collapsible": 1,
-   "fieldname": "performance_section",
-   "fieldtype": "Section Break",
-   "label": "Performance Metrics"
-  },
-  {
-   "default": "0",
-   "fieldname": "total_messages_handled",
-   "fieldtype": "Int",
-   "label": "Total Messages Handled",
-   "read_only": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "average_response_time",
-   "fieldtype": "Float",
-   "label": "Average Response Time (seconds)",
-   "precision": "2",
-   "read_only": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "customer_satisfaction_score",
-   "fieldtype": "Float",
-   "label": "Customer Satisfaction Score",
-   "precision": "2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "last_activity",
-   "fieldtype": "Datetime",
-   "label": "Last Activity",
-   "read_only": 1
-  },
-  {
-   "collapsible": 1,
-   "fieldname": "settings_section",
-   "fieldtype": "Section Break",
-   "label": "Agent Settings"
-  },
-  {
-   "default": "en",
-   "fieldname": "preferred_language",
-   "fieldtype": "Select",
-   "label": "Preferred Language",
-   "options": "en\nbem\nny\nto"
-  },
-  {
-   "default": "08:00:00",
-   "fieldname": "working_hours_start",
-   "fieldtype": "Time",
-   "label": "Working Hours Start"
-  },
-  {
-   "default": "17:00:00",
-   "fieldname": "working_hours_end",
-   "fieldtype": "Time",
-   "label": "Working Hours End"
-  },
-  {
-   "default": "Africa/Lusaka",
-   "fieldname": "timezone",
-   "fieldtype": "Data",
-   "label": "Timezone"
-  },
-  {
-   "default": "Email, In-App",
-   "fieldname": "notification_preferences",
-   "fieldtype": "Data",
-   "label": "Notification Preferences"
-  }
- ],
- "index_web_pages_for_search": 1,
- "links": [],
- "modified": "2025-07-22 12:00:00.000000",
- "modified_by": "Administrator",
- "module": "Assistant CRM",
- "name": "Agent Dashboard",
- "naming_rule": "By fieldname",
- "owner": "Administrator",
- "permissions": [
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "System Manager",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "read": 1,
-   "role": "WCFCB Agent",
-   "write": 1
-  },
-  {
-   "create": 1,
-   "delete": 1,
-   "read": 1,
-   "role": "WCFCB Assistant Admin",
-   "write": 1
-  }
- ],
- "sort_field": "modified",
- "sort_order": "DESC",
- "states": [],
- "title_field": "agent_name",
- "track_changes": 1
+    "actions": [],
+    "allow_rename": 1,
+    "creation": "2025-07-22 12:00:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "agent_user",
+        "agent_name",
+        "status",
+        "availability_section",
+        "available_channels",
+        "routing_branch",
+        "max_concurrent_chats",
+        "current_active_chats",
+        "auto_assignment_enabled",
+        "performance_section",
+        "total_messages_handled",
+        "average_response_time",
+        "customer_satisfaction_score",
+        "last_activity",
+        "settings_section",
+        "preferred_language",
+        "working_hours_start",
+        "working_hours_end",
+        "timezone",
+        "notification_preferences"
+    ],
+    "fields": [
+        {
+            "fieldname": "agent_user",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Agent User",
+            "options": "User",
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "fetch_from": "agent_user.full_name",
+            "fieldname": "agent_name",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Agent Name",
+            "read_only": 1
+        },
+        {
+            "default": "Available",
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Status",
+            "options": "Available\nBusy\nAway\nOffline\nSick\nOn Leave"
+        },
+        {
+            "fieldname": "availability_section",
+            "fieldtype": "Section Break",
+            "label": "Availability Settings"
+        },
+        {
+            "default": "Website Chat, WhatsApp, Facebook, Telegram",
+            "fieldname": "available_channels",
+            "fieldtype": "Data",
+            "label": "Available Channels"
+        },
+        {
+            "default": "Both",
+            "fieldname": "routing_branch",
+            "fieldtype": "Select",
+            "label": "Routing Branch",
+            "options": "Unified Inbox\nOmnichannel\nBoth"
+        },
+        {
+            "default": "5",
+            "fieldname": "max_concurrent_chats",
+            "fieldtype": "Int",
+            "label": "Max Concurrent Chats"
+        },
+        {
+            "default": "0",
+            "fieldname": "current_active_chats",
+            "fieldtype": "Int",
+            "label": "Current Active Chats",
+            "read_only": 1
+        },
+        {
+            "default": "1",
+            "fieldname": "auto_assignment_enabled",
+            "fieldtype": "Check",
+            "label": "Auto Assignment Enabled"
+        },
+        {
+            "collapsible": 1,
+            "fieldname": "performance_section",
+            "fieldtype": "Section Break",
+            "label": "Performance Metrics"
+        },
+        {
+            "default": "0",
+            "fieldname": "total_messages_handled",
+            "fieldtype": "Int",
+            "label": "Total Messages Handled",
+            "read_only": 1
+        },
+        {
+            "default": "0",
+            "fieldname": "average_response_time",
+            "fieldtype": "Float",
+            "label": "Average Response Time (seconds)",
+            "precision": "2",
+            "read_only": 1
+        },
+        {
+            "default": "0",
+            "fieldname": "customer_satisfaction_score",
+            "fieldtype": "Float",
+            "label": "Customer Satisfaction Score",
+            "precision": "2",
+            "read_only": 1
+        },
+        {
+            "fieldname": "last_activity",
+            "fieldtype": "Datetime",
+            "label": "Last Activity",
+            "read_only": 1
+        },
+        {
+            "collapsible": 1,
+            "fieldname": "settings_section",
+            "fieldtype": "Section Break",
+            "label": "Agent Settings"
+        },
+        {
+            "default": "en",
+            "fieldname": "preferred_language",
+            "fieldtype": "Select",
+            "label": "Preferred Language",
+            "options": "en\nbem\nny\nto"
+        },
+        {
+            "default": "08:00:00",
+            "fieldname": "working_hours_start",
+            "fieldtype": "Time",
+            "label": "Working Hours Start"
+        },
+        {
+            "default": "17:00:00",
+            "fieldname": "working_hours_end",
+            "fieldtype": "Time",
+            "label": "Working Hours End"
+        },
+        {
+            "default": "Africa/Lusaka",
+            "fieldname": "timezone",
+            "fieldtype": "Data",
+            "label": "Timezone"
+        },
+        {
+            "default": "Email, In-App",
+            "fieldname": "notification_preferences",
+            "fieldtype": "Data",
+            "label": "Notification Preferences"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2025-07-22 12:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Assistant CRM",
+    "name": "Agent Dashboard",
+    "naming_rule": "By fieldname",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "read": 1,
+            "role": "WCFCB Agent",
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "read": 1,
+            "role": "WCFCB Assistant Admin",
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "title_field": "agent_name",
+    "track_changes": 1
 }

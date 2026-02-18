@@ -207,7 +207,8 @@ doc_events = {
 scheduler_events = {
     "cron": {
         "*/10 * * * *": [
-            "assistant_crm.tasks.poll_twitter"
+            "assistant_crm.tasks.poll_twitter",
+            "assistant_crm.tasks.sweep_reassignments"
         ],
         "0 * * * *": [
             "assistant_crm.tasks.sweep_escalations"

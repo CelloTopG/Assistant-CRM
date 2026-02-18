@@ -4171,6 +4171,110 @@ def sweep_escalate_inactive_conversations():
         return {"status": "error", "message": str(e)}
 
 
+def sweep_agent_reassignments():
+    """
+    Scheduled job: detect conversations assigned to unavailable agents and reassign them.
+    Agents are considered 'unavailable' if:
+    1. Agent Dashboard status is not 'Available' (Sick, On Leave, Busy, Offline, etc.)
+    2. Agent is outside their working hours
+    3. User account is disabled
+    """
+    try:
+        from assistant_crm.assistant_crm.assistant_crm_module.doctype.agent_dashboard.agent_dashboard import (
+            AgentDashboard,
+        )
+        from frappe.utils import now
+
+        # Find all open conversations that have an assigned agent
+        conversations = frappe.get_all(
+            "Unified Inbox Conversation",
+            filters={
+                "status": ["not in", ["Resolved", "Closed"]],
+                "assigned_agent": ["is", "set"],
+            },
+            fields=["name", "assigned_agent", "platform", "customer_name"],
+        )
+
+        reassigned_count = 0
+        for conv in conversations:
+            agent_user = conv.assigned_agent
+
+            # Check agent availability
+            dashboard_name = frappe.db.get_value(
+                "Agent Dashboard", {"agent_user": agent_user}, "name"
+            )
+            reassign = False
+            reason = ""
+
+            if not dashboard_name:
+                # No dashboard means they haven't set up availability,
+                # we treat them as unavailable to be safe if they're assigned.
+                reassign = True
+                reason = "No Agent Dashboard configured"
+            else:
+                agent_dashboard = frappe.get_doc("Agent Dashboard", dashboard_name)
+                # Sync load before checking
+                AgentDashboard.sync_unified_inbox_load_for_agent(agent_user)
+                agent_dashboard.reload()
+
+                if not agent_dashboard.is_available():
+                    reassign = True
+                    reason = f"Status: {agent_dashboard.status}"
+                    if not agent_dashboard.is_within_working_hours():
+                        reason = "Outside working hours"
+                elif not frappe.db.get_value("User", agent_user, "enabled"):
+                    reassign = True
+                    reason = "User account disabled"
+
+            if reassign:
+                # Find a new available agent
+                conv_doc = frappe.get_doc("Unified Inbox Conversation", conv.name)
+                new_agent = conv_doc.find_available_agent()
+
+                if new_agent and new_agent != agent_user:
+                    # Reassign
+                    conv_doc.db_set("assigned_agent", new_agent)
+                    conv_doc.db_set("agent_assigned_at", now())
+
+                    # Log the reassignment as a comment
+                    comment = (
+                        f"🔄 **AUTO-REASSIGNED**\n\n"
+                        f"Original agent **{agent_user}** became unavailable ({reason}).\n"
+                        f"Reassigned to **{new_agent}** for immediate handling."
+                    )
+                    conv_doc.add_comment("Comment", comment)
+
+                    # Notify new agent
+                    conv_doc.notify_agent_assignment(new_agent)
+
+                    # Sync with linked issue if it exists
+                    issue_id = getattr(conv_doc, "custom_issue_id", None)
+                    if issue_id:
+                        try:
+                            frappe.db.set_value(
+                                "Issue", issue_id, "custom_assigned_agent", new_agent
+                            )
+                        except Exception:
+                            pass
+
+                    reassigned_count += 1
+
+        if reassigned_count > 0:
+            frappe.log_error(
+                f"Auto-reassigned {reassigned_count} conversations due to agent unavailability.",
+                "Unified Inbox Sweep",
+            )
+
+        return {"status": "success", "reassigned": reassigned_count}
+
+    except Exception as e:
+        frappe.log_error(
+            f"Error in sweep_agent_reassignments: {str(e)}",
+            "Unified Inbox Reassignment Error",
+        )
+        return {"status": "error", "message": str(e)}
+
+
 @frappe.whitelist()
 def lookup_customer_data():
     """Lookup customer data from CoreBusiness for unified inbox."""

@@ -21,6 +21,12 @@ def sweep_escalations():
     sweep_escalate_inactive_conversations()
 
 
+def sweep_reassignments():
+    """Sweep and reassign conversations from unavailable agents."""
+    from assistant_crm.api.unified_inbox_api import sweep_agent_reassignments
+    sweep_agent_reassignments()
+
+
 def cleanup_ussd():
     """Cleanup expired USSD sessions."""
     from assistant_crm.api.ussd_integration import cleanup_expired_ussd_sessions
