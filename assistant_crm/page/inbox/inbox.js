@@ -1,7 +1,7 @@
 // CRM Inbox - Professional Enterprise UI
 // Unified messaging hub for customer conversations
 
-frappe.pages['inbox'].on_page_load = function(wrapper) {
+frappe.pages['inbox'].on_page_load = function (wrapper) {
     var page = frappe.ui.make_app_page({
         parent: wrapper,
         title: 'Inbox',
@@ -299,11 +299,11 @@ class InboxManager {
             }
         });
 
-	        // Search input for conversations
-	        $(document).on('input', '#conversation-search', (e) => {
-	            const q = (e.currentTarget.value || '').trim();
-	            this.handleSearchInput(q);
-	        });
+        // Search input for conversations
+        $(document).on('input', '#conversation-search', (e) => {
+            const q = (e.currentTarget.value || '').trim();
+            this.handleSearchInput(q);
+        });
 
     }
 
@@ -421,7 +421,7 @@ class InboxManager {
             const unreadBadge = conv.unread_count > 0 ? `<span class="badge bg-danger ms-2">${conv.unread_count}</span>` : '';
             const tagHasSurvey = String(conv.tags || '').toLowerCase().includes('survey');
             const subjHasSurvey = String(conv.subject || '').toLowerCase().startsWith('survey');
-            const statusHasSurvey = String(conv.status||'').toLowerCase().includes('survey');
+            const statusHasSurvey = String(conv.status || '').toLowerCase().includes('survey');
 
             return `
                 <div class="conversation-item ${isActive}" data-conversation="${conv.name}">
@@ -594,14 +594,14 @@ class InboxManager {
             if (this.currentConversation) {
                 this.loadMessages(this.currentConversation);
             }
-            frappe.show_alert({message: 'Inbox refreshed', indicator: 'blue'});
+            frappe.show_alert({ message: 'Inbox refreshed', indicator: 'blue' });
         });
     }
 
 
     openAiControlDialog() {
         if (!this.currentConversation) {
-            frappe.show_alert({message: 'Please select a conversation first', indicator: 'orange'});
+            frappe.show_alert({ message: 'Please select a conversation first', indicator: 'orange' });
             return;
         }
         const conversation = this.conversations.find(c => c.name === this.currentConversation) || {};
@@ -635,7 +635,7 @@ class InboxManager {
                             if (conv) conv.ai_mode = mode;
                             $('#ai-control-btn').html(`<i class=\"fa fa-cog\"></i> AI: ${mode}`);
                             dialog.hide();
-                            frappe.show_alert({message: `AI mode set to ${mode}`, indicator: 'green'});
+                            frappe.show_alert({ message: `AI mode set to ${mode}`, indicator: 'green' });
                         } else {
                             frappe.show_alert({
                                 message: 'Failed to set AI mode: ' + (r.message?.message || 'Unknown error'),
@@ -645,7 +645,7 @@ class InboxManager {
                     },
                     error: (error) => {
                         console.error('Error setting AI mode:', error);
-                        frappe.show_alert({message: 'Error setting AI mode', indicator: 'red'});
+                        frappe.show_alert({ message: 'Error setting AI mode', indicator: 'red' });
                     }
                 });
             }
@@ -859,7 +859,7 @@ class InboxManager {
             if (typeof ts === 'string') {
                 const m = ts.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/);
                 if (m) {
-                    return Date.UTC(+m[1], +m[2]-1, +m[3], +m[4], +m[5], +m[6]);
+                    return Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]);
                 }
             }
             const d = new Date(ts);
@@ -924,7 +924,8 @@ class InboxManager {
                 ` : ''}
                 <div class="message ${messageClass}">
                     <div class="message-content">
-                        ${ (surveyActive && (msg.direction === 'Inbound' || msg.sender_name==='Survey Bot')) ? `<div class="mb-1"><small class="badge bg-success">Survey · ${surveyLabel || ''}</small></div>` : '' }
+                        ${isAI ? `<div class="mb-1 text-end"><small class="text-white-50"><i class="fas fa-robot me-1"></i>Anna AI Assistant</small></div>` : ''}
+                        ${(surveyActive && (msg.direction === 'Inbound' || msg.sender_name === 'Survey Bot')) ? `<div class="mb-1"><small class="badge bg-success">Survey · ${surveyLabel || ''}</small></div>` : ''}
                         ${msg.message_content}
                     </div>
                     <small class="text-muted d-block mt-1">
@@ -955,12 +956,12 @@ class InboxManager {
         const message = input.value.trim();
 
         if (!message) {
-            frappe.show_alert({message: 'Please enter a message', indicator: 'orange'});
+            frappe.show_alert({ message: 'Please enter a message', indicator: 'orange' });
             return;
         }
 
         if (!this.currentConversation) {
-            frappe.show_alert({message: 'Please select a conversation first', indicator: 'orange'});
+            frappe.show_alert({ message: 'Please select a conversation first', indicator: 'orange' });
             return;
         }
 
@@ -996,7 +997,7 @@ class InboxManager {
                     this.loadMessages(this.currentConversation);
                     this.loadConversations(); // Refresh conversation list
 
-                    frappe.show_alert({message: 'Message sent successfully!', indicator: 'green'});
+                    frappe.show_alert({ message: 'Message sent successfully!', indicator: 'green' });
                 } else {
                     // Surface platform error details if present
                     const ps = response.message?.data?.platform_send;
@@ -1025,7 +1026,7 @@ class InboxManager {
             },
             error: (error) => {
                 console.error('Error sending message:', error);
-                frappe.show_alert({message: 'Error sending message. Please try again.', indicator: 'red'});
+                frappe.show_alert({ message: 'Error sending message. Please try again.', indicator: 'red' });
             },
             always: () => {
                 // Restore button and input state
@@ -1043,7 +1044,7 @@ class InboxManager {
 
         if (!this.currentConversation) {
             console.log('DEBUG: No conversation selected, showing alert');
-            frappe.show_alert({message: 'Please select a conversation first', indicator: 'orange'});
+            frappe.show_alert({ message: 'Please select a conversation first', indicator: 'orange' });
             return;
         }
 
@@ -1077,7 +1078,7 @@ class InboxManager {
 
         if (!this.currentConversation) {
             console.log('DEBUG: No conversation selected for escalation');
-            frappe.show_alert({message: 'Please select a conversation first', indicator: 'orange'});
+            frappe.show_alert({ message: 'Please select a conversation first', indicator: 'orange' });
             return;
         }
 
@@ -1086,94 +1087,114 @@ class InboxManager {
 
         if (!conversation) {
             console.log('DEBUG: Conversation not found in conversations array');
-            frappe.show_alert({message: 'Conversation not found', indicator: 'red'});
+            frappe.show_alert({ message: 'Conversation not found', indicator: 'red' });
             return;
         }
 
         // Check if conversation has an associated ERPNext Issue
         if (!conversation.issue_id) {
-            frappe.show_alert({message: 'No ERPNext Issue found for this conversation', indicator: 'orange'});
+            frappe.show_alert({ message: 'No ERPNext Issue found for this conversation', indicator: 'orange' });
             return;
         }
 
-        // Use ERPNext's native escalation through Issue priority and assignment
-        const dialog = new frappe.ui.Dialog({
-            title: 'Escalate to ERPNext Issue',
-            fields: [
-                {
-                    fieldtype: 'Select',
-                    fieldname: 'priority',
-                    label: 'Escalate Priority To',
-                    options: ['Medium', 'High', 'Urgent'],
-                    default: 'High',
-                    reqd: 1
-                },
-                {
-                    fieldtype: 'Link',
-                    fieldname: 'assign_to',
-                    label: 'Escalate to User',
-                    options: 'User',
-                    description: 'Assign the ERPNext Issue to a specific user'
-                },
-                {
-                    fieldtype: 'Small Text',
-                    fieldname: 'escalation_reason',
-                    label: 'Escalation Reason',
-                    reqd: 1,
-                    description: 'Reason for escalating this conversation'
-                }
-            ],
-            primary_action_label: 'Escalate Issue',
-            primary_action: (values) => {
-                console.log('DEBUG: Escalating to ERPNext Issue:', conversation.issue_id);
+        // Fetch supervisors from API to filter the escalation target list
+        frappe.call({
+            method: 'assistant_crm.api.unified_inbox_api.get_supervisors',
+            callback: (res) => {
+                const supervisors = (res.message && res.message.status === 'success') ? res.message.data : [];
+                const supervisor_names = supervisors.map(s => s.name);
 
-                frappe.call({
-                    method: 'assistant_crm.api.unified_inbox_api.escalate_to_erpnext_issue',
-                    args: {
-                        conversation_name: this.currentConversation,
-                        issue_id: conversation.issue_id,
-                        new_priority: values.priority,
-                        assign_to: values.assign_to,
-                        escalation_reason: values.escalation_reason
-                    },
-                    callback: (response) => {
-                        if (response.message && response.message.status === 'success') {
-                            // Update conversation status
-                            conversation.status = 'Escalated';
-                            conversation.priority = values.priority;
-                            if (values.assign_to) {
-                                conversation.assigned_agent = values.assign_to;
-                            }
-
-                            this.renderConversations();
-                            this.updateConversationHeader(this.currentConversation);
-                            dialog.hide();
-
-                            frappe.show_alert({
-                                message: `Issue ${conversation.issue_id} escalated successfully!`,
-                                indicator: 'green'
-                            });
-                        } else {
-                            frappe.show_alert({
-                                message: 'Failed to escalate: ' + (response.message?.message || 'Unknown error'),
-                                indicator: 'red'
-                            });
+                // Use ERPNext's native escalation through Issue priority and assignment
+                const dialog = new frappe.ui.Dialog({
+                    title: 'Escalate to ERPNext Issue',
+                    fields: [
+                        {
+                            fieldtype: 'Select',
+                            fieldname: 'priority',
+                            label: 'Escalate Priority To',
+                            options: ['Medium', 'High', 'Urgent'],
+                            default: 'High',
+                            reqd: 1
+                        },
+                        {
+                            fieldtype: 'Link',
+                            fieldname: 'assign_to',
+                            label: 'Escalate to User',
+                            options: 'User',
+                            description: supervisors.length > 0 ? 'Showing supervisors by default' : 'Assign the ERPNext Issue to a specific user'
+                        },
+                        {
+                            fieldtype: 'Small Text',
+                            fieldname: 'escalation_reason',
+                            label: 'Escalation Reason',
+                            reqd: 1,
+                            description: 'Reason for escalating this conversation'
                         }
-                    },
-                    error: (error) => {
-                        console.error('Error escalating to ERPNext Issue:', error);
-                        frappe.show_alert({message: 'Error escalating Issue', indicator: 'red'});
+                    ],
+                    primary_action_label: 'Escalate Issue',
+                    primary_action: (values) => {
+                        console.log('DEBUG: Escalating to ERPNext Issue:', conversation.issue_id);
+
+                        frappe.call({
+                            method: 'assistant_crm.api.unified_inbox_api.escalate_to_erpnext_issue',
+                            args: {
+                                conversation_name: this.currentConversation,
+                                issue_id: conversation.issue_id,
+                                new_priority: values.priority,
+                                assign_to: values.assign_to,
+                                escalation_reason: values.escalation_reason
+                            },
+                            callback: (response) => {
+                                if (response.message && response.message.status === 'success') {
+                                    // Update conversation status
+                                    conversation.status = 'Escalated';
+                                    conversation.priority = values.priority;
+                                    if (values.assign_to) {
+                                        conversation.assigned_agent = values.assign_to;
+                                    }
+
+                                    this.renderConversations();
+                                    this.updateConversationHeader(this.currentConversation);
+                                    dialog.hide();
+
+                                    frappe.show_alert({
+                                        message: `Issue ${conversation.issue_id} escalated successfully!`,
+                                        indicator: 'green'
+                                    });
+                                } else {
+                                    frappe.show_alert({
+                                        message: 'Failed to escalate: ' + (response.message?.message || 'Unknown error'),
+                                        indicator: 'red'
+                                    });
+                                }
+                            },
+                            error: (error) => {
+                                console.error('Error escalating to ERPNext Issue:', error);
+                                frappe.show_alert({ message: 'Error escalating Issue', indicator: 'red' });
+                            }
+                        });
                     }
                 });
+
+                // Apply supervisor filter to the assign_to field if supervisors found
+                if (supervisor_names.length > 0) {
+                    dialog.fields_dict.assign_to.get_query = () => {
+                        return {
+                            filters: {
+                                "name": ["in", supervisor_names]
+                            }
+                        };
+                    };
+                }
+
+                dialog.show();
             }
         });
-
-        dialog.show();
     }
 
     closeConversation() {
         if (!this.currentConversation) {
-            frappe.show_alert({message: 'Please select a conversation first', indicator: 'orange'});
+            frappe.show_alert({ message: 'Please select a conversation first', indicator: 'orange' });
             return;
         }
 
@@ -1189,13 +1210,13 @@ class InboxManager {
 
             this.renderConversations();
             this.updateConversationHeader(this.currentConversation);
-            frappe.show_alert({message: 'Conversation closed', indicator: 'blue'});
+            frappe.show_alert({ message: 'Conversation closed', indicator: 'blue' });
         });
     }
 
     showCustomerData() {
         if (!this.currentConversation) {
-            frappe.show_alert({message: 'Please select a conversation first', indicator: 'orange'});
+            frappe.show_alert({ message: 'Please select a conversation first', indicator: 'orange' });
             return;
         }
 
@@ -1304,7 +1325,7 @@ class InboxManager {
 
         if (!this.currentConversation) {
             console.log('DEBUG: No conversation selected for opening issue');
-            frappe.show_alert({message: 'Please select a conversation first', indicator: 'orange'});
+            frappe.show_alert({ message: 'Please select a conversation first', indicator: 'orange' });
             return;
         }
 
@@ -1316,7 +1337,7 @@ class InboxManager {
         if (!conversation || (!conversation.issue_id && !conversation.custom_issue_id)) {
             console.log('DEBUG: No Issue ID found for conversation');
             console.log('DEBUG: Available conversation fields:', Object.keys(conversation || {}));
-            frappe.show_alert({message: 'No ERPNext Issue found for this conversation', indicator: 'orange'});
+            frappe.show_alert({ message: 'No ERPNext Issue found for this conversation', indicator: 'orange' });
             return;
         }
 
@@ -1324,7 +1345,7 @@ class InboxManager {
         const issueUrl = `/app/issue/${conversation.issue_id}`;
         window.open(issueUrl, '_blank');
 
-        frappe.show_alert({message: `Opening ERPNext Issue ${conversation.issue_id}`, indicator: 'blue'});
+        frappe.show_alert({ message: `Opening ERPNext Issue ${conversation.issue_id}`, indicator: 'blue' });
     }
 
     comprehensiveSystemDiagnostic() {
@@ -1371,7 +1392,7 @@ class InboxManager {
             // Test basic Dialog
             const testDialog = new frappe.ui.Dialog({
                 title: 'Test Dialog',
-                fields: [{fieldtype: 'Data', fieldname: 'test', label: 'Test'}]
+                fields: [{ fieldtype: 'Data', fieldname: 'test', label: 'Test' }]
             });
             console.log('   - Basic Dialog creation: SUCCESS');
             testDialog.$wrapper.remove(); // Clean up
@@ -1582,7 +1603,7 @@ class InboxManager {
                             console.log('DEBUG: Custom assignment dialog values:', values);
 
                             if (!values.assigned_to) {
-                                frappe.show_alert({message: 'Please select an agent', indicator: 'orange'});
+                                frappe.show_alert({ message: 'Please select an agent', indicator: 'orange' });
                                 return;
                             }
 
@@ -1736,7 +1757,7 @@ class InboxManager {
                         });
                     } else {
                         console.log('DEBUG: Using existing Issue:', response.message.issue_id,
-                                  'hadExisting:', hadExistingIssue, 'apiExisting:', response.message.existing);
+                            'hadExisting:', hadExistingIssue, 'apiExisting:', response.message.existing);
                     }
                 } else {
                     console.error('DEBUG: Failed to generate ticket:', response.message);
