@@ -773,24 +773,37 @@ def escalate_conversation(conversation_name: str, reason: str, priority: str = N
 
 		# Prefer currently assigned agent (supervisor) if present,
 		# otherwise fall back to routing logic.
-		target_agent = conversation_doc.assigned_agent or conversation_doc.find_available_agent()
+		target_agent = conversation_doc.find_available_agent()
 
-		if target_agent and target_agent != conversation_doc.assigned_agent:
-			conversation_doc.db_set("assigned_agent", target_agent)
+		if target_agent:
+			conversation_doc.db_set("escalated_agent", target_agent)
 			conversation_doc.db_set("agent_assigned_at", now())
 			conversation_doc.notify_agent_assignment(target_agent)
 
-		# Create escalation record using whichever agent is currently
-		# assigned after the above logic.
+			# If there's a linked issue, sync the escalated agent there too
+			issue_id = getattr(conversation_doc, "custom_issue_id", None)
+			if issue_id:
+				try:
+					user_name = frappe.get_value("User", target_agent, "full_name") or target_agent
+					display_name = f"{user_name} ({target_agent})"
+					frappe.db.set_value("Issue", issue_id, {
+						"custom_escalated_agent": target_agent,
+						"custom_escalated_agent_name": display_name
+					})
+				except Exception as e:
+					frappe.log_error(f"Failed to sync escalation to Issue: {str(e)}", "Unified Inbox Escalation Sync")
+
+		# Create escalation record
 		conversation_doc.create_escalation_record(target_agent or conversation_doc.assigned_agent, reason)
 
-		# Refresh Agent Dashboard workload snapshot now that this
-		# conversation is escalated and pinned to a human.
+		# Refresh Agent Dashboard workload snapshot
 		try:
 			from assistant_crm.assistant_crm.assistant_crm_module.doctype.agent_dashboard.agent_dashboard import (  # type: ignore
 				AgentDashboard,
 			)
-			if conversation_doc.assigned_agent:
+			if target_agent:
+				AgentDashboard.sync_unified_inbox_load_for_agent(target_agent)
+			elif conversation_doc.assigned_agent:
 				AgentDashboard.sync_unified_inbox_load_for_agent(conversation_doc.assigned_agent)
 		except Exception as sync_err:
 			frappe.log_error(f"Failed to sync agent load after escalation: {sync_err}", "Unified Inbox Agent Load Sync")
@@ -2264,6 +2277,17 @@ This Issue was escalated from the Unified Inbox conversation: {conversation_name
 
         issue_doc.add_comment("Comment", escalation_comment)
 
+        # Update custom escalation fields for separation
+        if assign_to:
+            try:
+                user_name = frappe.get_value("User", assign_to, "full_name") or assign_to
+                display_name = f"{user_name} ({assign_to})"
+                issue_doc.custom_escalated_agent = assign_to
+                issue_doc.custom_escalated_agent_name = display_name
+                print(f"DEBUG: Set custom_escalated_agent to {display_name}")
+            except Exception as e:
+                print(f"DEBUG: Error setting custom escalation fields: {str(e)}")
+
         # Assign to user if specified (ERPNext native assignment)
         if assign_to:
             try:
@@ -2283,23 +2307,22 @@ This Issue was escalated from the Unified Inbox conversation: {conversation_name
 
         # Save the Issue
         issue_doc.save(ignore_permissions=True)
-        print(f"DEBUG: Issue {issue_id} escalated successfully")
+        
+        # Update the conversation as well
+        if conversation_name and frappe.db.exists("Unified Inbox Conversation", conversation_name):
+            try:
+                frappe.db.set_value("Unified Inbox Conversation", conversation_name, {
+                    "escalated_agent": assign_to,
+                    "escalated_at": frappe.utils.now(),
+                    "escalated_by": frappe.session.user,
+                    "escalation_reason": escalation_reason,
+                    "status": "Escalated",
+                    "priority": new_priority
+                }, update_modified=True)
+            except Exception as e:
+                frappe.log_error(f"Failed to update conversation escalation status: {str(e)}", "Unified Inbox Escalation Sync")
 
-        # Update conversation status if it exists
-        try:
-            if frappe.db.exists("Unified Inbox Conversation", conversation_name):
-                frappe.db.set_value(
-                    "Unified Inbox Conversation",
-                    conversation_name,
-                    {
-                        "status": "Escalated",
-                        "priority": new_priority,
-                        "escalated_at": frappe.utils.now(),
-                        "escalated_by": frappe.session.user
-                    }
-                )
-        except Exception as conv_error:
-            print(f"DEBUG: Conversation update error: {str(conv_error)}")
+        print(f"DEBUG: Issue {issue_id} escalated successfully")
 
         return {
             "status": "success",
@@ -2359,6 +2382,12 @@ def sync_issue_escalation_to_conversation(issue_id):
         # Update assignment if Issue is assigned
         if hasattr(issue, 'assigned_to') and issue.assigned_to:
             conversation.assigned_agent = issue.assigned_to
+            
+        # Update escalation fields if present
+        if hasattr(issue, 'custom_escalated_agent') and issue.custom_escalated_agent:
+            conversation.escalated_agent = issue.custom_escalated_agent
+            if not conversation.escalated_at:
+                conversation.escalated_at = frappe.utils.now()
 
         conversation.save(ignore_permissions=True)
 

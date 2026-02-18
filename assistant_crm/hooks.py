@@ -173,7 +173,10 @@ doc_events = {
     # Guardrail: prevent editing system-managed platform source on Issue after creation
     # Branch assignment: enqueue background job to assign branch based on beneficiary location
     "Issue": {
-        "validate": "assistant_crm.issue_hooks.prevent_platform_source_edit",
+        "validate": [
+            "assistant_crm.issue_hooks.prevent_platform_source_edit",
+            "assistant_crm.issue_hooks.sync_escalated_agent_name"
+        ],
         "after_insert": "assistant_crm.issue_hooks.enqueue_branch_assignment"
     }
 }

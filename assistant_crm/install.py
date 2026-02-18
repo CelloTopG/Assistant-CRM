@@ -607,6 +607,22 @@ def ensure_issue_unified_inbox_fields():
 				"insert_after": "custom_platform_source",
 				"description": "Agent assigned to handle this Issue",
 			},
+			{
+				"fieldname": "custom_escalated_agent",
+				"label": "Escalated Agent",
+				"fieldtype": "Link",
+				"options": "User",
+				"insert_after": "custom_assigned_agent",
+				"description": "Specialist/Supervisor this Issue was escalated to",
+			},
+			{
+				"fieldname": "custom_escalated_agent_name",
+				"label": "Escalated Agent Full Name",
+				"fieldtype": "Data",
+				"insert_after": "custom_escalated_agent",
+				"read_only": 1,
+				"description": "Display name of the escalated agent",
+			},
 		]
 
 		for f in fields:

@@ -81,3 +81,21 @@ def enqueue_branch_assignment(doc, method):
         except Exception:
             pass
 
+def sync_escalated_agent_name(doc, method):
+    """
+    Sync custom_escalated_agent_name with the escalated agent's full name.
+    Format: Full Name (user_id)
+    """
+    try:
+        if not hasattr(doc, "custom_escalated_agent") or not doc.custom_escalated_agent:
+            if hasattr(doc, "custom_escalated_agent_name"):
+                doc.custom_escalated_agent_name = None
+            return
+
+        user_name = frappe.db.get_value("User", doc.custom_escalated_agent, "full_name") or doc.custom_escalated_agent
+        display_name = f"{user_name} ({doc.custom_escalated_agent})"
+        
+        if doc.custom_escalated_agent_name != display_name:
+            doc.custom_escalated_agent_name = display_name
+    except Exception:
+        pass
