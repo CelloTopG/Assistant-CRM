@@ -2110,6 +2110,58 @@ def get_available_agents():
 
 
 @frappe.whitelist()
+def get_supervisors():
+    """
+    Get list of supervisors (Assistant CRM Manager or System Manager).
+    Used for filtering the escalation target user list.
+    """
+    try:
+        # Get all enabled system users
+        users = frappe.get_all(
+            "User",
+            filters={
+                "enabled": 1,
+                "user_type": "System User",
+                "name": ["!=", "Administrator"]
+            },
+            fields=["name", "email", "full_name", "first_name"]
+        )
+
+        supervisors = []
+        # Define supervisor roles
+        supervisor_roles = ["System Manager", "Assistant CRM Manager"]
+
+        for user in users:
+            try:
+                user_roles = frappe.get_roles(user.name)
+                # Check for any supervisor role
+                if any(role in supervisor_roles for role in user_roles):
+                    supervisors.append({
+                        "name": user.name,
+                        "email": user.email,
+                        "full_name": user.full_name or user.first_name or user.email,
+                        "first_name": user.first_name
+                    })
+            except Exception:
+                continue
+
+        # If no specific supervisors found, return all available agents as fallback
+        if not supervisors:
+            agents_result = get_available_agents()
+            if agents_result.get("status") == "success":
+                supervisors = agents_result.get("data", [])
+
+        return {
+            "status": "success",
+            "data": supervisors,
+            "count": len(supervisors)
+        }
+    except Exception as e:
+        frappe.log_error(f"Error getting supervisors: {str(e)}", "Unified Inbox API Error")
+        return {"status": "error", "message": str(e), "data": []}
+
+
+@frappe.whitelist()
 def create_issue_for_conversation(conversation_name, customer_name, platform, initial_message, customer_phone=None, customer_nrc=None, priority="Medium"):
     """
     Create an ERPNext Issue for a new conversation.
