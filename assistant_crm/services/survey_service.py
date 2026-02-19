@@ -995,8 +995,12 @@ WCFCB Team
                 return {'ok': False, 'reason': reason or 'send_failed', 'send_result': send_res}
 
         except Exception as e:
-            frappe.log_error(f"Failed to start conversational survey session: {str(e)}")
-            return {'ok': False, 'reason': 'exception', 'error': str(e)}
+            frappe.log_error(title="Conversational Survey Failed", message=f"Failed to start conversational survey session: {str(e)}")
+            return {
+                'ok': False, 
+                'reason': 'exception', 
+                'error': "We couldn't start the survey session. The system administrator has been logged of this issue."
+            }
 
     def generate_survey_link(self, response_id):
         """Generate unique survey link using per-response token.

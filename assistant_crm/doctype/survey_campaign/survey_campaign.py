@@ -87,7 +87,7 @@ class SurveyCampaign(Document):
 		else:
 			# Distinguish between known errors and unknown errors
 			error_msg = result.get('error', 'Unknown error')
-			frappe.log_error(f"Survey Distribution Error for {self.name}: {error_msg}", "Survey Campaign Distribution Failure")
+			frappe.log_error(title="Survey Distribution Failed", message=f"Survey Distribution Error for {self.name}: {error_msg}")
 			frappe.throw(f"Wait, we couldn't send this survey. Reason: {error_msg}. Our administrators have been notified.")
 
 @frappe.whitelist(allow_guest=False)

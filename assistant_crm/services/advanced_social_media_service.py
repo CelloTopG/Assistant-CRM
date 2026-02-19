@@ -148,7 +148,7 @@ class AdvancedSocialMediaService:
             }
             
         except Exception as e:
-            frappe.log_error(f"Error handling Telegram webhook: {str(e)}")
+            frappe.log_error(title="Telegram Webhook Failed", message=f"Error handling Telegram webhook: {str(e)}")
             return {
                 "success": False,
                 "error": str(e)
@@ -172,7 +172,7 @@ class AdvancedSocialMediaService:
                 return {"success": True, "message": f"Unhandled event type: {event_type}"}
             
         except Exception as e:
-            frappe.log_error(f"Error handling LinkedIn webhook: {str(e)}")
+            frappe.log_error(title="LinkedIn Webhook Failed", message=f"Error handling LinkedIn webhook: {str(e)}")
             return {
                 "success": False,
                 "error": str(e)
@@ -193,7 +193,7 @@ class AdvancedSocialMediaService:
                 return {"success": True, "message": "No relevant events to process"}
             
         except Exception as e:
-            frappe.log_error(f"Error handling Twitter webhook: {str(e)}")
+            frappe.log_error(title="Twitter Webhook Failed", message=f"Error handling Twitter webhook: {str(e)}")
             return {
                 "success": False,
                 "error": str(e)
@@ -240,7 +240,7 @@ class AdvancedSocialMediaService:
                 }
             
         except Exception as e:
-            frappe.log_error(f"Error sending Telegram message: {str(e)}")
+            frappe.log_error(title="Telegram Send Failed", message=f"Error sending Telegram message: {str(e)}")
             return {
                 "success": False,
                 "error": str(e)
@@ -289,7 +289,7 @@ class AdvancedSocialMediaService:
             }
             
         except Exception as e:
-            frappe.log_error(f"Error sending LinkedIn message: {str(e)}")
+            frappe.log_error(title="LinkedIn Send Failed", message=f"Error sending LinkedIn message: {str(e)}")
             return {
                 "success": False,
                 "error": str(e)
@@ -334,7 +334,7 @@ class AdvancedSocialMediaService:
             }
             
         except Exception as e:
-            frappe.log_error(f"Error sending Twitter DM: {str(e)}")
+            frappe.log_error(title="Twitter DM Failed", message=f"Error sending Twitter DM: {str(e)}")
             return {
                 "success": False,
                 "error": str(e)
@@ -383,7 +383,7 @@ class AdvancedSocialMediaService:
             return conversation.name
             
         except Exception as e:
-            frappe.log_error(f"Error creating Telegram conversation: {str(e)}")
+            frappe.log_error(title="Telegram Convo Failed", message=f"Error creating Telegram conversation: {str(e)}")
             return None
 
     def process_linkedin_message(self, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -422,7 +422,7 @@ class AdvancedSocialMediaService:
             }
 
         except Exception as e:
-            frappe.log_error(f"Error processing LinkedIn message: {str(e)}")
+            frappe.log_error(title="LinkedIn Process Failed", message=f"Error processing LinkedIn message: {str(e)}")
             return {"success": False, "error": str(e)}
 
     def process_twitter_dm(self, dm_events: List[Dict]) -> Dict[str, Any]:
@@ -468,7 +468,7 @@ class AdvancedSocialMediaService:
             }
 
         except Exception as e:
-            frappe.log_error(f"Error processing Twitter DMs: {str(e)}")
+            frappe.log_error(title="Twitter DM Process Failed", message=f"Error processing Twitter DMs: {str(e)}")
             return {"success": False, "error": str(e)}
 
     def get_linkedin_user_info(self, user_id: str) -> Dict[str, Any]:
@@ -492,7 +492,7 @@ class AdvancedSocialMediaService:
             }
 
         except Exception as e:
-            frappe.log_error(f"Error getting LinkedIn user info: {str(e)}")
+            frappe.log_error(title="LinkedIn User Info Failed", message=f"Error getting LinkedIn user info: {str(e)}")
             return {
                 "first_name": "",
                 "last_name": "",
@@ -527,7 +527,7 @@ class AdvancedSocialMediaService:
             }
 
         except Exception as e:
-            frappe.log_error(f"Error getting Twitter user info: {str(e)}")
+            frappe.log_error(title="Twitter User Info Failed", message=f"Error getting Twitter user info: {str(e)}")
             return {
                 "name": "",
                 "username": "",
@@ -554,7 +554,7 @@ class AdvancedSocialMediaService:
             return routing_result
 
         except Exception as e:
-            frappe.log_error(f"Error routing Telegram message: {str(e)}")
+            frappe.log_error(title="Telegram Routing Failed", message=f"Error routing Telegram message: {str(e)}")
             return {"success": False, "error": str(e)}
 
     def send_telegram_auto_response(self, chat_id: str, message_text: str):
@@ -574,7 +574,7 @@ class AdvancedSocialMediaService:
                 self.send_telegram_message(chat_id, auto_response["response"])
 
         except Exception as e:
-            frappe.log_error(f"Error sending Telegram auto-response: {str(e)}")
+            frappe.log_error(title="Telegram Auto-Response Failed", message=f"Error sending Telegram auto-response: {str(e)}")
 
     def is_business_hours(self) -> bool:
         """Check if current time is within business hours using centralized utility."""
@@ -606,7 +606,7 @@ class AdvancedSocialMediaService:
             message.insert()
 
         except Exception as e:
-            frappe.log_error(f"Error creating message record: {str(e)}")
+            frappe.log_error(title="Record Creation Failed", message=f"Error creating message record: {str(e)}")
 
     def log_outbound_message(self, conversation_id: str, message_text: str, platform: str, platform_message_id: str = None):
         """Log outbound message to database"""
@@ -634,4 +634,4 @@ class AdvancedSocialMediaService:
             frappe.db.commit()
 
         except Exception as e:
-            frappe.log_error(f"Error logging outbound message: {str(e)}")
+            frappe.log_error(title="Outbound Log Failed", message=f"Error logging outbound message: {str(e)}")

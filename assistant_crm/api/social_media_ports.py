@@ -186,16 +186,16 @@ class SocialMediaPlatform(ABC):
             except Exception as issue_err:
                 # Log but don't propagate — the conversation was already created
                 frappe.log_error(
-                    message=f"Issue creation failed for {conversation_doc.name}: {str(issue_err)}",
-                    title="Auto Issue Creation Error"
+                    title="Conversation Issue Creation Failed",
+                    message=f"Issue creation failed for {conversation_doc.name}: {str(issue_err)}"
                 )
 
             return conversation_doc.name
 
         except Exception as e:
             frappe.log_error(
-                message=f"Error creating conversation for {self.platform_name}: {str(e)}",
-                title="Social Media Integration Error"
+                title="Conversation Creation Failed",
+                message=f"Error creating conversation for {self.platform_name}: {str(e)}"
             )
             return None
 
@@ -261,7 +261,7 @@ class SocialMediaPlatform(ABC):
             return message_doc.name
 
         except Exception as e:
-            frappe.log_error(f"Error creating message for {self.platform_name}: {str(e)}", "Social Media Integration Error")
+            frappe.log_error(title="Message Creation Failed", message=f"Error creating message for {self.platform_name}: {str(e)}")
             return None
 
     def create_issue_for_new_conversation(self, conversation_name: str, platform_data: Dict[str, Any]):
@@ -296,8 +296,8 @@ class SocialMediaPlatform(ABC):
         except Exception as e:
             print(f"DEBUG: Error creating Issue for conversation {conversation_name}: {str(e)}")
             frappe.log_error(
-                message=f"Error creating Issue for {self.platform_name} conversation {conversation_name}: {str(e)}",
-                title="Auto Issue Creation Error"
+                title="Auto Issue Creation Failed",
+                message=f"Error creating Issue for {self.platform_name} conversation {conversation_name}: {str(e)}"
             )
 
     def update_conversation_timestamp(self, conversation_name: str, timestamp_str: str):
@@ -311,7 +311,7 @@ class SocialMediaPlatform(ABC):
                 update_modified=True,
             )
         except Exception as e:
-            frappe.log_error(f"Error updating conversation timestamp: {str(e)}", "Social Media Integration")
+            frappe.log_error(title="Update Timestamp Failed", message=f"Error updating conversation timestamp: {str(e)}")
 
     def update_issue_conversation_history(self, conversation_name: str, new_message_content: str, sender_name: str, timestamp_str: str, direction: str):
         """Update the ERPNext Issue with complete conversation history after each message."""
@@ -389,7 +389,7 @@ class SocialMediaPlatform(ABC):
             print(f"DEBUG: Error updating Issue conversation history: {str(e)}")
             import traceback
             print(f"DEBUG: Traceback: {traceback.format_exc()}")
-            frappe.log_error(f"Error updating Issue conversation history: {str(e)}", "Social Media Integration")
+            frappe.log_error(title="Issue History Sync Failed", message=f"Error updating Issue conversation history: {str(e)}")
 
 
 class WhatsAppIntegration(SocialMediaPlatform):
@@ -415,7 +415,7 @@ class WhatsAppIntegration(SocialMediaPlatform):
     def send_message(self, recipient_id: str, message: str, message_type: str = "text") -> bool:
         """Send WhatsApp message."""
         if not self.is_configured:
-            frappe.log_error("WhatsApp not configured", "WhatsApp Integration")
+            frappe.log_error(title="WhatsApp Config Missing", message="WhatsApp not configured")
             return False
 
         try:
@@ -437,7 +437,7 @@ class WhatsAppIntegration(SocialMediaPlatform):
             return response.status_code == 200
 
         except Exception as e:
-            frappe.log_error(f"WhatsApp send error: {str(e)}", "WhatsApp Integration")
+            frappe.log_error(title="WhatsApp Send Failed", message=f"WhatsApp send error: {str(e)}")
             return False
 
     def process_webhook(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -524,7 +524,7 @@ class WhatsAppIntegration(SocialMediaPlatform):
 
         except Exception as e:
             print(f"DEBUG: WhatsApp webhook error: {str(e)}")
-            frappe.log_error(f"WhatsApp webhook error: {str(e)}", "WhatsApp Integration")
+            frappe.log_error(title="WhatsApp Webhook Failed", message=f"WhatsApp webhook error: {str(e)}")
             return {"status": "error", "message": str(e)}
 
     def extract_whatsapp_message_content(self, message: Dict[str, Any]) -> str:
@@ -622,7 +622,7 @@ class FacebookIntegration(SocialMediaPlatform):
           we attempt to exchange it for a page token using the configured page_id.
         """
         if not self.is_configured:
-            frappe.log_error("Facebook not configured", "Facebook Integration")
+            frappe.log_error(title="Facebook Config Missing", message="Facebook not configured")
             return False
 
         try:
@@ -674,7 +674,7 @@ class FacebookIntegration(SocialMediaPlatform):
             token = token.strip().strip('"').strip("'")
             token = token.replace(" ", "").replace("\n", "").replace("\r", "")
             if not token:
-                frappe.log_error("Missing Facebook Page Access Token", "Facebook Integration")
+                frappe.log_error(title="Facebook Token Missing", message="Missing Facebook Page Access Token")
                 return False
 
             # First attempt
@@ -710,7 +710,7 @@ class FacebookIntegration(SocialMediaPlatform):
                             self.last_error = "token_exchange_failed"
                         except Exception:
                             pass
-                        frappe.log_error(f"Facebook token exchange failed: HTTP {ex.status_code} - {ex_txt}", "Facebook Integration")
+                        frappe.log_error(title="Facebook Token Exchange Failed", message=f"HTTP {ex.status_code} - {ex_txt}")
                     if ex.status_code == 200:
                         page_token = (ex.json() or {}).get("access_token")
                         if page_token:
@@ -728,7 +728,7 @@ class FacebookIntegration(SocialMediaPlatform):
                                 )
                                 return False
                 except Exception as ex_err:
-                    frappe.log_error(f"Facebook token exchange failed: {str(ex_err)}", "Facebook Integration")
+                    frappe.log_error(title="Facebook Token Exchange Exception", message=f"Facebook token exchange failed: {str(ex_err)}")
 
             # Log detailed error for diagnostics
             try:
@@ -736,8 +736,8 @@ class FacebookIntegration(SocialMediaPlatform):
             except Exception:
                 err_txt = "<no response text>"
             frappe.log_error(
-                f"Facebook send failed: HTTP {resp.status_code} - {err_txt}",
-                "Facebook Integration"
+                title="Facebook Send Failed",
+                message=f"HTTP {resp.status_code} - {err_txt}"
             )
             return False
 
@@ -746,7 +746,7 @@ class FacebookIntegration(SocialMediaPlatform):
                 self.last_error = str(e)
             except Exception:
                 pass
-            frappe.log_error(f"Facebook send error: {str(e)}", "Facebook Integration")
+            frappe.log_error(title="Facebook Send Exception", message=f"Facebook send error: {str(e)}")
             return False
 
     def process_webhook(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -1700,7 +1700,7 @@ class TawkToIntegration(SocialMediaPlatform):
 
         except Exception as e:
             print(f"DEBUG: Error in Tawk.to webhook processing: {str(e)}")
-            frappe.log_error(f"Tawk.to webhook error: {str(e)}", "Tawk.to Integration")
+            frappe.log_error(title="Tawk.to Webhook Failed", message=f"Tawk.to webhook error: {str(e)}")
             return {"status": "error", "message": str(e)}
 
 
@@ -1782,7 +1782,7 @@ class InstagramIntegration(SocialMediaPlatform):
             token = token.replace(" ", "").replace("\n", "").replace("\r", "")
             if not token:
                 self.last_error = "Missing Instagram/Facebook Page Access Token"
-                frappe.log_error("Missing Instagram Access Token", "Instagram Integration")
+                frappe.log_error(title="Instagram Token Missing", message="Missing Instagram Access Token")
                 return False
 
             def do_send(current_token: str) -> requests.Response:
@@ -1854,8 +1854,8 @@ class InstagramIntegration(SocialMediaPlatform):
                                 # Log failure after token exchange attempt
                                 try:
                                     frappe.log_error(
-                                        f"Instagram send failed after token exchange: HTTP {response2.status_code} - {response2.text}",
-                                        "Instagram Integration",
+                                        title="Instagram Send After Exchange Failed",
+                                        message=f"HTTP {response2.status_code} - {response2.text}"
                                     )
                                 except Exception:
                                     pass
@@ -1866,13 +1866,13 @@ class InstagramIntegration(SocialMediaPlatform):
                         except Exception:
                             ex_txt = "<no response text>"
                         frappe.log_error(
-                            f"Instagram token exchange failed: HTTP {exchange_resp.status_code} - {ex_txt}",
-                            "Instagram Integration",
+                            title="Instagram Token Exchange Failed",
+                            message=f"HTTP {exchange_resp.status_code} - {ex_txt}"
                         )
                 except Exception as ex_err:
                     frappe.log_error(
-                        f"Instagram token exchange failed: {str(ex_err)}",
-                        "Instagram Integration",
+                        title="Instagram Token Exchange Exception",
+                        message=f"Instagram token exchange failed: {str(ex_err)}"
                     )
 
             # Log detailed error and return False
@@ -1890,7 +1890,7 @@ class InstagramIntegration(SocialMediaPlatform):
                 self.last_error = str(e)
             except Exception:
                 pass
-            frappe.log_error(f"Instagram send error: {str(e)}", "Instagram Integration")
+            frappe.log_error(title="Instagram Send Exception", message=f"Instagram send error: {str(e)}")
             return False
 
     def process_webhook(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -3550,7 +3550,7 @@ def poll_twitter_inbox() -> Dict[str, Any]:
 
         return {"status": "success", "imported": imported}
     except Exception as e:
-        frappe.log_error(f"Twitter polling fatal error: {str(e)}", "Twitter Polling")
+        frappe.log_error(title="Twitter Poll Fatal", message=f"Twitter polling fatal error: {str(e)}")
         return {"status": "error", "message": str(e)}
 
 def get_platform_integration(platform_name: str) -> Optional[SocialMediaPlatform]:
@@ -3720,7 +3720,7 @@ DEBUG: Request args: {frappe.request.args}
     except Exception as e:
         error_msg = f"Social media webhook error: {str(e)}"
         print(f"DEBUG: EXCEPTION in webhook processing: {error_msg}")
-        frappe.log_error(error_msg, "Social Media Webhook Error")
+        frappe.log_error(title="Social Media Webhook Fatal", message=error_msg)
         return {"status": "error", "message": "Webhook processing failed"}
 
 
@@ -4084,7 +4084,7 @@ def send_social_media_message(platform: str, conversation_name: str, message: st
             )
         except Exception:
             pass
-        frappe.log_error(f"Error sending {platform} message: {str(e)}", "Social Media Send Error")
+        frappe.log_error(title="Social Media Send Failed", message=f"Error sending {platform} message: {str(e)}")
         return {"status": "error", "message": "Failed to send message"}
 
 

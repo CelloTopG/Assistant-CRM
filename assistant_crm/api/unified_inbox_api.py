@@ -644,7 +644,7 @@ def send_message():
                         reply_mode=twitter_reply_mode
                     )
             except Exception as platform_error:
-                frappe.log_error(f"Platform send error: {str(platform_error)}", "Platform Send Error")
+                frappe.log_error(title="Platform Send Failed", message=f"Platform send error: {str(platform_error)}")
                 platform_send_result = {"status": "warning", "message": "Message saved but platform send failed"}
 
         frappe.db.commit()
