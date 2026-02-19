@@ -107,13 +107,17 @@ function validate_status_change(frm) {
     const supervisorRoles = ["System Manager", "Assistant CRM Manager", "Customer Service Manager"];
     const agentRoles = ["WCF Customer Service Assistant", "WCF Customer Service Officer"];
 
-    const isSupervisor = frappe.user_roles.some(role => supervisorRoles.includes(role));
-    const isAgent = frappe.user_roles.some(role => agentRoles.includes(role));
+    // Use frappe.boot.user_roles as the reliable source
+    const userRoles = (frappe.boot && frappe.boot.user_roles) ? frappe.boot.user_roles : (frappe.user_roles || []);
+
+    const isSupervisor = userRoles.some(role => supervisorRoles.includes(role));
+    const isAgent = userRoles.some(role => agentRoles.includes(role));
 
     if (isAgent && !isSupervisor) {
       frappe.db.get_value('Issue', frm.doc.name, 'status', (r) => {
         if (r && r.status !== 'Closed' && r.status !== 'Resolved') {
-          frappe.msgprint(__('Customer Service Assistants and Officers are not authorized to close or resolve tickets.'));
+          frappe.msgprint(__('Customer Service Assistants and Officers are not authorized to close or resolve tickets. Please refer this to a Supervisor.'));
+          // Only the server-side will truly block it, but we warn here.
         }
       });
     } else if (!isSupervisor) {
@@ -125,4 +129,3 @@ function validate_status_change(frm) {
     }
   }
 }
-

@@ -43,6 +43,26 @@ class UnifiedInboxConversation(Document):
         if self.should_process_with_ai_supervising():
             self.trigger_ai_processing()
     
+    def validate(self):
+        """DocType-level validation for role-based permissions."""
+        if self.status in ["Resolved", "Closed"]:
+            # Only check if the status is actually being changed to Resolved/Closed
+            if not self.name or frappe.db.get_value("Unified Inbox Conversation", self.name, "status") not in ["Resolved", "Closed"]:
+                # authorized supervisor roles
+                supervisor_roles = ["System Manager", "Assistant CRM Manager", "Customer Service Manager"]
+                agent_roles = ["WCF Customer Service Assistant", "WCF Customer Service Officer"]
+                
+                # Use current session roles
+                user_roles = frappe.get_roles()
+                is_supervisor = any(role in supervisor_roles for role in user_roles)
+                is_agent = any(role in agent_roles for role in user_roles)
+
+                if is_agent and not is_supervisor:
+                    frappe.throw(frappe._("WCF Customer Service Assistants and Officers are not authorized to close conversations. Please refer this to a Supervisor."))
+                
+                if not is_supervisor:
+                    frappe.throw(frappe._("Only Supervisors and Managers are authorized to close conversations."))
+
     def before_save(self):
         """Actions to perform before saving the document."""
         # Update last message time if status changed

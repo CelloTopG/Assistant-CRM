@@ -526,12 +526,19 @@ class InboxManager {
         const supervisorRoles = ["System Manager", "Assistant CRM Manager", "Customer Service Manager"];
         const agentRoles = ["WCF Customer Service Assistant", "WCF Customer Service Officer"];
 
-        const isSupervisor = frappe.user_roles.some(role => supervisorRoles.includes(role));
-        const isAgent = frappe.user_roles.some(role => agentRoles.includes(role));
+        // Use frappe.boot.user_roles as the reliable source
+        const userRoles = (frappe.boot && frappe.boot.user_roles) ? frappe.boot.user_roles : (frappe.user_roles || []);
 
-        if (isSupervisor || (!isAgent && !isSupervisor && frappe.user_roles.includes('System Manager'))) {
+        const isSupervisor = userRoles.some(role => supervisorRoles.includes(role));
+        const isAgent = userRoles.some(role => agentRoles.includes(role));
+
+        // Explicitly hide if they are an agent and not a supervisor
+        if (isAgent && !isSupervisor) {
+            $('#close-btn').hide();
+        } else if (isSupervisor) {
             $('#close-btn').show();
         } else {
+            // General safety: hide if not a supervisor
             $('#close-btn').hide();
         }
     }
@@ -1811,12 +1818,15 @@ class InboxManager {
             callback: (response) => {
                 if (response.message && response.message.status === 'success') {
                     console.log('Issue status synced successfully:', response.message.issue_id);
-                } else {
-                    console.log('Issue sync response:', response.message);
                 }
             },
             error: (error) => {
                 console.error('Error syncing Issue status:', error);
+                // Revert status on error
+                this.loadConversations();
+                if (this.currentConversation) {
+                    this.loadMessages(this.currentConversation);
+                }
             }
         });
     }
