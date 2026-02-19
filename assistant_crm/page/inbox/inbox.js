@@ -803,6 +803,15 @@ class InboxManager {
                 if (response.message && response.message.status === 'success') {
                     this.messages = response.message.data;
 
+                    // Sync updated conversation state (like auto-disabled AI)
+                    if (response.message.conversation) {
+                        const conversation = this.conversations.find(c => c.name === conversationName);
+                        if (conversation) {
+                            conversation.ai_mode = response.message.conversation.ai_mode;
+                            this.updateConversationHeader(conversationName);
+                        }
+                    }
+
                     // Generate ticket immediately when messages are loaded (before rendering)
                     this.generateTicketForConversation(conversationName, () => {
                         this.renderMessages();

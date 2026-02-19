@@ -8,9 +8,9 @@ def get_business_hours():
     """
     settings = frappe.get_single("Assistant CRM Settings")
     
-    start_str = settings.business_hours_start or "09:00:00"
-    end_str = settings.business_hours_end or "17:00:00"
-    business_days_str = settings.business_days or "Monday, Tuesday, Wednesday, Thursday, Friday"
+    start_str = settings.get("business_hours_start") or "09:00:00"
+    end_str = settings.get("business_hours_end") or "17:00:00"
+    business_days_str = settings.get("business_days") or "Monday, Tuesday, Wednesday, Thursday, Friday"
     
     # Convert business days to a set of day names and index (0=Mon, 6=Sun)
     day_name_to_idx = {
@@ -68,7 +68,7 @@ def get_out_of_hours_message():
     Get the out of hours message from settings.
     """
     settings = frappe.get_single("Assistant CRM Settings")
-    return settings.out_of_hours_message or "We are currently closed. Our business hours are from 09:00 to 17:00, Monday to Friday. We will respond to your message as soon as possible."
+    return settings.get("out_of_hours_message") or "We are currently closed. Our business hours are from 09:00 to 17:00, Monday to Friday. We will respond to your message as soon as possible."
 
 def get_business_minutes_between(start, end):
     """

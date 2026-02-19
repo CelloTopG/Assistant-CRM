@@ -431,7 +431,8 @@ def get_messages(conversation_name: str, limit: int = 200, offset: int = 0):
         if result.get("status") == "success":
             return {
                 "status": "success",
-                "data": result.get("messages", [])
+                "data": result.get("messages", []),
+                "conversation": result.get("conversation")
             }
         else:
             return {
@@ -459,8 +460,20 @@ def get_conversation_messages(conversation_name: str, limit: int = 50, offset: i
             if alt:
                 resolved_name = alt
 
-        # Get conversation details (allow if user can see it; otherwise still try to fetch minimal info)
+        # Get conversation details
         conversation = frappe.get_doc("Unified Inbox Conversation", resolved_name)
+
+        # Auto-disable AI if viewed by the assigned agent to ensure human control
+        if (conversation.assigned_agent == frappe.session.user or 
+            conversation.assigned_to == frappe.session.user):
+            if conversation.ai_mode != "Off":
+                conversation.db_set("ai_mode", "Off", update_modified=True)
+                try:
+                    frappe.logger("assistant_crm.unified_inbox_ai").info(
+                        f"[AI] auto_disable_on_view conversation={resolved_name} user={frappe.session.user}"
+                    )
+                except Exception:
+                    pass
 
         # Get messages (ignore permissions so agents with UI access can see full thread)
         # Return the LAST `limit` messages by default (so newest messages appear), preserving asc order for display
@@ -946,6 +959,26 @@ def process_message_with_ai(message_id: str):
     try:
         message_doc = frappe.get_doc("Unified Inbox Message", message_id)
         conversation_doc = frappe.get_doc("Unified Inbox Conversation", message_doc.conversation)
+
+        # Respect user settings for AI responses
+        ai_mode = conversation_doc.ai_mode or "Auto"
+        if ai_mode == "Off":
+            try:
+                frappe.logger("assistant_crm.unified_inbox_ai").info(
+                    f"[AI] skip_mode_off message_id={message_id} conv={conversation_doc.name}"
+                )
+            except Exception:
+                pass
+            return
+
+        if ai_mode == "Auto" and (conversation_doc.assigned_agent or conversation_doc.assigned_to):
+            try:
+                frappe.logger("assistant_crm.unified_inbox_ai").info(
+                    f"[AI] skip_auto_assigned message_id={message_id} conv={conversation_doc.name} assigned={conversation_doc.assigned_agent or conversation_doc.assigned_to}"
+                )
+            except Exception:
+                pass
+            return
 
         # Diagnostic log for job start
         try:
