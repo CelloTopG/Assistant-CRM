@@ -392,7 +392,7 @@
     margin: 16px;
 }
 
-.anna-welcome-avatar {
+.WorkCom-welcome-avatar {
     font-size: 48px;
     margin-bottom: 16px;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
@@ -880,3 +880,4 @@
 }
 
 /* Chat bubble is completely hidden when not configured - no disabled styling needed */
+

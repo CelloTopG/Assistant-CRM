@@ -747,7 +747,7 @@ class LiveDataRetrievalService:
                     "last_message_time": (now - timedelta(minutes=2)).strftime("%H:%M"),
                     "response_time": "45s",
                     "channel": "Web Chat",
-                    "agent": "Anna (AI)",
+                    "agent": "WorkCom (AI)",
                     "unread_count": 1,
                     "conversation_duration": "5m 30s",
                     "customer_type": "Beneficiary"
@@ -762,7 +762,7 @@ class LiveDataRetrievalService:
                     "last_message_time": (now - timedelta(minutes=8)).strftime("%H:%M"),
                     "response_time": "2m 15s",
                     "channel": "WhatsApp",
-                    "agent": "Anna (AI)",
+                    "agent": "WorkCom (AI)",
                     "unread_count": 2,
                     "conversation_duration": "12m 45s",
                     "customer_type": "Beneficiary"
@@ -777,7 +777,7 @@ class LiveDataRetrievalService:
                     "last_message_time": (now - timedelta(minutes=1)).strftime("%H:%M"),
                     "response_time": "30s",
                     "channel": "Phone",
-                    "agent": "Anna (AI)",
+                    "agent": "WorkCom (AI)",
                     "unread_count": 3,
                     "conversation_duration": "3m 15s",
                     "customer_type": "Employer"
@@ -830,3 +830,4 @@ class LiveDataRetrievalService:
                 "success": False,
                 "message": f"Error retrieving agent dashboard data: {str(e)}"
             }
+

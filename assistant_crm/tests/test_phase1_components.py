@@ -285,7 +285,7 @@ class TestResponseAssembler(unittest.TestCase):
         )
         
         self.assertIsInstance(response, str)
-        self.assertIn('Anna', response)
+        self.assertIn('WorkCom', response)
         self.assertIn('CLM-2025-001', response)
         self.assertIn('Under Review', response)
         self.assertIn('Sarah Mwanza', response)
@@ -306,18 +306,18 @@ class TestResponseAssembler(unittest.TestCase):
         )
         
         self.assertIsInstance(response, str)
-        self.assertIn('Anna', response)
+        self.assertIn('WorkCom', response)
         self.assertIn('WCFCB', response)
     
-    def test_apply_anna_personality(self):
-        """Test applying Anna's personality to responses."""
+    def test_apply_WorkCom_personality(self):
+        """Test applying WorkCom's personality to responses."""
         basic_response = "Your claim is under review."
         
-        enhanced_response = self.assembler._apply_anna_personality(
+        enhanced_response = self.assembler._apply_WorkCom_personality(
             basic_response, 'claim_status', self.test_user_context
         )
         
-        self.assertIn('Anna', enhanced_response)
+        self.assertIn('WorkCom', enhanced_response)
         self.assertIn('WCFCB', enhanced_response)
         self.assertIn('claim is under review', enhanced_response)
     
@@ -334,11 +334,11 @@ class TestResponseAssembler(unittest.TestCase):
     def test_fallback_responses(self):
         """Test fallback response generation."""
         timeout_response = self.assembler._get_timeout_fallback_response(self.test_user_context)
-        self.assertIn('Anna', timeout_response)
+        self.assertIn('WorkCom', timeout_response)
         self.assertIn('delays', timeout_response)
         
         error_response = self.assembler._get_error_fallback_response(self.test_user_context)
-        self.assertIn('Anna', error_response)
+        self.assertIn('WorkCom', error_response)
         self.assertIn('technical difficulties', error_response)
 
 
@@ -407,7 +407,7 @@ class TestComponentIntegration(unittest.TestCase):
         
         # Validate end-to-end flow
         self.assertIsInstance(final_response, str)
-        self.assertIn('Anna', final_response)
+        self.assertIn('WorkCom', final_response)
         self.assertGreater(len(final_response), 50)  # Substantial response
     
     def test_no_circular_dependencies(self):
@@ -440,3 +440,4 @@ class TestComponentIntegration(unittest.TestCase):
 if __name__ == '__main__':
     # Run all tests
     unittest.main(verbosity=2)
+

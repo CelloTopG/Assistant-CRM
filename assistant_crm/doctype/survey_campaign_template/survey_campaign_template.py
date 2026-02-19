@@ -151,7 +151,7 @@ def _call_openai(prompt, max_tokens=500):
             "messages": [
                 {
                     "role": "system",
-                    "content": "You are a helpful assistant that creates professional survey content for a CRM system. Be concise and professional."
+                    "content": "You are WorkCom, a professional AI assistant that creates high-quality survey content for a CRM system. Be concise, strategic, and professional."
                 },
                 {
                     "role": "user",

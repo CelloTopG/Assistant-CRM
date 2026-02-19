@@ -70,16 +70,16 @@ class AssistantCRMIntegration {
         const html = `
             <div class="assistant-crm-integration">
                 <div class="page-header">
-                    <div class="anna-avatar">
-                        <div class="anna-image">👩‍💼</div>
+                    <div class="WorkCom-avatar">
+                        <div class="WorkCom-image">👩‍💼</div>
                     </div>
-                    <h1>Hi this is Anna!</h1>
-                    <p class="anna-greeting">How can I help?</p>
+                    <h1>Hi this is WorkCom!</h1>
+                    <p class="WorkCom-greeting">How can I help?</p>
                     <p class="text-muted">Your WCFCB AI assistant for customer service and CRM support</p>
                 </div>
 
-                <!-- Anna's Services Section -->
-                <div class="anna-services-section">
+                <!-- WorkCom's Services Section -->
+                <div class="WorkCom-services-section">
                     <h3>I specialize in helping you with:</h3>
                     <div class="services-grid">
                         <div class="service-card">
@@ -121,11 +121,11 @@ class AssistantCRMIntegration {
                         <div class="checkbox">
                             <label>
                                 <input type="checkbox" id="assistant-enabled" />
-                                <span class="label-area">Enable Anna Assistant</span>
+                                <span class="label-area">Enable WorkCom Assistant</span>
                             </label>
                         </div>
                         <p class="help-text text-muted">
-                            Enable Anna to provide AI-powered assistance across your WCFCB system
+                            Enable WorkCom to provide AI-powered assistance across your WCFCB system
                         </p>
                     </div>
 
@@ -170,7 +170,7 @@ class AssistantCRMIntegration {
 
                         <div class="form-group">
                             <label class="control-label">Welcome Message</label>
-                            <textarea class="form-control" id="welcome-message" rows="2" placeholder="Hi! I'm Anna, your WCFCB assistant. How can I help you today? 😊"></textarea>
+                            <textarea class="form-control" id="welcome-message" rows="2" placeholder="Hi! I'm WorkCom, your WCFCB assistant. How can I help you today? 😊"></textarea>
                         </div>
 
                         <div class="form-group">
@@ -208,7 +208,7 @@ class AssistantCRMIntegration {
                         <ul>
                             <li>🌐 <strong>Omnichannel Support:</strong> WhatsApp, Telegram, Facebook Messenger integration</li>
                             <li>🎯 <strong>CRM Integration:</strong> Direct access to customer data, leads, and opportunities</li>
-                            <li>🤖 <strong>Anna Persona:</strong> Professional, patient, and solution-focused assistant</li>
+                            <li>🤖 <strong>WorkCom Persona:</strong> Professional, patient, and solution-focused assistant</li>
                             <li>🔍 <strong>Context-Aware:</strong> Understands customer history and preferences</li>
                             <li>🛡️ <strong>Secure:</strong> Role-based access with encrypted API key storage</li>
                             <li>📊 <strong>Analytics:</strong> Sentiment analysis and conversation monitoring</li>
@@ -434,3 +434,4 @@ class AssistantCRMIntegration {
         }
     }
 }
+

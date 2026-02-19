@@ -244,7 +244,7 @@ class LiveAuthenticationWorkflow:
     def _generate_authentication_prompt(self, intent: str, intent_description: str) -> str:
         """Generate comprehensive authentication prompt."""
         
-        return (f"Hi! I'm Anna from WCFCB. To {intent_description}, I need to verify your identity first.\n\n"
+        return (f"Hi! I'm WorkCom from WCFCB. To {intent_description}, I need to verify your identity first.\n\n"
                 f"🔐 **Authentication Required**\n"
                 f"Please provide:\n"
                 f"• Your **NRC Number** (National Registration Card)\n"
@@ -386,7 +386,7 @@ class LiveAuthenticationWorkflow:
                     else:
                         welcome_message = (f"Perfect! Welcome to WCFCB digital services, {full_name}. "
                                          f"I've verified your identity as a WCFCB {user_type}.\n\n"
-                                         f"I'm Anna, your personal assistant. Let me help you with your request...")
+                                         f"I'm WorkCom, your personal assistant. Let me help you with your request...")
 
                     # Phase 3: Generate immediate live data response for the pending intent
                     live_data_response = ""
@@ -1072,3 +1072,4 @@ class LiveAuthenticationWorkflow:
                 'error': str(e),
                 'reply': f"Hello {user_profile.get('full_name', 'Valued Member')}! I've verified your identity but encountered an error retrieving your information. Please try again."
             }
+

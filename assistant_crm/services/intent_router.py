@@ -407,7 +407,7 @@ class IntentRouter:
                 'requires_knowledge_base': True,
                 'intent_category': self._get_intent_category(intent),
                 'response_type': self._get_response_type(intent),
-                'anna_personality_required': True,
+                'WorkCom_personality_required': True,
                 'wcfcb_branding_required': True
             },
             'timestamp': now()
@@ -526,3 +526,4 @@ def get_intent_router() -> IntentRouter:
     if _intent_router is None:
         _intent_router = IntentRouter()
     return _intent_router
+

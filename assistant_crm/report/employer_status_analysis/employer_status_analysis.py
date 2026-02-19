@@ -4,7 +4,7 @@ Employer Status Analysis - Script Report
 Production-ready Script Report for analyzing employer status distributions,
 registration trends, and branch associations using the Employer doctype.
 
-Includes Antoine AI integration for intelligent insights.
+Includes WorkCom AI integration for intelligent insights.
 """
 
 import json
@@ -174,7 +174,7 @@ def get_distribution_maps() -> Tuple[Dict[str, int], Dict[str, int]]:
 
 @frappe.whitelist()
 def get_ai_insights(filters: str, query: str) -> Dict[str, Any]:
-    """Return Antoine-style insights for the Employer Status Analysis report."""
+    """Return WorkCom-style insights for the Employer Status Analysis report."""
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters or {})
 
     # Ensure dates
@@ -216,7 +216,7 @@ def get_ai_insights(filters: str, query: str) -> Dict[str, Any]:
         return {
             "insights": (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
         }
 
@@ -281,4 +281,5 @@ def get_trend_chart(months: int = 6) -> Dict[str, Any]:
         "type": "line",
         "colors": ["#7cd6fd"],
     }
+
 

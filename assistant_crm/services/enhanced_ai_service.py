@@ -25,8 +25,8 @@ class EnhancedAIService:
         """Get AI service configuration from Enhanced AI Settings.
 
         We support two logical models sharing the same API key:
-        - openai_model: primary model used for analytical/report-style Antoine flows
-        - chat_model: optional model used for Anna / Unified Inbox chat. If not set,
+        - openai_model: primary model used for analytical/report-style WorkCom flows
+        - chat_model: optional model used for WorkCom / Unified Inbox chat. If not set,
           we fall back to openai_model.
         """
         try:
@@ -656,7 +656,7 @@ class EnhancedAIService:
             score = 100.0
 
             # Deduct points for unprofessional elements
-            if re.search(r'\b(gonna|wanna|gotta)\b', text, re.IGNORECASE):
+            if re.search(r'\b(gonna|wWorkCom|gotta)\b', text, re.IGNORECASE):
                 score -= 10
 
             if re.search(r'[!]{2,}', text):  # Multiple exclamation marks
@@ -713,7 +713,7 @@ class EnhancedAIService:
             return []
 
     def generate_claims_status_report_insights(self, query: str, context: Dict[str, Any]) -> str:
-        """Generate Antoine-style insights for Claims Status Report using OpenAI.
+        """Generate WorkCom-style insights for Claims Status Report using OpenAI.
 
         Context is expected to contain:
         - window: {"from": date_from, "to": date_to}
@@ -728,11 +728,11 @@ class EnhancedAIService:
                     "Please configure Enhanced AI Settings with a valid OpenAI API key."
                 )
 
-            # Serialize context so Antoine can see the exact numbers
+            # Serialize context so WorkCom can see the exact numbers
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
 
             prompt = f"""
-You are Antoine, a senior analytics specialist for the Workers' Compensation Fund Control Board (WCFCB) in Zambia.
+You are WorkCom, a senior analytics specialist for the Workers' Compensation Fund Control Board (WCFCB) in Zambia.
 
 You are given:
 - A reporting window
@@ -758,13 +758,13 @@ USER QUESTION:
 """
 
             response = self.openai_client.chat.completions.create(
-                # Antoine / report model
+                # WorkCom / report model
                 model=self.config.get("openai_model", "gpt-4"),
                 messages=[
                     {
                         "role": "system",
                         "content": (
-                            "You are Antoine, a WCFCB claims analytics specialist. "
+                            "You are WorkCom, a WCFCB claims analytics specialist. "
                             "Respond with concise, numeric, executive-level insights based only on the provided JSON."
                         ),
                     },
@@ -783,15 +783,15 @@ USER QUESTION:
             key_len = len(key)
             frappe.log_error(
                 f"Error generating claims status report insights (key_len={key_len}): {str(e)}",
-                "EnhancedAI Antoine Insights",
+                "EnhancedAI WorkCom Insights",
             )
             return (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
 
     def generate_unified_inbox_reply(self, message: str, context: Dict[str, Any]) -> str:
-        """Generate Antoine-style conversational reply for Unified Inbox / direct social channels.
+        """Generate WorkCom-style conversational reply for Unified Inbox / direct social channels.
 
         The context is expected to mirror the structure built by SimplifiedChatAPI._generate_ai_response,
         including intent, confidence, data_source, live_data (if any), conversation_history, and
@@ -804,18 +804,18 @@ USER QUESTION:
                     "Please try again later or ask to speak with a human agent."
                 )
 
-            # Serialize context so Antoine can see the exact structure
+            # Serialize context so WorkCom can see the exact structure
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
 
             prompt = f"""
-You are Antoine, the AI engine behind WCFCB's Anna omnichannel assistant.
+You are WorkCom, the AI engine behind WCFCB's WorkCom omnichannel assistant.
 
 You receive:
 - The latest user message from a beneficiary, employer, supplier, or staff member.
 - A JSON context describing the detected intent, confidence, any live claim/beneficiary/employer data,
   authentication status, and a short conversation history.
 
-Your job is to respond as *Anna* in a warm, professional Zambian-English tone.
+Your job is to respond as *WorkCom* in a warm, professional Zambian-English tone.
 
 GUIDELINES:
 - If live_data is present, use it to answer precisely (for example, claim status or payment details).
@@ -844,8 +844,8 @@ USER MESSAGE:
 {message}
 """
 
-            # Choose chat model (Anna) if configured, otherwise fall back to the
-            # primary Antoine/report model for backwards compatibility.
+            # Choose chat model (WorkCom) if configured, otherwise fall back to the
+            # primary WorkCom/report model for backwards compatibility.
             chat_model = (self.config.get("chat_model") or "").strip() or self.config.get("openai_model", "gpt-4")
 
             response = self.openai_client.chat.completions.create(
@@ -854,8 +854,8 @@ USER MESSAGE:
                     {
                         "role": "system",
                         "content": (
-                            "You are Antoine, the AI engine behind WCFCB's Anna chatbot. "
-                            "Respond as 'Anna' in a warm, professional tone, using only the provided context."
+                            "You are WorkCom, the AI engine behind WCFCB's WorkCom chatbot. "
+                            "Respond as 'WorkCom' in a warm, professional tone, using only the provided context."
                         ),
                     },
                     {"role": "user", "content": prompt},
@@ -875,7 +875,7 @@ USER MESSAGE:
             key_len = len(key)
             frappe.log_error(
                 f"Error generating unified inbox reply (key_len={key_len}): {str(e)}",
-                "EnhancedAI Antoine Unified Reply",
+                "EnhancedAI WorkCom Unified Reply",
             )
             return (
                 "Our AI assistant is temporarily unavailable. "
@@ -885,7 +885,7 @@ USER MESSAGE:
 
 
     def generate_employer_status_report_insights(self, query: str, context: Dict[str, Any]) -> str:
-        """Generate Antoine-style insights for Employer Status Report using OpenAI.
+        """Generate WorkCom-style insights for Employer Status Report using OpenAI.
 
         Context is expected to contain:
         - window: {"period_type": ..., "from": ..., "to": ...}
@@ -903,7 +903,7 @@ USER MESSAGE:
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
 
             prompt = f"""
-You are Antoine, a senior analytics specialist for the Workers' Compensation Fund Control Board (WCFCB) in Zambia.
+You are WorkCom, a senior analytics specialist for the Workers' Compensation Fund Control Board (WCFCB) in Zambia.
 
 You are given:
 - A reporting window
@@ -931,13 +931,13 @@ USER QUESTION:
 """
 
             response = self.openai_client.chat.completions.create(
-                # Antoine / report model
+                # WorkCom / report model
                 model=self.config.get("openai_model", "gpt-4"),
                 messages=[
                     {
                         "role": "system",
                         "content": (
-                            "You are Antoine, a WCFCB employer analytics specialist. "
+                            "You are WorkCom, a WCFCB employer analytics specialist. "
                             "Respond with concise, numeric, executive-level insights based only on the provided JSON."
                         ),
                     },
@@ -955,15 +955,15 @@ USER QUESTION:
             key_len = len(key)
             frappe.log_error(
                 f"Error generating employer status report insights (key_len={key_len}): {str(e)}",
-                "EnhancedAI Antoine Employer Insights",
+                "EnhancedAI WorkCom Employer Insights",
             )
             return (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to verify the Antoine/OpenAI configuration in Enhanced AI Settings."
+                "administrator to verify the WorkCom/OpenAI configuration in Enhanced AI Settings."
             )
 
     def generate_inbox_status_report_insights(self, query: str, context: Dict[str, Any]) -> str:
-        """Generate Antoine-style insights for Inbox Status Report using OpenAI.
+        """Generate WorkCom-style insights for Inbox Status Report using OpenAI.
 
         Context is expected to contain:
         - window: {"period_type": ..., "from": ..., "to": ...}
@@ -980,7 +980,7 @@ USER QUESTION:
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
 
             prompt = f"""
-You are Antoine, a senior analytics specialist for the Workers' Compensation
+You are WorkCom, a senior analytics specialist for the Workers' Compensation
 Fund Control Board (WCFCB) in Zambia.
 
 You are given:
@@ -1019,7 +1019,7 @@ USER QUESTION:
                     {
                         "role": "system",
                         "content": (
-                            "You are Antoine, a WCFCB inbox analytics specialist. "
+                            "You are WorkCom, a WCFCB inbox analytics specialist. "
                             "Respond with concise, numeric, executive-level insights based only on the provided JSON."
                         ),
                     },
@@ -1037,14 +1037,14 @@ USER QUESTION:
             key_len = len(key)
             frappe.log_error(
                 f"Error generating inbox status report insights (key_len={key_len}): {str(e)}",
-                "EnhancedAI Antoine Inbox Insights",
+                "EnhancedAI WorkCom Inbox Insights",
             )
             return (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to verify the Antoine/OpenAI configuration in Enhanced AI Settings."
+                "administrator to verify the WorkCom/OpenAI configuration in Enhanced AI Settings."
             )
     def generate_survey_feedback_report_insights(self, query: str, context: Dict[str, Any]) -> str:
-        """Generate Antoine-style insights for Survey Feedback Report using OpenAI.
+        """Generate WorkCom-style insights for Survey Feedback Report using OpenAI.
 
         Context is expected to contain:
         - window: {"period_type": ..., "from": ..., "to": ...}
@@ -1061,7 +1061,7 @@ USER QUESTION:
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
 
             prompt = f"""
-You are Antoine, a senior analytics specialist for the Workers' Compensation
+You are WorkCom, a senior analytics specialist for the Workers' Compensation
 Fund Control Board (WCFCB) in Zambia.
 
 You are given:
@@ -1103,7 +1103,7 @@ USER QUESTION:
                     {
                         "role": "system",
                         "content": (
-                            "You are Antoine, a WCFCB survey analytics specialist. "
+                            "You are WorkCom, a WCFCB survey analytics specialist. "
                             "Respond with concise, numeric, executive-level insights based only on the provided JSON."
                         ),
                     },
@@ -1121,16 +1121,16 @@ USER QUESTION:
             key_len = len(key)
             frappe.log_error(
                 f"Error generating survey feedback report insights (key_len={key_len}): {str(e)}",
-                "EnhancedAI Antoine Survey Feedback Insights",
+                "EnhancedAI WorkCom Survey Feedback Insights",
             )
             return (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to verify the Antoine/OpenAI configuration in Enhanced AI Settings."
+                "administrator to verify the WorkCom/OpenAI configuration in Enhanced AI Settings."
             )
 
 
     def generate_ai_automation_report_insights(self, query: str, context: Dict[str, Any]) -> str:
-        """Generate Antoine-style insights for AI Automation Report using OpenAI.
+        """Generate WorkCom-style insights for AI Automation Report using OpenAI.
 
         Context is expected to contain:
         - window: {"period_type": ..., "from": ..., "to": ...}
@@ -1147,7 +1147,7 @@ USER QUESTION:
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
 
             prompt = f"""
-You are Antoine, a senior analytics specialist for the Workers' Compensation
+You are WorkCom, a senior analytics specialist for the Workers' Compensation
 Fund Control Board (WCFCB) in Zambia.
 
 You are given:
@@ -1183,7 +1183,7 @@ USER QUESTION:
                     {
                         "role": "system",
                         "content": (
-                            "You are Antoine, a WCFCB AI automation and data quality analytics specialist. "
+                            "You are WorkCom, a WCFCB AI automation and data quality analytics specialist. "
                             "Respond with concise, numeric, executive-level insights based only on the provided JSON."
                         ),
                     },
@@ -1201,18 +1201,18 @@ USER QUESTION:
             key_len = len(key)
             frappe.log_error(
                 f"Error generating AI automation report insights (key_len={key_len}): {str(e)}",
-                "EnhancedAI Antoine AI Automation Insights",
+                "EnhancedAI WorkCom AI Automation Insights",
             )
             return (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to verify the Antoine/OpenAI configuration in Enhanced AI Settings."
+                "administrator to verify the WorkCom/OpenAI configuration in Enhanced AI Settings."
             )
 
 
 
 
     def generate_branch_performance_report_insights(self, query: str, context: Dict[str, Any]) -> str:
-        """Generate Antoine-style insights for Branch Performance Reports using OpenAI.
+        """Generate WorkCom-style insights for Branch Performance Reports using OpenAI.
 
         Context is expected to contain:
         - window: {"period_type": ..., "from": ..., "to": ...}
@@ -1230,7 +1230,7 @@ USER QUESTION:
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
 
             prompt = f"""
-You are Antoine, a senior analytics specialist for the Workers' Compensation Fund Control Board (WCFCB) in Zambia.
+You are WorkCom, a senior analytics specialist for the Workers' Compensation Fund Control Board (WCFCB) in Zambia.
 
 You are given:
 - A reporting window (monthly or quarterly)
@@ -1261,7 +1261,7 @@ USER QUESTION:
                     {
                         "role": "system",
                         "content": (
-                            "You are Antoine, a WCFCB branch performance analytics specialist. "
+                            "You are WorkCom, a WCFCB branch performance analytics specialist. "
                             "Respond with concise, numeric, executive-level insights based only on the provided JSON."
                         ),
                     },
@@ -1278,15 +1278,15 @@ USER QUESTION:
             key_len = len(key)
             frappe.log_error(
                 f"Error generating branch performance report insights (key_len={key_len}): {str(e)}",
-                "EnhancedAI Antoine Branch Insights",
+                "EnhancedAI WorkCom Branch Insights",
             )
             return (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to verify the Antoine/OpenAI configuration in Enhanced AI Settings."
+                "administrator to verify the WorkCom/OpenAI configuration in Enhanced AI Settings."
             )
 
     def generate_complaints_status_report_insights(self, query: str, context: Dict[str, Any]) -> str:
-        """Generate Antoine-style insights for Complaints Status Report using OpenAI.
+        """Generate WorkCom-style insights for Complaints Status Report using OpenAI.
 
         Context is expected to contain:
         - window: {"period_type": ..., "from": ..., "to": ...}
@@ -1306,7 +1306,7 @@ USER QUESTION:
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
 
             prompt = f"""
-You are Antoine, a senior analytics specialist for the Workers' Compensation Fund Control Board (WCFCB) in Zambia.
+You are WorkCom, a senior analytics specialist for the Workers' Compensation Fund Control Board (WCFCB) in Zambia.
 
 You are given:
 - A complaints reporting window (weekly or monthly)
@@ -1339,7 +1339,7 @@ USER QUESTION:
                     {
                         "role": "system",
                         "content": (
-                            "You are Antoine, a WCFCB complaints analytics specialist. "
+                            "You are WorkCom, a WCFCB complaints analytics specialist. "
                             "Respond with concise, numeric, executive-level insights based only on the provided JSON."
                         ),
                     },
@@ -1356,15 +1356,15 @@ USER QUESTION:
             key_len = len(key)
             frappe.log_error(
                 f"Error generating complaints status report insights (key_len={key_len}): {str(e)}",
-                "EnhancedAI Antoine Complaints Insights",
+                "EnhancedAI WorkCom Complaints Insights",
             )
             return (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to verify the Antoine/OpenAI configuration in Enhanced AI Settings."
+                "administrator to verify the WorkCom/OpenAI configuration in Enhanced AI Settings."
             )
 
     def generate_sla_compliance_report_insights(self, query: str, context: Dict[str, Any]) -> str:
-        """Generate Antoine-style insights for SLA Compliance Report using OpenAI.
+        """Generate WorkCom-style insights for SLA Compliance Report using OpenAI.
 
         Context is expected to contain:
         - window: {"period_type": ..., "from": ..., "to": ...}
@@ -1382,7 +1382,7 @@ USER QUESTION:
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
 
             prompt = f"""
-You are Antoine, a senior analytics specialist for the Workers' Compensation Fund Control Board (WCFCB) in Zambia.
+You are WorkCom, a senior analytics specialist for the Workers' Compensation Fund Control Board (WCFCB) in Zambia.
 
 You are given:
 - An SLA reporting window (typically monthly)
@@ -1412,7 +1412,7 @@ USER QUESTION:
                     {
                         "role": "system",
                         "content": (
-                            "You are Antoine, a WCFCB SLA compliance analytics specialist. "
+                            "You are WorkCom, a WCFCB SLA compliance analytics specialist. "
                             "Respond with concise, numeric, executive-level insights based only on the provided JSON."
                         ),
                     },
@@ -1429,15 +1429,15 @@ USER QUESTION:
             key_len = len(key)
             frappe.log_error(
                 f"Error generating SLA compliance report insights (key_len={key_len}): {str(e)}",
-                "EnhancedAI Antoine SLA Insights",
+                "EnhancedAI WorkCom SLA Insights",
             )
             return (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to verify the Antoine/OpenAI configuration in Enhanced AI Settings."
+                "administrator to verify the WorkCom/OpenAI configuration in Enhanced AI Settings."
             )
 
     def generate_beneficiary_status_report_insights(self, query: str, context: Dict[str, Any]) -> str:
-        """Generate Antoine-style insights for Beneficiary Status Report using OpenAI.
+        """Generate WorkCom-style insights for Beneficiary Status Report using OpenAI.
 
         Context is expected to contain:
         - window: {"period_type": ..., "from": ..., "to": ...}
@@ -1456,7 +1456,7 @@ USER QUESTION:
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
 
             prompt = f"""
-You are Antoine, a senior analytics specialist for the Workers' Compensation Fund Control Board (WCFCB) in Zambia.
+You are WorkCom, a senior analytics specialist for the Workers' Compensation Fund Control Board (WCFCB) in Zambia.
 
 You are given:
 - A beneficiary reporting window (typically monthly)
@@ -1487,7 +1487,7 @@ USER QUESTION:
                     {
                         "role": "system",
                         "content": (
-                            "You are Antoine, a WCFCB beneficiary portfolio analytics specialist. "
+                            "You are WorkCom, a WCFCB beneficiary portfolio analytics specialist. "
                             "Respond with concise, numeric, executive-level insights based only on the provided JSON."
                         ),
                     },
@@ -1504,15 +1504,15 @@ USER QUESTION:
             key_len = len(key)
             frappe.log_error(
                 f"Error generating beneficiary status report insights (key_len={key_len}): {str(e)}",
-                "EnhancedAI Antoine Beneficiary Insights",
+                "EnhancedAI WorkCom Beneficiary Insights",
             )
             return (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to verify the Antoine/OpenAI configuration in Enhanced AI Settings."
+                "administrator to verify the WorkCom/OpenAI configuration in Enhanced AI Settings."
             )
 
     def generate_employee_status_report_insights(self, query: str, context: Dict[str, Any]) -> str:
-        """Generate Antoine-style insights for Employee Status Analysis Report using OpenAI.
+        """Generate WorkCom-style insights for Employee Status Analysis Report using OpenAI.
 
         Context is expected to contain:
         - window: {"period_type": ..., "from": ..., "to": ...}
@@ -1529,7 +1529,7 @@ USER QUESTION:
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
 
             prompt = f"""
-You are Antoine, a senior HR analytics specialist for the Workers' Compensation Fund Control Board (WCFCB) in Zambia.
+You are WorkCom, a senior HR analytics specialist for the Workers' Compensation Fund Control Board (WCFCB) in Zambia.
 
 You are given:
 - A reporting window
@@ -1561,7 +1561,7 @@ USER QUESTION:
                     {
                         "role": "system",
                         "content": (
-                            "You are Antoine, a WCFCB HR and workforce analytics specialist. "
+                            "You are WorkCom, a WCFCB HR and workforce analytics specialist. "
                             "Respond with concise, numeric, executive-level insights based only on the provided JSON."
                         ),
                     },
@@ -1578,15 +1578,15 @@ USER QUESTION:
             key_len = len(key)
             frappe.log_error(
                 f"Error generating employee status report insights (key_len={key_len}): {str(e)}",
-                "EnhancedAI Antoine Employee Insights",
+                "EnhancedAI WorkCom Employee Insights",
             )
             return (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to verify the Antoine/OpenAI configuration in Enhanced AI Settings."
+                "administrator to verify the WorkCom/OpenAI configuration in Enhanced AI Settings."
             )
 
     def generate_payout_summary_report_insights(self, query: str, context: Dict[str, Any]) -> str:
-        """Generate Antoine-style insights for Payout Summary Report using OpenAI.
+        """Generate WorkCom-style insights for Payout Summary Report using OpenAI.
 
         Context is expected to contain:
         - window: {"period_type": ..., "date_from": ..., "date_to": ..., "payroll_month": ...}
@@ -1605,7 +1605,7 @@ USER QUESTION:
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
 
             prompt = f"""
-You are Antoine, a senior analytics specialist for the Workers' Compensation Fund Control Board (WCFCB) in Zambia.
+You are WorkCom, a senior analytics specialist for the Workers' Compensation Fund Control Board (WCFCB) in Zambia.
 
 You are given:
 - A payout reporting window (monthly or custom)
@@ -1637,7 +1637,7 @@ USER QUESTION:
                     {
                         "role": "system",
                         "content": (
-                            "You are Antoine, a WCFCB payout analytics specialist. "
+                            "You are WorkCom, a WCFCB payout analytics specialist. "
                             "Respond with concise, numeric, executive-level insights based only on the provided JSON."
                         ),
                     },
@@ -1654,11 +1654,11 @@ USER QUESTION:
             key_len = len(key)
             frappe.log_error(
                 f"Error generating payout summary report insights (key_len={key_len}): {str(e)}",
-                "EnhancedAI Antoine Payout Insights",
+                "EnhancedAI WorkCom Payout Insights",
             )
             return (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to verify the Antoine/OpenAI configuration in Enhanced AI Settings."
+                "administrator to verify the WorkCom/OpenAI configuration in Enhanced AI Settings."
             )
 
     def get_platform_optimizations(self, platform: str) -> Dict[str, Any]:
@@ -1675,3 +1675,5 @@ USER QUESTION:
         }
 
         return optimizations.get(platform, {"character_limit": None, "features": []})
+
+

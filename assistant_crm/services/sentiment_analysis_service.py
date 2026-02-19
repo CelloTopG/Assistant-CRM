@@ -24,8 +24,8 @@ class SentimentAnalysisService:
 			'gratitude': ['thank', 'thanks', 'appreciate', 'grateful', 'helpful']
 		}
 
-		# Anna's response adjustments based on detected emotions
-		self.anna_adjustments = {
+		# WorkCom's response adjustments based on detected emotions
+		self.WorkCom_adjustments = {
 			'frustration': {'tone': 'empathetic', 'urgency': 'high', 'escalation': True},
 			'confusion': {'tone': 'patient', 'detail_level': 'high', 'examples': True},
 			'urgency': {'tone': 'professional', 'response_speed': 'immediate', 'priority': 'high'},
@@ -743,14 +743,14 @@ def detect_emotions_enhanced(self, text, conversation_history=None):
 		# Determine primary emotion
 		primary_emotion = max(emotions.items(), key=lambda x: x[1])[0] if emotions else 'neutral'
 
-		# Generate Anna's response adjustments
-		anna_adjustments = self.anna_adjustments.get(primary_emotion, {})
+		# Generate WorkCom's response adjustments
+		WorkCom_adjustments = self.WorkCom_adjustments.get(primary_emotion, {})
 
 		return {
 			'success': True,
 			'primary_emotion': primary_emotion,
 			'emotion_scores': emotions,
-			'anna_adjustments': anna_adjustments,
+			'WorkCom_adjustments': WorkCom_adjustments,
 			'confidence': emotions.get(primary_emotion, 0.0),
 			'conversation_context': conversation_history is not None
 		}
@@ -783,8 +783,8 @@ def detect_emotions_enhanced(self, text, conversation_history=None):
 
 		return emotion_trend
 
-	def get_anna_response_style(self, sentiment_analysis, emotion_analysis):
-		"""Get Anna's response style based on sentiment and emotion analysis"""
+	def get_WorkCom_response_style(self, sentiment_analysis, emotion_analysis):
+		"""Get WorkCom's response style based on sentiment and emotion analysis"""
 		try:
 			# Base style from sentiment
 			base_style = {
@@ -809,10 +809,10 @@ def detect_emotions_enhanced(self, text, conversation_history=None):
 				})
 
 			# Apply emotion-specific adjustments
-			emotion_adjustments = emotion_analysis.get('anna_adjustments', {})
+			emotion_adjustments = emotion_analysis.get('WorkCom_adjustments', {})
 			base_style.update(emotion_adjustments)
 
-			# Add specific Anna personality traits
+			# Add specific WorkCom personality traits
 			base_style.update({
 				'personality_traits': ['helpful', 'professional', 'empathetic', 'solution_focused'],
 				'communication_style': 'clear_and_supportive',
@@ -822,5 +822,6 @@ def detect_emotions_enhanced(self, text, conversation_history=None):
 			return base_style
 
 		except Exception as e:
-			frappe.log_error(f"Error getting Anna response style: {str(e)}", "SentimentAnalysisService")
+			frappe.log_error(f"Error getting WorkCom response style: {str(e)}", "SentimentAnalysisService")
 			return base_style
+

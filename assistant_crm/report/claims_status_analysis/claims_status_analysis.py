@@ -3,7 +3,7 @@ Claims Status Analysis - Native ERPNext Script Report
 
 Comprehensive analysis of claims from the Claim doctype with full lifecycle
 status tracking, claim type breakdown, amount analysis, escalation metrics,
-and Antoine AI integration for intelligent insights.
+and WorkCom AI integration for intelligent insights.
 
 This report replaces the Claims Status Report doctype with a native ERPNext
 Script Report for improved integration and real-time data access.
@@ -238,7 +238,7 @@ def get_report_summary(summary: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 @frappe.whitelist()
 def get_ai_insights(filters: str, query: str) -> Dict[str, Any]:
-    """Return Antoine-style insights for the Claims Status Analysis report."""
+    """Return WorkCom-style insights for the Claims Status Analysis report."""
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters or {})
     _ensure_dates(filters)
 
@@ -301,7 +301,7 @@ def get_ai_insights(filters: str, query: str) -> Dict[str, Any]:
         return {
             "insights": (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
         }
 
@@ -537,4 +537,5 @@ def get_employer_chart(filters: str) -> Dict[str, Any]:
         "type": "bar",
         "colors": ["#6f42c1"],
     }
+
 

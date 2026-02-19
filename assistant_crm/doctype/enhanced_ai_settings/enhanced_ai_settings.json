@@ -70,14 +70,14 @@
    "default": "gpt-4",
    "fieldname": "openai_model",
    "fieldtype": "Select",
-   "label": "OpenAI Model (Antoine / Reports)",
+   "label": "OpenAI Model (WorkCom / Reports)",
    "options": "gpt-4\ngpt-4-turbo\ngpt-3.5-turbo\ngpt-3.5-turbo-16k"
   },
   {
    "fieldname": "chat_model",
    "fieldtype": "Data",
-   "label": "Chat Model (Anna / Unified Inbox)",
-   "description": "Optional custom GPT model ID for Anna chat. If empty, the OpenAI Model above will be used."
+   "label": "Chat Model (WorkCom / Unified Inbox)",
+   "description": "Optional custom GPT model ID for WorkCom chat. If empty, the OpenAI Model above will be used."
   },
   {
    "default": "1000",
@@ -370,3 +370,5 @@
  "states": [],
  "track_changes": 1
 }
+
+

@@ -178,14 +178,14 @@ def _generate_acknowledgment(message: str, intent: str, tone: str, user_context:
         return f"{name_prefix}I will provide you with clear, specific guidance to resolve your situation. Let me walk you through exactly what we need to do."
 
     elif tone == 'polite':
-        return f"{name_prefix}I'm Anna from the WCFCB team, and I'm here to help you."
+        return f"{name_prefix}I'm WorkCom from the WCFCB team, and I'm here to help you."
 
     elif tone == 'direct':
         return f"{name_prefix}I will get you the information you need right now."
 
     # Intent-based acknowledgments with confident problem-solving approach
     if intent == 'greeting':
-        return f"Hello{', ' + user_name if user_name else ''}! I'm Anna from the WCFCB team."
+        return f"Hello{', ' + user_name if user_name else ''}! I'm WorkCom from the WCFCB team."
     elif intent == 'pension_inquiry':
         return f"{name_prefix}I will get you the pension information you need. Let me access your account and provide you with complete details."
     elif intent == 'claim_submission':
@@ -1424,9 +1424,9 @@ def get_role_based_response_template(intent: str, user_role: str, confidence: fl
     role_templates = {
         'employer': {
             'greeting': [
-                f"{acknowledgment} I'm Anna from WCFCB, and I'm here to help you with all your business compliance and employee management needs. Whether you need assistance with premium payments, employee registrations, returns submission, or compliance requirements, I'll guide you through the process efficiently. What specific business matter can I assist you with today?",
-                f"{acknowledgment} I'm Anna, your WCFCB business support specialist. I understand the importance of keeping your operations compliant and your employees protected. I can help you with premium calculations, payroll submissions, employee registrations, and any compliance questions you have. How can I support your business today?",
-                f"{acknowledgment} I'm Anna from the WCFCB team, ready to help you manage your workplace compensation responsibilities effectively. From premium payments to employee coverage, I'll ensure you have everything you need to stay compliant and protect your workforce. What business process can I assist you with?"
+                f"{acknowledgment} I'm WorkCom from WCFCB, and I'm here to help you with all your business compliance and employee management needs. Whether you need assistance with premium payments, employee registrations, returns submission, or compliance requirements, I'll guide you through the process efficiently. What specific business matter can I assist you with today?",
+                f"{acknowledgment} I'm WorkCom, your WCFCB business support specialist. I understand the importance of keeping your operations compliant and your employees protected. I can help you with premium calculations, payroll submissions, employee registrations, and any compliance questions you have. How can I support your business today?",
+                f"{acknowledgment} I'm WorkCom from the WCFCB team, ready to help you manage your workplace compensation responsibilities effectively. From premium payments to employee coverage, I'll ensure you have everything you need to stay compliant and protect your workforce. What business process can I assist you with?"
             ],
             'claim_submission': [
                 f"{acknowledgment} I'll help you process this workplace incident claim for your employee immediately. As the employer, you'll need to ensure proper documentation and timely submission. I'll guide you through the employer reporting requirements, help you gather the necessary incident details, and ensure your claim is submitted correctly to protect both your employee and your business interests.",
@@ -1461,9 +1461,9 @@ def get_role_based_response_template(intent: str, user_role: str, confidence: fl
         },
         'beneficiary': {
             'greeting': [
-                f"{acknowledgment} I'm Anna from WCFCB, and I'm here to support you through your recovery and benefits process. I understand this can be a challenging time, and I want to make sure you get all the help and benefits you're entitled to. Whether you need information about your claim, payment schedules, medical benefits, or support services, I'm here to guide you every step of the way. How can I help you today?",
-                f"{acknowledgment} I'm Anna, your WCFCB support specialist, and I want you to know that you're not alone in this process. I'm here to help you navigate your benefits, understand your options, and ensure you receive all the support you need for your recovery. From claim updates to payment information, I'll make sure you have everything you need. What can I assist you with?",
-                f"{acknowledgment} I'm Anna from the WCFCB team, and I'm committed to helping you through this journey. I know dealing with a workplace injury can be overwhelming, but I'm here to make the process as smooth as possible for you. I can help with claim status, benefit information, medical coverage, and any questions you have about your entitlements. How may I support you today?"
+                f"{acknowledgment} I'm WorkCom from WCFCB, and I'm here to support you through your recovery and benefits process. I understand this can be a challenging time, and I want to make sure you get all the help and benefits you're entitled to. Whether you need information about your claim, payment schedules, medical benefits, or support services, I'm here to guide you every step of the way. How can I help you today?",
+                f"{acknowledgment} I'm WorkCom, your WCFCB support specialist, and I want you to know that you're not alone in this process. I'm here to help you navigate your benefits, understand your options, and ensure you receive all the support you need for your recovery. From claim updates to payment information, I'll make sure you have everything you need. What can I assist you with?",
+                f"{acknowledgment} I'm WorkCom from the WCFCB team, and I'm committed to helping you through this journey. I know dealing with a workplace injury can be overwhelming, but I'm here to make the process as smooth as possible for you. I can help with claim status, benefit information, medical coverage, and any questions you have about your entitlements. How may I support you today?"
             ],
             'claim_status': [
                 f"{acknowledgment} I'll check your claim status right away and give you a complete, clear update. I know how important it is for you to understand where things stand with your claim. I'll tell you exactly what stage your claim is in, what has been completed, what's happening next, and provide you with specific timelines so you know what to expect. You deserve to be fully informed about your claim progress.",
@@ -1498,9 +1498,9 @@ def get_role_based_response_template(intent: str, user_role: str, confidence: fl
         },
         'employee': {
             'greeting': [
-                f"{acknowledgment} I'm Anna from WCFCB, and I'm here to help you understand your workplace rights and safety protections. Whether you need information about reporting a workplace incident, understanding your coverage, learning about safety requirements, or knowing what to do if you're injured at work, I'll provide you with clear, practical guidance. Your safety and well-being at work are our priority. How can I help you today?",
-                f"{acknowledgment} I'm Anna, your WCFCB workplace safety and rights specialist. I want to make sure you have all the information you need to stay safe at work and know your rights if something happens. I can help you understand incident reporting procedures, safety training requirements, your coverage benefits, and what steps to take if you're ever injured. What workplace topic can I assist you with?",
-                f"{acknowledgment} I'm Anna from the WCFCB team, and I'm here to empower you with knowledge about your workplace protections and rights. From understanding safety protocols to knowing how to report incidents, I'll make sure you have the information you need to work safely and confidently. How can I support your workplace safety and rights today?"
+                f"{acknowledgment} I'm WorkCom from WCFCB, and I'm here to help you understand your workplace rights and safety protections. Whether you need information about reporting a workplace incident, understanding your coverage, learning about safety requirements, or knowing what to do if you're injured at work, I'll provide you with clear, practical guidance. Your safety and well-being at work are our priority. How can I help you today?",
+                f"{acknowledgment} I'm WorkCom, your WCFCB workplace safety and rights specialist. I want to make sure you have all the information you need to stay safe at work and know your rights if something happens. I can help you understand incident reporting procedures, safety training requirements, your coverage benefits, and what steps to take if you're ever injured. What workplace topic can I assist you with?",
+                f"{acknowledgment} I'm WorkCom from the WCFCB team, and I'm here to empower you with knowledge about your workplace protections and rights. From understanding safety protocols to knowing how to report incidents, I'll make sure you have the information you need to work safely and confidently. How can I support your workplace safety and rights today?"
             ],
             'claim_submission': [
                 f"{acknowledgment} I'll help you report this workplace incident and start your claim process right away. Your health and safety are the top priority, so I'll guide you through each step to ensure you get the medical care and support you need. I'll explain your rights, help you understand the process, and make sure your incident is properly documented and reported.",
@@ -1510,9 +1510,9 @@ def get_role_based_response_template(intent: str, user_role: str, confidence: fl
         },
         'stakeholder': {
             'greeting': [
-                f"{acknowledgment} I'm Anna from WCFCB, and I'm here to provide you with the strategic information and insights you need. Whether you're looking for compliance updates, performance metrics, regulatory changes, or policy guidance, I'll ensure you have access to the most current and relevant information for your oversight responsibilities. How can I support your stakeholder needs today?",
-                f"{acknowledgment} I'm Anna, your WCFCB strategic information specialist. I understand you need comprehensive, accurate data for your stakeholder responsibilities. I can provide you with performance reports, compliance status updates, regulatory developments, and analytical insights to support your decision-making processes. What information can I provide for you?",
-                f"{acknowledgment} I'm Anna from the WCFCB team, ready to support your stakeholder information requirements. From governance updates to performance analytics, I'll ensure you have the strategic insights and data you need for effective oversight and decision-making. How may I assist you today?"
+                f"{acknowledgment} I'm WorkCom from WCFCB, and I'm here to provide you with the strategic information and insights you need. Whether you're looking for compliance updates, performance metrics, regulatory changes, or policy guidance, I'll ensure you have access to the most current and relevant information for your oversight responsibilities. How can I support your stakeholder needs today?",
+                f"{acknowledgment} I'm WorkCom, your WCFCB strategic information specialist. I understand you need comprehensive, accurate data for your stakeholder responsibilities. I can provide you with performance reports, compliance status updates, regulatory developments, and analytical insights to support your decision-making processes. What information can I provide for you?",
+                f"{acknowledgment} I'm WorkCom from the WCFCB team, ready to support your stakeholder information requirements. From governance updates to performance analytics, I'll ensure you have the strategic insights and data you need for effective oversight and decision-making. How may I assist you today?"
             ]
         }
     }
@@ -1568,7 +1568,7 @@ def get_concise_template(template_type: str) -> str:
 
     # Fallback responses if database templates are not available
     fallback_responses = {
-        'greeting': "Hi! I'm Anna from WCFCB. How can I help you today?",
+        'greeting': "Hi! I'm WorkCom from WCFCB. How can I help you today?",
         'confirmation': "Got it! I'll help you with that right away.",
         'thank_you': "You're welcome! Is there anything else I can help you with?",
         'status_check': "I'll check that for you right now. One moment please.",
@@ -1721,7 +1721,7 @@ def generate_response(intent: str, confidence: float, message: str, context: Dic
         context (Dict): Additional context information
 
     Returns:
-        str: Generated response message following Anna's personality
+        str: Generated response message following WorkCom's personality
 
     Response Strategy:
         - Always acknowledge the user's specific message first
@@ -1796,7 +1796,7 @@ def generate_response(intent: str, confidence: float, message: str, context: Dic
             user_name = f" {user_name}"
 
         # Return concise greeting (20-35 words)
-        return f"Hi{user_name}! I'm Anna from WCFCB, and I'm here to help you. What can I assist you with today?"
+        return f"Hi{user_name}! I'm WorkCom from WCFCB, and I'm here to help you. What can I assist you with today?"
 
         return get_concise_template('greeting')
 
@@ -1857,15 +1857,15 @@ def generate_response(intent: str, confidence: float, message: str, context: Dic
     # Response templates organized by intent with empathetic structure
     responses = {
         'simple_greeting': [
-            "Hi! I'm Anna from WCFCB. How can I help you today?",
-            "Hello! I'm Anna, your WCFCB assistant. What can I do for you?",
-            "Hi there! I'm Anna from the WCFCB team. How may I assist you?"
+            "Hi! I'm WorkCom from WCFCB. How can I help you today?",
+            "Hello! I'm WorkCom, your WCFCB assistant. What can I do for you?",
+            "Hi there! I'm WorkCom from the WCFCB team. How may I assist you?"
         ],
 
         'greeting': [
-            f"{acknowledgment} I'm Anna from the WCFCB team, and I'm here to help you resolve any workplace compensation matters you have. I will make sure you get exactly what you need today. What specific situation can I assist you with?",
-            f"{acknowledgment} I'm Anna from the WCFCB team. Whether you need help with workplace injury claims, payment information, or employer services, I will guide you through the process and get everything sorted out for you. What brings you here today?",
-            f"{acknowledgment} I'm Anna, your WCFCB team member. I will help you navigate any workplace compensation matters quickly and efficiently. Tell me what you need assistance with today."
+            f"{acknowledgment} I'm WorkCom from the WCFCB team, and I'm here to help you resolve any workplace compensation matters you have. I will make sure you get exactly what you need today. What specific situation can I assist you with?",
+            f"{acknowledgment} I'm WorkCom from the WCFCB team. Whether you need help with workplace injury claims, payment information, or employer services, I will guide you through the process and get everything sorted out for you. What brings you here today?",
+            f"{acknowledgment} I'm WorkCom, your WCFCB team member. I will help you navigate any workplace compensation matters quickly and efficiently. Tell me what you need assistance with today."
         ],
 
         'employer_registration': [
@@ -1875,7 +1875,7 @@ def generate_response(intent: str, confidence: float, message: str, context: Dic
         ],
 
         'pension_inquiry': [
-            f"{acknowledgment} I'm Anna from the WCFCB team, and I understand you need information about your pension - that's important planning for your future. Here's exactly what we need to do: First, I'll need to verify your identity with either your ID number or member number. Once I have that, I can give you specific details about your pension status, payment schedule, and any benefits you're entitled to. This verification step protects your personal information and ensures you get accurate details about your account.",
+            f"{acknowledgment} I'm WorkCom from the WCFCB team, and I understand you need information about your pension - that's important planning for your future. Here's exactly what we need to do: First, I'll need to verify your identity with either your ID number or member number. Once I have that, I can give you specific details about your pension status, payment schedule, and any benefits you're entitled to. This verification step protects your personal information and ensures you get accurate details about your account.",
             f"{acknowledgment} Pension questions are really important, and I want to make sure you get the right information. Let me walk you through this step by step: I'll need your ID number first to access your account securely. Then I can tell you exactly where your pension stands, when payments are scheduled, and answer any specific questions you have. This process ensures we're looking at your actual records, not general information.",
             f"{acknowledgment} I can see you're looking for pension information, and as your WCFCB team member, I'm here to get you those details. Here's what I need from you: your ID number or member number so I can pull up your specific account. Once I have that, I'll be able to give you a complete picture of your pension status, including payment amounts, schedules, and any actions you might need to take. This way you'll have exactly the information you need."
         ],
@@ -1923,13 +1923,13 @@ def generate_response(intent: str, confidence: float, message: str, context: Dic
         ],
 
         'goodbye': [
-            f"{acknowledgment} It's been my pleasure helping you today. I'm Anna from the WCFCB team, and I hope I was able to provide the information and support you needed. Remember, I'm here whenever you have questions about WCFCB services - whether it's claims, payments, compliance, or anything else. Don't hesitate to reach out if you need assistance in the future. Take care, and I hope everything goes smoothly for you!",
+            f"{acknowledgment} It's been my pleasure helping you today. I'm WorkCom from the WCFCB team, and I hope I was able to provide the information and support you needed. Remember, I'm here whenever you have questions about WCFCB services - whether it's claims, payments, compliance, or anything else. Don't hesitate to reach out if you need assistance in the future. Take care, and I hope everything goes smoothly for you!",
             f"{acknowledgment} I'm glad I could assist you with your WCFCB needs today. If any other questions come up about your claims, payments, or services, please don't hesitate to contact us again. Our team is always here to support you, and I personally want to make sure you have a positive experience with WCFCB. Have a wonderful day!",
-            f"{acknowledgment} Thank you for giving me the opportunity to help you today. I'm Anna, your WCFCB team member, and I hope the information I provided will be useful for your situation. Remember, whether you need help with claims, employer services, payments, or any other WCFCB matters, we're always here for you. Feel free to reach out anytime - I'm committed to making sure you get the support you deserve. Take care!"
+            f"{acknowledgment} Thank you for giving me the opportunity to help you today. I'm WorkCom, your WCFCB team member, and I hope the information I provided will be useful for your situation. Remember, whether you need help with claims, employer services, payments, or any other WCFCB matters, we're always here for you. Feel free to reach out anytime - I'm committed to making sure you get the support you deserve. Take care!"
         ],
 
         'unknown': [
-            f"{acknowledgment} I'm Anna from the WCFCB team, and I want to make sure I give you exactly the help you're looking for, so let me ask a few questions to better understand your needs. Are you asking about workplace injury claims, employer registration and compliance, payment schedules, required documents, or something else entirely? Once I know what area you need help with, I can provide you with specific, actionable guidance that will actually solve your problem rather than giving you general information.",
+            f"{acknowledgment} I'm WorkCom from the WCFCB team, and I want to make sure I give you exactly the help you're looking for, so let me ask a few questions to better understand your needs. Are you asking about workplace injury claims, employer registration and compliance, payment schedules, required documents, or something else entirely? Once I know what area you need help with, I can provide you with specific, actionable guidance that will actually solve your problem rather than giving you general information.",
             f"{acknowledgment} I want to make sure I understand your situation correctly so I can give you the most helpful response. Could you tell me a bit more about what you're trying to accomplish? For example, are you dealing with a workplace injury, trying to register your business, checking on payments, or looking for specific forms or documents? The more specific you can be, the better I can tailor my assistance to your exact needs.",
             f"{acknowledgment} As your WCFCB team member, I'd like to provide you with the most relevant and useful information, so help me understand what you're looking for. Are you asking about claims processing, employer obligations, benefit payments, compliance requirements, or perhaps something else? If you can give me a bit more context about your situation or what you're trying to achieve, I can give you targeted guidance that will actually move you forward rather than general information that might not apply to your specific case."
         ]
@@ -2104,7 +2104,7 @@ def get_bot_reply(message: str, user_context: Dict = None, session_id: str = Non
     """
     Main function to generate empathetic, actionable bot reply for user message.
 
-    This is the primary entry point for Anna's conversation service. It implements
+    This is the primary entry point for WorkCom's conversation service. It implements
     the new personality requirements: first-person perspective, empathetic acknowledgment,
     emotional mirroring, and actionable roadmap responses.
 
@@ -2114,9 +2114,9 @@ def get_bot_reply(message: str, user_context: Dict = None, session_id: str = Non
         session_id (str): Session identifier for conversation tracking
 
     Returns:
-        str: Generated bot response following Anna's personality guidelines
+        str: Generated bot response following WorkCom's personality guidelines
 
-    Anna's Response Process:
+    WorkCom's Response Process:
         1. Validate message format and safety
         2. Analyze user's emotional tone and communication style
         3. Detect user intent using enhanced NLU
@@ -2439,60 +2439,60 @@ def get_bot_reply(message: str, user_context: Dict = None, session_id: str = Non
 
             # CRITICAL FIX: Handle specific problematic intents with natural responses
             if conversation_blocks and intent == 'injury_report' or 'injur' in message.lower() or 'hurt' in message.lower():
-                # Test 4 & 9 FIX: Empathetic injury response with Anna personality (appropriate for injury scenarios)
+                # Test 4 & 9 FIX: Empathetic injury response with WorkCom personality (appropriate for injury scenarios)
                 if conversation_blocks:
                     injury_response = conversation_blocks.get_injury_response_block(enhanced_context)
-                    response = f"Hi, I'm Anna. {injury_response}"
+                    response = f"Hi, I'm WorkCom. {injury_response}"
                 else:
-                    response = f"Hi, I'm Anna. I'm so sorry to hear about your injury. Let me help you immediately with your workplace injury claim. Do you need our emergency response team's number?"
+                    response = f"Hi, I'm WorkCom. I'm so sorry to hear about your injury. Let me help you immediately with your workplace injury claim. Do you need our emergency response team's number?"
                 response = fix_response_grammar(response)
                 needs_natural_enhancement = False
 
             elif intent == 'gratitude' or any(word in message.lower() for word in ['thank', 'thanks', 'grateful']):
-                # Test 8 FIX: Proper gratitude recognition WITHOUT Anna personality (TARGET: 90%+ excellence)
-                # CRITICAL: Must be 20-35 words, no Anna, proper grammar, natural flow
+                # Test 8 FIX: Proper gratitude recognition WITHOUT WorkCom personality (TARGET: 90%+ excellence)
+                # CRITICAL: Must be 20-35 words, no WorkCom, proper grammar, natural flow
                 response = "You're very welcome! I'm always here to help with any WCFCB questions or concerns you might have. Feel free to reach out anytime you need assistance."
                 response = fix_response_grammar(response)
-                # CRITICAL: Ensure NO Anna personality for gratitude responses
-                if 'anna' in response.lower():
-                    response = response.replace("I'm Anna. ", "").replace("I'm Anna, ", "").replace("Hi, I'm Anna. ", "").replace("I'm Anna, and ", "")
+                # CRITICAL: Ensure NO WorkCom personality for gratitude responses
+                if 'WorkCom' in response.lower():
+                    response = response.replace("I'm WorkCom. ", "").replace("I'm WorkCom, ", "").replace("Hi, I'm WorkCom. ", "").replace("I'm WorkCom, and ", "")
                 needs_natural_enhancement = False
 
             elif intent == 'service_overview' or any(phrase in message.lower() for phrase in ['understand wcfcb services', 'what can you help', 'what services']):
-                # Test 10 FIX: Service overview with Anna introduction (first-time user scenario)
+                # Test 10 FIX: Service overview with WorkCom introduction (first-time user scenario)
                 user_name = enhanced_context.get('user_name', '')
                 name_part = f"{user_name}! " if user_name else ""
                 if conversation_blocks:
                     service_response = conversation_blocks.get_service_overview_block(enhanced_context)
-                    response = f"Hi {name_part}I'm Anna from WCFCB. {service_response}"
+                    response = f"Hi {name_part}I'm WorkCom from WCFCB. {service_response}"
                 else:
-                    response = f"Hi {name_part}I'm Anna from WCFCB. I can help you with claims, payments, employer registration, and compliance questions. What specific area interests you?"
+                    response = f"Hi {name_part}I'm WorkCom from WCFCB. I can help you with claims, payments, employer registration, and compliance questions. What specific area interests you?"
                 response = fix_response_grammar(response)
                 needs_natural_enhancement = False
 
             elif enhanced_context.get('interaction_frequency') == 'first_time' and intent in ['greeting', 'general_inquiry']:
-                # Test 1 FIX: First-time greeting with Anna introduction
+                # Test 1 FIX: First-time greeting with WorkCom introduction
                 if conversation_blocks:
                     greeting_response = conversation_blocks.get_greeting_block(enhanced_context)
                     response = greeting_response
                 else:
                     user_name = enhanced_context.get('user_name', '')
-                    response = f"Hi {user_name}! I'm Anna from WCFCB. I'm here to help with claims, payments, employer services, and workplace compensation questions. What can I assist you with today?"
+                    response = f"Hi {user_name}! I'm WorkCom from WCFCB. I'm here to help with claims, payments, employer services, and workplace compensation questions. What can I assist you with today?"
                 response = fix_response_grammar(response)
                 needs_natural_enhancement = False
 
             # Apply natural conversation enhancement if needed (Tests 2-9 natural responses)
             if needs_natural_enhancement and response and conversation_blocks:
-                # Check if Anna introduction is needed (only for first-time users)
-                should_introduce_anna = conversation_blocks.should_use_anna_introduction(enhanced_context)
+                # Check if WorkCom introduction is needed (only for first-time users)
+                should_introduce_WorkCom = conversation_blocks.should_use_WorkCom_introduction(enhanced_context)
 
-                if 'anna' not in response.lower() and should_introduce_anna:
-                    # Only introduce Anna for first-time users (Test 1)
+                if 'WorkCom' not in response.lower() and should_introduce_WorkCom:
+                    # Only introduce WorkCom for first-time users (Test 1)
                     user_name = enhanced_context.get('user_name', '')
                     name_part = f"{user_name}! " if user_name else ""
-                    response = f"Hi {name_part}I'm Anna from WCFCB. I'm here to help. {response}"
-                elif 'anna' not in response.lower():
-                    # Use natural conversation starter without repetitive Anna mentions (Tests 2-9)
+                    response = f"Hi {name_part}I'm WorkCom from WCFCB. I'm here to help. {response}"
+                elif 'WorkCom' not in response.lower():
+                    # Use natural conversation starter without repetitive WorkCom mentions (Tests 2-9)
                     natural_response = conversation_blocks.build_natural_response(intent, enhanced_context, 'standard')
                     response = natural_response
                     response = fix_response_grammar(response)
@@ -2504,66 +2504,66 @@ def get_bot_reply(message: str, user_context: Dict = None, session_id: str = Non
 
             # Provide intent-specific natural fallback responses (COMPLETELY ELIMINATE ROBOTIC PATTERNS)
             if intent == 'injury_report' or 'injur' in message.lower():
-                response = "Hi, I'm Anna. I'm so sorry to hear about your injury. Let me help you immediately with your workplace injury claim. Do you need our emergency response team's number?"
+                response = "Hi, I'm WorkCom. I'm so sorry to hear about your injury. Let me help you immediately with your workplace injury claim. Do you need our emergency response team's number?"
                 response = fix_response_grammar(response)
             elif intent == 'gratitude' or any(word in message.lower() for word in ['thank', 'thanks']):
-                # FALLBACK Test 8 FIX: Gratitude without Anna (TARGET: 90%+ excellence)
+                # FALLBACK Test 8 FIX: Gratitude without WorkCom (TARGET: 90%+ excellence)
                 response = "You're very welcome! I'm always here to help with any WCFCB questions or concerns you might have. Feel free to reach out anytime you need assistance."
                 response = fix_response_grammar(response)
-                # CRITICAL: Ensure NO Anna personality in gratitude responses
-                if 'anna' in response.lower():
-                    response = response.replace("I'm Anna. ", "").replace("I'm Anna, ", "").replace("Hi, I'm Anna. ", "").replace("I'm Anna, and ", "")
+                # CRITICAL: Ensure NO WorkCom personality in gratitude responses
+                if 'WorkCom' in response.lower():
+                    response = response.replace("I'm WorkCom. ", "").replace("I'm WorkCom, ", "").replace("Hi, I'm WorkCom. ", "").replace("I'm WorkCom, and ", "")
             elif intent == 'service_overview' or 'understand' in message.lower():
-                response = f"Hi {name_part}I'm Anna from WCFCB. I can help you with claims, payments, employer registration, and compliance questions. What specific area interests you?"
+                response = f"Hi {name_part}I'm WorkCom from WCFCB. I can help you with claims, payments, employer registration, and compliance questions. What specific area interests you?"
                 response = fix_response_grammar(response)
             elif intent in ['claim_status', 'claim_inquiry']:
-                response = "Hello, I'm Anna. I'll check your claim status right away. Do you have your claim reference number?"
+                response = "Hello, I'm WorkCom. I'll check your claim status right away. Do you have your claim reference number?"
                 response = fix_response_grammar(response)
             elif intent in ['payment_status', 'payment_inquiry']:
-                response = "Hi, I'm Anna. I'll look up your payment details right away. Please provide me with your payment reference so I can track your current status."
+                response = "Hi, I'm WorkCom. I'll look up your payment details right away. Please provide me with your payment reference so I can track your current status."
                 response = fix_response_grammar(response)
             elif intent in ['employer_registration', 'business_registration']:
-                response = "Hello, I'm Anna. I'll guide you through the WCFCB registration process. What type of business are you registering?"
+                response = "Hello, I'm WorkCom. I'll guide you through the WCFCB registration process. What type of business are you registering?"
                 response = fix_response_grammar(response)
             elif enhanced_context.get('sentiment') == 'frustrated':
                 response = "I understand your frustration completely. What specific issue can I help you resolve?"
                 response = fix_response_grammar(response)
-            elif response and 'anna' not in response.lower():
-                # Add Anna personality naturally (NATURAL INTRODUCTION ONLY)
-                response = f"Hi, I'm Anna. {response}"
+            elif response and 'WorkCom' not in response.lower():
+                # Add WorkCom personality naturally (NATURAL INTRODUCTION ONLY)
+                response = f"Hi, I'm WorkCom. {response}"
                 response = fix_response_grammar(response)
             elif not response:
                 # Ultimate fallback for empty responses (NATURAL PATTERN)
-                response = f"Hi {name_part}I'm Anna from WCFCB. I'm here to help you with any workplace compensation questions. What can I assist you with?"
+                response = f"Hi {name_part}I'm WorkCom from WCFCB. I'm here to help you with any workplace compensation questions. What can I assist you with?"
                 response = fix_response_grammar(response)
 
-        # CRITICAL FIX: Ensure proper grammar, capitalization, and natural Anna presence (TARGET: 90%+ excellence)
+        # CRITICAL FIX: Ensure proper grammar, capitalization, and natural WorkCom presence (TARGET: 90%+ excellence)
         if response:
             # Fix grammar and capitalization issues UNIVERSALLY (apply to ALL responses)
             response = fix_response_grammar(response)
 
-            # CRITICAL: Check if this is a gratitude response - NEVER add Anna to gratitude
+            # CRITICAL: Check if this is a gratitude response - NEVER add WorkCom to gratitude
             is_gratitude = intent == 'gratitude' or any(word in message.lower() for word in ['thank', 'thanks', 'grateful'])
 
-            # Only add Anna personality if missing and appropriate (NOT for gratitude)
-            if 'anna' not in response.lower() and not is_gratitude:
-                # Check if this should have Anna personality based on context
+            # Only add WorkCom personality if missing and appropriate (NOT for gratitude)
+            if 'WorkCom' not in response.lower() and not is_gratitude:
+                # Check if this should have WorkCom personality based on context
                 interaction_frequency = enhanced_context.get('interaction_frequency', 'general')
 
-                # Only add Anna for first-time users or injury scenarios (NOT gratitude)
+                # Only add WorkCom for first-time users or injury scenarios (NOT gratitude)
                 if interaction_frequency == 'first_time' or 'injur' in message.lower():
                     user_name = enhanced_context.get('user_name', '')
                     name_part = f"{user_name}, " if user_name else ""
 
-                    # Intelligent Anna injection based on response type
+                    # Intelligent WorkCom injection based on response type
                     if response.lower().startswith('let me'):
-                        response = f"I'm Anna, and {response.lower()}"
+                        response = f"I'm WorkCom, and {response.lower()}"
                     elif response.lower().startswith('i can see') or response.lower().startswith('i understand'):
-                        response = f"I'm Anna. {response}"
+                        response = f"I'm WorkCom. {response}"
                     elif response.lower().startswith('i '):
-                        response = f"I'm Anna, and {response[2:].lower()}"
+                        response = f"I'm WorkCom, and {response[2:].lower()}"
                     else:
-                        response = f"I'm Anna, and {response.lower()}"
+                        response = f"I'm WorkCom, and {response.lower()}"
 
         # CRITICAL FIX: Ensure response conciseness (20-35 words target)
         words = response.split()
@@ -2629,7 +2629,7 @@ def get_bot_reply(message: str, user_context: Dict = None, session_id: str = Non
     except Exception as e:
         # Log error for debugging
         if frappe:
-            frappe.log_error(f"Anna Reply service error: {str(e)}", "Assistant CRM Reply Error")
+            frappe.log_error(f"WorkCom Reply service error: {str(e)}", "Assistant CRM Reply Error")
 
         # Return empathetic fallback response
         return _("I understand you're looking for help, and I apologize that I'm having some technical difficulties right now. This isn't the experience I want you to have. Please try reaching out again in a moment, or if this is urgent, you can contact our office directly at +260-211-123456. I'm committed to making sure you get the support you need.")
@@ -2777,3 +2777,4 @@ def end_conversation_session(session_id: str, reason: str = "user_ended") -> Dic
         if frappe:
             frappe.log_error(f"Error ending conversation session: {str(e)}", "Conversation Flow")
         return {"status": "error", "message": "Failed to end session"}
+

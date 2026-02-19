@@ -28,29 +28,29 @@ class EnhancedGreetingService:
         # Persona-specific greeting styles
         self.persona_greetings = {
             'employer': {
-                'formal': "Good {time_period}! I'm Anna, your WCFCB business assistant.",
-                'professional': "Hello! I'm Anna from WCFCB, ready to assist with your business needs.",
+                'formal': "Good {time_period}! I'm WorkCom, your WCFCB business assistant.",
+                'professional': "Hello! I'm WorkCom from WCFCB, ready to assist with your business needs.",
                 'returning': "Welcome back! I'm here to help with your business requirements."
             },
             'beneficiary': {
-                'supportive': "Hello! I'm Anna, and I'm here to help you with your benefits and services.",
-                'warm': "Hi there! I'm Anna, your friendly WCFCB assistant.",
+                'supportive': "Hello! I'm WorkCom, and I'm here to help you with your benefits and services.",
+                'warm': "Hi there! I'm WorkCom, your friendly WCFCB assistant.",
                 'returning': "Good to see you again! How can I help you today?"
             },
             'supplier': {
-                'professional': "Good {time_period}! I'm Anna, your WCFCB procurement assistant.",
-                'business': "Hello! I'm Anna, ready to assist with your supplier needs.",
+                'professional': "Good {time_period}! I'm WorkCom, your WCFCB procurement assistant.",
+                'business': "Hello! I'm WorkCom, ready to assist with your supplier needs.",
                 'returning': "Welcome back! I'm here to help with your supplier requirements."
             },
             'wcfcb_staff': {
-                'colleague': "Hi! I'm Anna, your internal assistant.",
+                'colleague': "Hi! I'm WorkCom, your internal assistant.",
                 'professional': "Good {time_period}! Ready to assist with internal processes.",
                 'returning': "Hello again! What can I help you with today?"
             },
             'general': {
-                'friendly': "Hello! I'm Anna, your WCFCB assistant.",
-                'professional': "Good {time_period}! I'm Anna, how can I help you today?",
-                'returning': "Welcome back! I'm Anna, ready to assist you."
+                'friendly': "Hello! I'm WorkCom, your WCFCB assistant.",
+                'professional': "Good {time_period}! I'm WorkCom, how can I help you today?",
+                'returning': "Welcome back! I'm WorkCom, ready to assist you."
             }
         }
         
@@ -62,8 +62,8 @@ class EnhancedGreetingService:
             'follow_up': ['greeting', 'status_check', 'assistance_offer']
         }
         
-        # Anna's personality traits for greetings
-        self.anna_personality = {
+        # WorkCom's personality traits for greetings
+        self.WorkCom_personality = {
             'core_traits': ['helpful', 'professional', 'empathetic', 'efficient'],
             'communication_style': 'warm_professional',
             'brand_values': ['customer_focused', 'reliable', 'accessible', 'supportive']
@@ -102,8 +102,8 @@ class EnhancedGreetingService:
             flow_type = self._determine_flow_type(is_returning_user, urgency_level, conversation_history)
             conversation_flow = self._generate_conversation_flow(flow_type, persona)
             
-            # Add Anna's personality touches
-            enhanced_greeting = self._add_anna_personality(personalized_greeting, persona)
+            # Add WorkCom's personality touches
+            enhanced_greeting = self._add_WorkCom_personality(personalized_greeting, persona)
             
             # Generate quick action suggestions
             quick_actions = self._generate_quick_actions(persona, user_context)
@@ -116,7 +116,7 @@ class EnhancedGreetingService:
                 'quick_actions': quick_actions,
                 'personalization_applied': True,
                 'flow_type': flow_type,
-                'anna_personality_traits': self.anna_personality['core_traits'],
+                'WorkCom_personality_traits': self.WorkCom_personality['core_traits'],
                 'timestamp': now()
             }
             
@@ -305,8 +305,8 @@ class EnhancedGreetingService:
         
         return capabilities.get(persona, capabilities['general'])
     
-    def _add_anna_personality(self, greeting: str, persona: str) -> str:
-        """Add Anna's personality touches to the greeting"""
+    def _add_WorkCom_personality(self, greeting: str, persona: str) -> str:
+        """Add WorkCom's personality touches to the greeting"""
         
         # Add empathy and warmth while maintaining professionalism
         if persona == 'beneficiary':
@@ -357,11 +357,11 @@ class EnhancedGreetingService:
         """Get fallback greeting in case of errors"""
         
         fallback_greetings = {
-            'employer': "Hello! I'm Anna, your WCFCB business assistant. How can I help you today?",
-            'beneficiary': "Hello! I'm Anna, and I'm here to help you with your benefits and services.",
-            'supplier': "Hello! I'm Anna, your WCFCB procurement assistant. How can I assist you?",
-            'wcfcb_staff': "Hi! I'm Anna, your internal assistant. What can I help you with?",
-            'general': "Hello! I'm Anna, your WCFCB assistant. How can I help you today?"
+            'employer': "Hello! I'm WorkCom, your WCFCB business assistant. How can I help you today?",
+            'beneficiary': "Hello! I'm WorkCom, and I'm here to help you with your benefits and services.",
+            'supplier': "Hello! I'm WorkCom, your WCFCB procurement assistant. How can I assist you?",
+            'wcfcb_staff': "Hi! I'm WorkCom, your internal assistant. What can I help you with?",
+            'general': "Hello! I'm WorkCom, your WCFCB assistant. How can I help you today?"
         }
         
         return {
@@ -374,3 +374,4 @@ class EnhancedGreetingService:
             'flow_type': 'first_time',
             'fallback_used': True
         }
+

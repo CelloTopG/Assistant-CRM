@@ -303,7 +303,7 @@ class ConversationFlowOptimizer:
             guidance.update({
                 "suggested_actions": ["present_data", "offer_follow_up"],
                 "user_guidance": "Here's your information!",
-                "system_guidance": "Present data with Anna's personality and offer next steps."
+                "system_guidance": "Present data with WorkCom's personality and offer next steps."
             })
         
         elif next_state == ConversationState.FOLLOW_UP:
@@ -600,3 +600,4 @@ def test_conversation_flows():
             "success": False,
             "error": str(e)
         }
+

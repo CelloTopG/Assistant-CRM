@@ -235,10 +235,10 @@ class ProductionValidationSystem:
                 status="pending"
             ),
             ValidationTest(
-                test_id="anna_personality_test",
-                test_name="Anna Personality Consistency",
+                test_id="WorkCom_personality_test",
+                test_name="WorkCom Personality Consistency",
                 test_type="functional",
-                description="Validate Anna's personality across all interactions",
+                description="Validate WorkCom's personality across all interactions",
                 success_criteria={
                     "personality_consistency": 0.95,
                     "tone_appropriateness": 0.9,
@@ -756,7 +756,7 @@ class ProductionValidationSystem:
                     "ux_refinement_score": 0.91,
                     "component_integration": True
                 }
-            elif test.test_id == "anna_personality_test":
+            elif test.test_id == "WorkCom_personality_test":
                 return {
                     "success": True,
                     "personality_consistency": 0.97,
@@ -833,7 +833,7 @@ class ProductionValidationSystem:
                 "task_completion_rate": 0.92,
                 "ease_of_use": 4.1,
                 "feature_adoption": 0.85,
-                "feedback_summary": "Users appreciate Anna's helpful personality and clear guidance",
+                "feedback_summary": "Users appreciate WorkCom's helpful personality and clear guidance",
                 "participants": 25
             }
             
@@ -1217,3 +1217,4 @@ def get_validation_summary():
             "success": False,
             "error": str(e)
         }
+

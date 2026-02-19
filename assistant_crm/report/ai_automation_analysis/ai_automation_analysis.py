@@ -11,7 +11,7 @@ Leverages native Frappe/ERPNext doctypes:
 - Activity Log: User activity and audit trail
 - Communication: Email/notification tracking
 
-Includes Antoine AI integration for intelligent insights.
+Includes WorkCom AI integration for intelligent insights.
 """
 
 import json
@@ -299,7 +299,7 @@ def get_report_summary(summary: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 @frappe.whitelist()
 def get_ai_insights(filters: str, query: str) -> Dict[str, Any]:
-    """Return Antoine-style insights for the AI Automation Analysis report."""
+    """Return WorkCom-style insights for the AI Automation Analysis report."""
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters or {})
     _ensure_dates(filters)
 
@@ -362,7 +362,7 @@ def get_ai_insights(filters: str, query: str) -> Dict[str, Any]:
         return {
             "insights": (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
         }
 
@@ -533,4 +533,5 @@ def get_automation_trend_chart(filters: str = None, months: int = 6) -> Dict[str
         "type": "line",
         "colors": ["#28a745", "#dc3545"],
     }
+
 

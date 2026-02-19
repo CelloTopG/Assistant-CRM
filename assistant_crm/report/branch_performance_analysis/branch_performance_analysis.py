@@ -6,7 +6,7 @@ Native ERPNext Script Report for analyzing branch performance using:
 - Claim doctype (via branch field)
 - Unified Inbox Conversation doctype (via branch field)
 
-Includes Antoine AI integration for intelligent insights.
+Includes WorkCom AI integration for intelligent insights.
 """
 
 import json
@@ -424,7 +424,7 @@ def _extract_sla_branch_stats(charts: Dict[str, Any]) -> Dict[str, Dict[str, int
 
 @frappe.whitelist()
 def get_ai_insights(filters: str, query: str) -> Dict[str, Any]:
-    """Return Antoine-style insights for the Branch Performance Analysis report."""
+    """Return WorkCom-style insights for the Branch Performance Analysis report."""
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters or {})
 
     # Ensure dates
@@ -464,7 +464,7 @@ def get_ai_insights(filters: str, query: str) -> Dict[str, Any]:
         return {
             "insights": (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
         }
 
@@ -584,4 +584,5 @@ def get_trend_chart(filters: str, months: int = 6) -> Dict[str, Any]:
         "type": "line",
         "colors": ["#5e64ff", "#28a745", "#ffc107"],
     }
+
 

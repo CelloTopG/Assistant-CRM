@@ -99,7 +99,7 @@ function render_ai_sidebar(frm) {
   const sidebar = $(
     '<div class="frappe-control"><div class="control-input-wrapper">' +
     '<div class="control-input flex"><input class="form-control" type="text" ' +
-    'placeholder="This is Antoine, how can I help with branch performance?" />' +
+    'placeholder="This is WorkCom, how can I help with branch performance?" />' +
     '<button class="btn btn-default" style="margin-left:6px">Ask</button></div>' +
     '<div class="help-box small text-muted" style="margin-top:6px">' +
     'Uses current and recent branch performance reports for trend and SLA risk analysis.' +
@@ -171,4 +171,5 @@ function add_view_tickets_buttons(frm) {
     window.open(url, '_blank');
   }, __('View Tickets'));
 }
+
 

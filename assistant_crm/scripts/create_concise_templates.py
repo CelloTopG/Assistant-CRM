@@ -2,7 +2,7 @@
 """
 Script to create concise response templates for basic interactions.
 This script adds new Message Template records to support brief, efficient responses
-while maintaining Anna's warm, professional personality.
+while maintaining WorkCom's warm, professional personality.
 """
 
 import frappe
@@ -17,7 +17,7 @@ def create_concise_templates():
             "template_type": "Greeting",
             "language": "en",
             "subject": "Simple Greeting",
-            "content": "Hi! I'm Anna from WCFCB. How can I help you today?",
+            "content": "Hi! I'm WorkCom from WCFCB. How can I help you today?",
             "is_active": 1
         },
         {
@@ -115,3 +115,4 @@ def create_concise_templates():
 if __name__ == "__main__":
     # This script should be run from within Frappe context
     create_concise_templates()
+

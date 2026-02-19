@@ -2,7 +2,7 @@
 """
 WCFCB Assistant CRM - User Experience Refinement Engine
 Core Integration Phase: Polish authentication flows and enhance visual indicators
-Maintains Anna's supportive tone while optimizing user workflows for all personas
+Maintains WorkCom's supportive tone while optimizing user workflows for all personas
 """
 
 import frappe
@@ -128,13 +128,13 @@ class UXRefinementEngine:
     def optimize_communication_style(self, interaction_data: Dict, preferences: Dict,
                                    interaction_type: InteractionType) -> Dict:
         """
-        Optimize Anna's communication style for the user persona
+        Optimize WorkCom's communication style for the user persona
         """
         message = interaction_data.get("message", "")
         sentiment = interaction_data.get("sentiment", "neutral")
         
         style_adjustments = {
-            "tone_adjustment": "warm_professional",  # Anna's default
+            "tone_adjustment": "warm_professional",  # WorkCom's default
             "formality_level": preferences.get("formality_preference", "balanced"),
             "explanation_depth": preferences.get("explanation_preference", "standard"),
             "encouragement_level": self.determine_encouragement_level(sentiment, interaction_type)
@@ -438,7 +438,7 @@ class UXRefinementEngine:
     def improve_error_handling(self, interaction_data: Dict, user_persona: UserPersona,
                              current_state: str) -> Dict:
         """
-        Improve error handling to maintain Anna's supportive tone
+        Improve error handling to maintain WorkCom's supportive tone
         """
         error_type = interaction_data.get("error_type")
         if not error_type:
@@ -754,3 +754,4 @@ def test_ux_refinements():
             "success": False,
             "error": str(e)
         }
+

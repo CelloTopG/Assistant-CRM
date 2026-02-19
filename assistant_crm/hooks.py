@@ -1,7 +1,7 @@
 app_name = "assistant_crm"
 app_title = "WCFCB Assistant CRM"
 app_publisher = "WCFCB"
-app_description = "WCFCB CRM Chatbot - Omnichannel AI Assistant"
+app_description = "WCFCB CRM - WorkCom AI Assistant"
 app_email = "support@wcfcb.com"
 app_license = "mit"
 

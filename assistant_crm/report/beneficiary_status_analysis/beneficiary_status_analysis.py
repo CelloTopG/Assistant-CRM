@@ -4,7 +4,7 @@ Beneficiary Status Analysis - Script Report
 Native ERPNext Script Report for analyzing beneficiary/pensioner status distributions,
 trends, and demographics using the Customer doctype (customer_type='Pensioner').
 
-Includes Antoine AI integration for intelligent insights.
+Includes WorkCom AI integration for intelligent insights.
 """
 
 import json
@@ -168,10 +168,10 @@ def get_distribution_maps() -> Tuple[Dict[str, int], Dict[str, int]]:
 
 @frappe.whitelist()
 def get_ai_insights(filters: str, query: str) -> Dict[str, Any]:
-    """Return Antoine-style insights for the Beneficiary Status Analysis report.
+    """Return WorkCom-style insights for the Beneficiary Status Analysis report.
 
     Builds a JSON context with status counts, distributions and trends,
-    and passes it to Antoine via EnhancedAIService.
+    and passes it to WorkCom via EnhancedAIService.
     """
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters or {})
 
@@ -226,7 +226,7 @@ def get_ai_insights(filters: str, query: str) -> Dict[str, Any]:
         return {
             "insights": (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
         }
 
@@ -285,3 +285,4 @@ def get_trend_chart(months: int = 6) -> Dict[str, Any]:
         "type": "line",
         "colors": ["#7cd6fd"],
     }
+

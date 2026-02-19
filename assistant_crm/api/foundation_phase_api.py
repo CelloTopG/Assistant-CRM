@@ -2,7 +2,7 @@
 """
 WCFCB Assistant CRM - Foundation Phase API
 Main integration layer for authentication, session management, and data access
-Provides unified interface for Anna's live data capabilities while preserving existing functionality
+Provides unified interface for WorkCom's live data capabilities while preserving existing functionality
 """
 
 import frappe
@@ -17,7 +17,7 @@ from .data_connection_manager import DataConnectionManager
 class FoundationPhaseAPI:
     """
     Foundation Phase API that coordinates authentication, sessions, and data access
-    Provides unified interface for Anna's live data capabilities
+    Provides unified interface for WorkCom's live data capabilities
     """
     
     def __init__(self):
@@ -255,7 +255,7 @@ class FoundationPhaseAPI:
     def generate_data_response(self, data: Dict, request_type: str, user_type: str, 
                              session_data: Dict) -> str:
         """
-        Generate Anna's response with live data, maintaining her personality
+        Generate WorkCom's response with live data, maintaining her personality
         """
         user_name = session_data.get("verification_data", {}).get("claimant_name", "")
         first_name = user_name.split()[0] if user_name else ""
@@ -363,7 +363,7 @@ How can I assist you today?"""
         Process general message without authentication - preserves existing functionality
         """
         # Use existing static response system for general queries
-        general_response = """Hi there! I'm Anna, your WCFCB assistant. 😊
+        general_response = """Hi there! I'm WorkCom, your WCFCB assistant. 😊
 
 I'm here to help you with information about workers' compensation, claims processes, and general WCFCB services.
 
@@ -379,7 +379,7 @@ How can I help you today?"""
         }
     
     def generate_error_response(self) -> str:
-        """Generate friendly error response maintaining Anna's personality"""
+        """Generate friendly error response maintaining WorkCom's personality"""
         return """I'm sorry, but I'm having a small technical difficulty right now. 😔
 
 Please try again in a moment, or if you need immediate assistance, you can contact our support team:
@@ -485,3 +485,4 @@ def test_foundation_components():
             "success": False,
             "error": str(e)
         }
+

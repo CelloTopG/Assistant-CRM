@@ -24,7 +24,7 @@ function add_ai_buttons(frm) {
   // Add AI button for Description field
   const desc_btn = $(`
     <button class="btn btn-xs btn-default ai-suggest-btn" style="margin-left: 10px;">
-      <i class="fa fa-magic"></i> AI Suggest
+      <i class="fa fa-magic"></i> WorkCom Suggest
     </button>
   `);
   frm.fields_dict.description.$wrapper.find('.clearfix').append(desc_btn);
@@ -33,7 +33,7 @@ function add_ai_buttons(frm) {
   // Add AI button for Recommended For field
   const rec_btn = $(`
     <button class="btn btn-xs btn-default ai-suggest-btn" style="margin-left: 10px;">
-      <i class="fa fa-magic"></i> AI Suggest
+      <i class="fa fa-magic"></i> WorkCom Suggest
     </button>
   `);
   frm.fields_dict.recommended_for.$wrapper.find('.clearfix').append(rec_btn);
@@ -45,7 +45,7 @@ function add_ai_buttons(frm) {
   if (existing_q_btn.length === 0) {
     const q_btn = $(`
       <button class="btn btn-xs btn-primary ai-suggest-btn" style="margin-bottom: 10px;">
-        <i class="fa fa-magic"></i> Generate AI Questions
+        <i class="fa fa-magic"></i> Generate WorkCom Questions
       </button>
     `);
     questions_section.prepend(q_btn);
@@ -94,11 +94,11 @@ function suggest_description(frm) {
       description: __('Any specific requirements or keywords to include')
     }
   ],
-  (values) => {
-    generate_description(frm, values);
-  },
-  __('Customize AI Description'),
-  __('Generate')
+    (values) => {
+      generate_description(frm, values);
+    },
+    __('Customize WorkCom Description'),
+    __('Generate')
   );
 }
 
@@ -111,14 +111,14 @@ function generate_description(frm, preferences) {
       preferences: preferences
     },
     freeze: true,
-    freeze_message: __('Generating AI suggestion...'),
+    freeze_message: __('Generating WorkCom suggestion...'),
     callback: (r) => {
       if (r.message && r.message.success) {
         // Show preview dialog before applying
         show_suggestion_preview(frm, 'description', 'Description', r.message.suggestion);
       } else {
         frappe.msgprint({
-          title: __('AI Suggestion Failed'),
+          title: __('WorkCom Suggestion Failed'),
           message: r.message?.error || __('Failed to generate suggestion.'),
           indicator: 'red'
         });
@@ -170,11 +170,11 @@ function suggest_recommended_for(frm) {
       description: __('Any specific audience segments or criteria to consider')
     }
   ],
-  (values) => {
-    generate_recommended_for(frm, values);
-  },
-  __('Customize AI Recommendation'),
-  __('Generate')
+    (values) => {
+      generate_recommended_for(frm, values);
+    },
+    __('Customize WorkCom Recommendation'),
+    __('Generate')
   );
 }
 
@@ -188,14 +188,14 @@ function generate_recommended_for(frm, preferences) {
       preferences: preferences
     },
     freeze: true,
-    freeze_message: __('Generating AI suggestion...'),
+    freeze_message: __('Generating WorkCom suggestion...'),
     callback: (r) => {
       if (r.message && r.message.success) {
         // Show preview dialog before applying
         show_suggestion_preview(frm, 'recommended_for', 'Recommended For', r.message.suggestion);
       } else {
         frappe.msgprint({
-          title: __('AI Suggestion Failed'),
+          title: __('WorkCom Suggestion Failed'),
           message: r.message?.error || __('Failed to generate suggestion.'),
           indicator: 'red'
         });
@@ -210,7 +210,7 @@ function show_suggestion_preview(frm, fieldname, field_label, suggestion) {
   const cleanedSuggestion = suggestion.trim().replace(/\s+/g, ' ');
 
   const dialog = new frappe.ui.Dialog({
-    title: __('AI Suggestion Preview'),
+    title: __('WorkCom Suggestion Preview'),
     size: 'large',
     fields: [
       {
@@ -299,11 +299,11 @@ function suggest_questions(frm) {
       description: __('Uncheck to append questions instead of replacing')
     }
   ],
-  (values) => {
-    generate_ai_questions(frm, values);
-  },
-  __('Customize AI Questions'),
-  __('Generate')
+    (values) => {
+      generate_ai_questions(frm, values);
+    },
+    __('Customize WorkCom Questions'),
+    __('Generate')
   );
 }
 
@@ -318,14 +318,14 @@ function generate_ai_questions(frm, preferences) {
       preferences: preferences
     },
     freeze: true,
-    freeze_message: __('Generating AI questions...'),
+    freeze_message: __('Generating WorkCom questions...'),
     callback: (r) => {
       if (r.message && r.message.success) {
         // Show preview dialog before applying
         show_questions_preview(frm, r.message.questions, preferences.replace_existing);
       } else {
         frappe.msgprint({
-          title: __('AI Question Generation Failed'),
+          title: __('WorkCom Question Generation Failed'),
           message: r.message?.error || __('Failed to generate questions.'),
           indicator: 'red'
         });
@@ -339,7 +339,7 @@ function show_questions_preview(frm, questions, replace_existing) {
   // Build HTML table for questions preview
   let questions_html = `
     <div style="margin-bottom: 15px;">
-      <label class="control-label" style="font-weight: bold;">${__('AI Generated Questions')}:</label>
+      <label class="control-label" style="font-weight: bold;">${__('WorkCom Generated Questions')}:</label>
       <table class="table table-bordered" style="margin-top: 10px;">
         <thead>
           <tr style="background: #f5f7fa;">
@@ -374,7 +374,7 @@ function show_questions_preview(frm, questions, replace_existing) {
   `;
 
   const dialog = new frappe.ui.Dialog({
-    title: __('AI Questions Preview'),
+    title: __('WorkCom Questions Preview'),
     size: 'extra-large',
     fields: [
       {
@@ -422,7 +422,7 @@ function apply_ai_questions(frm, questions, replace_existing) {
   frm.refresh_field('template_questions');
 
   frappe.show_alert({
-    message: __('Added {0} AI-generated questions!', [questions.length]),
+    message: __('Added {0} WorkCom-generated questions!', [questions.length]),
     indicator: 'green'
   }, 5);
 }

@@ -82,10 +82,10 @@ def test_live_data_deployment():
         print(f"✅ Live Data Used: {live_data_used}")
         print(f"✅ Reply Length: {len(reply)} chars")
         
-        anna_present = 'Anna' in reply
+        WorkCom_present = 'WorkCom' in reply
         wcfcb_present = 'WCFCB' in reply
         
-        print(f"✅ Anna Personality: {anna_present}")
+        print(f"✅ WorkCom Personality: {WorkCom_present}")
         print(f"✅ WCFCB Branding: {wcfcb_present}")
         
         api_success = success and live_data_used and len(reply) > 0
@@ -131,7 +131,7 @@ def test_live_data_deployment():
     if passed == total:
         print("\n🎉 DEPLOYMENT: COMPLETE SUCCESS!")
         print("✅ All 8 live data intents operational")
-        print("✅ Anna personality and WCFCB branding preserved")
+        print("✅ WorkCom personality and WCFCB branding preserved")
         print("✅ Ready for production use")
     else:
         print(f"\n⚠️  DEPLOYMENT: {total - passed} issues detected")
@@ -222,3 +222,4 @@ def run_complete_deployment_test():
     else:
         print("\n⚠️  Basic deployment issues detected")
         return False
+

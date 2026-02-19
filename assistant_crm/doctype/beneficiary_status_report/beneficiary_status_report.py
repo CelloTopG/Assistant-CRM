@@ -426,10 +426,10 @@ def _build_charts_from_maps(counts: Dict[str, int], province_map: Dict[str, int]
 # ----- AI Insights -----
 @frappe.whitelist()
 def get_ai_insights(name: str, query: str) -> Dict[str, Any]:
-    """Return Antoine-style insights for a Beneficiary Status Report.
+    """Return WorkCom-style insights for a Beneficiary Status Report.
 
     Builds a JSON context with status counts, distributions and recent
-    historical snapshots, and passes it to Antoine via EnhancedAIService.
+    historical snapshots, and passes it to WorkCom via EnhancedAIService.
     """
     doc = frappe.get_doc("Beneficiary Status Report", name)
 
@@ -451,7 +451,7 @@ def get_ai_insights(name: str, query: str) -> Dict[str, Any]:
         limit=10,
     )
 
-    # Reuse same aggregation logic as run_generation so Antoine sees
+    # Reuse same aggregation logic as run_generation so WorkCom sees
     # the latest numbers and distributions
     try:
         if doc._is_monthly_window():
@@ -494,7 +494,7 @@ def get_ai_insights(name: str, query: str) -> Dict[str, Any]:
         return {
             "insights": (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
         }
 
@@ -639,3 +639,4 @@ def smoke_generate_report(period_type: str = "Monthly", date_from: Optional[str]
     except Exception:
         pass
     return doc.name
+

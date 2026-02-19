@@ -177,7 +177,7 @@ def schedule_monthly_inbox_status_reports():
 # AI Insights
 @frappe.whitelist()
 def get_ai_insights(name: str, query: str) -> Dict[str, Any]:
-    """Return Antoine-style insights for an Inbox Status Report."""
+    """Return WorkCom-style insights for an Inbox Status Report."""
     doc = frappe.get_doc("Inbox Status Report", name)
 
     history = frappe.get_all(
@@ -240,7 +240,7 @@ def get_ai_insights(name: str, query: str) -> Dict[str, Any]:
         return {
             "insights": (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
         }
 
@@ -322,4 +322,5 @@ def ensure_ict_role():
 def generate_pdf_for(name: str):
     doc = frappe.get_doc("Inbox Status Report", name)
     return doc.generate_pdf()
+
 

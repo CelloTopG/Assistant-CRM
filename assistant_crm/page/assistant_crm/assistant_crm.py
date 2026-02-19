@@ -19,7 +19,7 @@ def get_settings():
                 "api_key": "***" if settings.get_password("api_key") else "",
                 "has_api_key": bool(settings.get_password("api_key")),
                 "response_timeout": getattr(settings, 'response_timeout', 30),
-                "welcome_message": getattr(settings, 'welcome_message', 'Hello! I\'m Anna, your WCFCB assistant. How can I help you today?'),
+                "welcome_message": getattr(settings, 'welcome_message', 'Hello! I\'m WorkCom, your WCFCB assistant. How can I help you today?'),
                 "chat_bubble_position": getattr(settings, 'chat_bubble_position', 'Bottom Right')
             }
         except Exception:
@@ -33,7 +33,7 @@ def get_settings():
                     "api_key": "***" if getattr(settings, 'api_key', '') else "",
                     "has_api_key": bool(getattr(settings, 'api_key', '')),
                     "response_timeout": getattr(settings, 'response_timeout', 30),
-                    "welcome_message": getattr(settings, 'welcome_message', 'Hello! I\'m Anna, your WCFCB assistant. How can I help you today?'),
+                    "welcome_message": getattr(settings, 'welcome_message', 'Hello! I\'m WorkCom, your WCFCB assistant. How can I help you today?'),
                     "chat_bubble_position": getattr(settings, 'chat_bubble_position', 'Bottom Right')
                 }
             else:
@@ -45,7 +45,7 @@ def get_settings():
                     "api_key": "",
                     "has_api_key": False,
                     "response_timeout": 30,
-                    "welcome_message": "Hello! I'm Anna, your WCFCB assistant. How can I help you today?",
+                    "welcome_message": "Hello! I'm WorkCom, your WCFCB assistant. How can I help you today?",
                     "chat_bubble_position": "Bottom Right"
                 }
     except Exception as e:
@@ -58,7 +58,7 @@ def get_settings():
             "api_key": "",
             "has_api_key": False,
             "response_timeout": 30,
-            "welcome_message": "Hello! I'm Anna, your WCFCB assistant. How can I help you today?",
+            "welcome_message": "Hello! I'm WorkCom, your WCFCB assistant. How can I help you today?",
             "chat_bubble_position": "Bottom Right"
         }
 
@@ -116,7 +116,7 @@ def save_settings(**kwargs):
         doc.ai_provider = settings.get("ai_provider", "Google Gemini")
         doc.model_name = settings.get("model_name", "gemini-1.5-pro")
         doc.response_timeout = settings.get("response_timeout", 30)
-        doc.welcome_message = settings.get("welcome_message", "Hello! I'm Anna, your WCFCB assistant. How can I help you today?")
+        doc.welcome_message = settings.get("welcome_message", "Hello! I'm WorkCom, your WCFCB assistant. How can I help you today?")
         doc.chat_bubble_position = settings.get("chat_bubble_position", "Bottom Right")
         
         # Handle API key
@@ -195,3 +195,4 @@ def get_context(context):
     except Exception as e:
         frappe.log_error(f"Error getting page context: {str(e)}", "Assistant CRM Page")
         return context
+

@@ -82,13 +82,13 @@ class UserTrainingDocumentationSystem:
         sections = [
             DocumentationSection(
                 id="beneficiary_getting_started",
-                title="Getting Started with Anna - Your WCFCB Assistant",
+                title="Getting Started with WorkCom - Your WCFCB Assistant",
                 content="""
-# Welcome to Anna - Your Personal WCFCB Assistant! 😊
+# Welcome to WorkCom - Your Personal WCFCB Assistant! 😊
 
-Anna is here to help you with all your Workers' Compensation Fund questions and needs. She's available 24/7 and can assist you with:
+WorkCom is here to help you with all your Workers' Compensation Fund questions and needs. She's available 24/7 and can assist you with:
 
-## What Anna Can Help You With:
+## What WorkCom Can Help You With:
 - **Check Your Claim Status**: Get real-time updates on your claim progress
 - **View Payment Information**: See your benefit payments and schedules
 - **Update Your Contact Details**: Keep your information current
@@ -96,11 +96,11 @@ Anna is here to help you with all your Workers' Compensation Fund questions and 
 - **Get Process Guidance**: Understand WCFCB procedures step-by-step
 - **Answer Questions**: Get instant answers about workers' compensation
 
-## How to Talk to Anna:
-Anna understands natural language, so you can talk to her just like you would talk to a person:
+## How to Talk to WorkCom:
+WorkCom understands natural language, so you can talk to her just like you would talk to a person:
 
 ✅ **Good Examples:**
-- "Hi Anna, can you check my claim status?"
+- "Hi WorkCom, can you check my claim status?"
 - "When will I receive my next payment?"
 - "I need to update my phone number"
 - "What documents do I need for my claim?"
@@ -111,18 +111,18 @@ Anna understands natural language, so you can talk to her just like you would ta
 - Sharing sensitive information in public areas
 
 ## Getting the Best Help:
-1. **Be Specific**: The more details you provide, the better Anna can help
+1. **Be Specific**: The more details you provide, the better WorkCom can help
 2. **One Question at a Time**: Ask one main question per message
 3. **Use Your Claim Number**: Have your claim number ready (format: WC-YYYY-XXXXXX)
-4. **Be Patient**: Anna may need to verify your identity for security
+4. **Be Patient**: WorkCom may need to verify your identity for security
 
 ## Security and Privacy:
-- Anna will verify your identity before sharing personal information
+- WorkCom will verify your identity before sharing personal information
 - Your conversations are encrypted and secure
 - Never share your verification details with others
 - Contact support if you notice any suspicious activity
 
-Ready to get started? Just say "Hi Anna!" and she'll guide you through everything! 🌟
+Ready to get started? Just say "Hi WorkCom!" and she'll guide you through everything! 🌟
                 """,
                 persona="beneficiary",
                 category="getting_started",
@@ -134,25 +134,25 @@ Ready to get started? Just say "Hi Anna!" and she'll guide you through everythin
             
             DocumentationSection(
                 id="beneficiary_claim_status",
-                title="Checking Your Claim Status with Anna",
+                title="Checking Your Claim Status with WorkCom",
                 content="""
 # How to Check Your Claim Status 📋
 
-Anna can provide you with real-time updates on your workers' compensation claim. Here's how:
+WorkCom can provide you with real-time updates on your workers' compensation claim. Here's how:
 
 ## Step-by-Step Guide:
 
 ### 1. Start the Conversation
-Simply say: "Hi Anna, I'd like to check my claim status"
+Simply say: "Hi WorkCom, I'd like to check my claim status"
 
 ### 2. Identity Verification
-For your security, Anna will verify your identity:
+For your security, WorkCom will verify your identity:
 - **Claim Number**: Provide your claim number (WC-YYYY-XXXXXX)
 - **Personal Details**: Confirm your name and date of birth
 - **SMS Verification**: You may receive a text message with a verification code
 
 ### 3. View Your Status
-Once verified, Anna will show you:
+Once verified, WorkCom will show you:
 - **Current Status**: Where your claim stands in the process
 - **Current Stage**: What's happening right now
 - **Next Steps**: What will happen next
@@ -182,11 +182,11 @@ Once verified, Anna will show you:
 - Keep your contact information updated
 
 ## If You Need Help:
-- Ask Anna: "What documents are still needed?"
+- Ask WorkCom: "What documents are still needed?"
 - Request: "Can I speak to my case manager?"
 - Say: "I don't understand my claim status"
 
-Anna is here to help you understand every step of the process! 💙
+WorkCom is here to help you understand every step of the process! 💙
                 """,
                 persona="beneficiary",
                 category="claim_management",
@@ -202,7 +202,7 @@ Anna is here to help you understand every step of the process! 💙
                 content="""
 # Your Benefit Payments Explained 💰
 
-Anna can help you understand and track your workers' compensation benefit payments.
+WorkCom can help you understand and track your workers' compensation benefit payments.
 
 ## Types of Benefits:
 
@@ -226,13 +226,13 @@ Anna can help you understand and track your workers' compensation benefit paymen
 
 ## Checking Your Payment Information:
 
-### Ask Anna:
+### Ask WorkCom:
 - "When is my next payment?"
 - "How much will I receive?"
 - "Show me my payment history"
 - "Why was my payment delayed?"
 
-### What Anna Will Show You:
+### What WorkCom Will Show You:
 - **Next Payment Date**: When to expect your next benefit
 - **Payment Amount**: How much you'll receive
 - **Payment History**: Your last several payments
@@ -246,7 +246,7 @@ Anna can help you understand and track your workers' compensation benefit paymen
 - **Direct Deposit**: Faster than mailed checks
 
 ## If There's a Problem:
-- **Missing Payment**: Ask Anna "Where is my payment?"
+- **Missing Payment**: Ask WorkCom "Where is my payment?"
 - **Wrong Amount**: Say "My payment amount seems incorrect"
 - **Payment Method**: Request "I want to change to direct deposit"
 
@@ -256,7 +256,7 @@ Anna can help you understand and track your workers' compensation benefit paymen
 - Report any return to work immediately
 - Keep WCFCB updated on your recovery progress
 
-Anna can answer any questions about your specific payment situation! 📊
+WorkCom can answer any questions about your specific payment situation! 📊
                 """,
                 persona="beneficiary",
                 category="payments",
@@ -279,9 +279,9 @@ Anna can answer any questions about your specific payment situation! 📊
                 content="""
 # WCFCB Assistant CRM for Employers 🏢
 
-Welcome to the enhanced WCFCB Assistant CRM system. Anna can now help you manage your workers' compensation responsibilities more efficiently.
+Welcome to the enhanced WCFCB Assistant CRM system. WorkCom can now help you manage your workers' compensation responsibilities more efficiently.
 
-## What Anna Can Help Employers With:
+## What WorkCom Can Help Employers With:
 
 ### Claim Management:
 - **View Employee Claims**: See all claims for your employees
@@ -304,7 +304,7 @@ Welcome to the enhanced WCFCB Assistant CRM system. Anna can now help you manage
 ## Getting Started:
 
 ### 1. Authentication
-Anna will verify your employer account:
+WorkCom will verify your employer account:
 - **Company Registration Number**
 - **Authorized Representative Details**
 - **Multi-factor Authentication**
@@ -328,7 +328,7 @@ Once authenticated, you'll have access to:
 - Submit required documentation promptly
 - Review safety training regularly
 
-Anna is here to make workers' compensation management easier for your business! 📈
+WorkCom is here to make workers' compensation management easier for your business! 📈
                 """,
                 persona="employer",
                 category="getting_started",
@@ -351,9 +351,9 @@ Anna is here to make workers' compensation management easier for your business! 
                 content="""
 # WCFCB Assistant for Medical Providers 🏥
 
-Anna can help medical providers navigate the WCFCB system efficiently and ensure proper patient care coordination.
+WorkCom can help medical providers navigate the WCFCB system efficiently and ensure proper patient care coordination.
 
-## What Anna Can Help Providers With:
+## What WorkCom Can Help Providers With:
 
 ### Patient Management:
 - **Verify Patient Coverage**: Confirm workers' compensation coverage
@@ -398,7 +398,7 @@ Before treatment, verify coverage:
 - Use approved treatment protocols
 - Maintain detailed documentation
 
-Anna ensures you have the information needed to provide excellent patient care! 🩺
+WorkCom ensures you have the information needed to provide excellent patient care! 🩺
                 """,
                 persona="supplier",
                 category="getting_started",
@@ -623,8 +623,8 @@ The system is designed for enterprise-grade reliability and performance! 🚀
         """Create training module for beneficiaries"""
         module = TrainingModule(
             id="beneficiary_basic_training",
-            title="Getting Started with Anna - Your WCFCB Assistant",
-            description="Learn how to use Anna to manage your workers' compensation claim and benefits",
+            title="Getting Started with WorkCom - Your WCFCB Assistant",
+            description="Learn how to use WorkCom to manage your workers' compensation claim and benefits",
             persona="beneficiary",
             sections=[
                 self.documentation_sections["beneficiary_getting_started"],
@@ -638,7 +638,7 @@ The system is designed for enterprise-grade reliability and performance! 🚀
             },
             assessment_questions=[
                 {
-                    "question": "What information do you need to check your claim status with Anna?",
+                    "question": "What information do you need to check your claim status with WorkCom?",
                     "type": "multiple_choice",
                     "options": [
                         "Just your name",
@@ -647,7 +647,7 @@ The system is designed for enterprise-grade reliability and performance! 🚀
                         "Your employer's information"
                     ],
                     "correct_answer": 1,
-                    "explanation": "Anna needs your claim number and personal details to verify your identity securely."
+                    "explanation": "WorkCom needs your claim number and personal details to verify your identity securely."
                 },
                 {
                     "question": "How often are temporary disability benefits typically paid?",
@@ -953,7 +953,7 @@ The system is designed for enterprise-grade reliability and performance! 🚀
             "beneficiary": {
                 "claim_status": [
                     "Have your claim number ready (WC-YYYY-XXXXXX)",
-                    "Anna will verify your identity for security",
+                    "WorkCom will verify your identity for security",
                     "Ask specific questions for better help"
                 ],
                 "payments": [
@@ -979,7 +979,7 @@ The system is designed for enterprise-grade reliability and performance! 🚀
         }
         
         persona_tips = tips_map.get(persona, {})
-        return persona_tips.get(action, ["Ask Anna for help with any questions!"])
+        return persona_tips.get(action, ["Ask WorkCom for help with any questions!"])
     
     def get_related_training(self, persona: str, action: str) -> List[str]:
         """Get related training modules"""
@@ -1091,3 +1091,4 @@ def get_contextual_help():
             "success": False,
             "error": str(e)
         }
+

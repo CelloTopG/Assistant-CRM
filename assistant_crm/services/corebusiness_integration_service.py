@@ -52,7 +52,7 @@ class CoreBusinessIntegrationService:
                 return {
                     "valid": False,
                     "error": "CoreBusiness integration not configured",
-                    "anna_message": "I'm having trouble connecting to our main system. Let me get our technical team to check this."
+                    "WorkCom_message": "I'm having trouble connecting to our main system. Let me get our technical team to check this."
                 }
 
             api_url = self.integration_config.get('api_endpoint')
@@ -60,7 +60,7 @@ class CoreBusinessIntegrationService:
                 return {
                     "valid": False,
                     "error": "API endpoint not configured",
-                    "anna_message": "Our system connection needs to be set up. I'll notify our technical team."
+                    "WorkCom_message": "Our system connection needs to be set up. I'll notify our technical team."
                 }
 
             # Test connection with timeout and proper error handling
@@ -82,44 +82,44 @@ class CoreBusinessIntegrationService:
                         "response_time": response.elapsed.total_seconds(),
                         "api_version": response_data.get("version", "unknown"),
                         "status": "connected",
-                        "anna_message": "Great! I'm connected to our main system and ready to help you with live data."
+                        "WorkCom_message": "Great! I'm connected to our main system and ready to help you with live data."
                     }
                 elif response.status_code == 401:
                     return {
                         "valid": False,
                         "error": "Authentication failed - invalid credentials",
-                        "anna_message": "I'm having authentication issues with our main system. Let me use our backup information for now."
+                        "WorkCom_message": "I'm having authentication issues with our main system. Let me use our backup information for now."
                     }
                 elif response.status_code == 403:
                     return {
                         "valid": False,
                         "error": "Access forbidden - insufficient permissions",
-                        "anna_message": "I don't have the right permissions to access some data. I'll work with what I can access."
+                        "WorkCom_message": "I don't have the right permissions to access some data. I'll work with what I can access."
                     }
                 else:
                     return {
                         "valid": False,
                         "error": f"API returned status {response.status_code}",
-                        "anna_message": "Our main system is responding but there might be some issues. I'll try to help you anyway."
+                        "WorkCom_message": "Our main system is responding but there might be some issues. I'll try to help you anyway."
                     }
 
             except requests.exceptions.Timeout:
                 return {
                     "valid": False,
                     "error": "Connection timeout",
-                    "anna_message": "Our main system is taking too long to respond. I'll use cached information to help you."
+                    "WorkCom_message": "Our main system is taking too long to respond. I'll use cached information to help you."
                 }
             except requests.exceptions.ConnectionError:
                 return {
                     "valid": False,
                     "error": "Connection failed",
-                    "anna_message": "I can't reach our main system right now, but I can still help you with general information."
+                    "WorkCom_message": "I can't reach our main system right now, but I can still help you with general information."
                 }
             except Exception as e:
                 return {
                     "valid": False,
                     "error": f"Connection test failed: {str(e)}",
-                    "anna_message": "I'm having some technical difficulties, but I'm still here to help you as best I can."
+                    "WorkCom_message": "I'm having some technical difficulties, but I'm still here to help you as best I can."
                 }
 
         except Exception as e:
@@ -127,7 +127,7 @@ class CoreBusinessIntegrationService:
             return {
                 "valid": False,
                 "error": f"Validation failed: {str(e)}",
-                "anna_message": "I'm experiencing some technical issues, but I'll do my best to help you with the information I have."
+                "WorkCom_message": "I'm experiencing some technical issues, but I'll do my best to help you with the information I have."
             }
 
     def get_enhanced_configuration(self) -> Dict[str, Any]:
@@ -777,3 +777,4 @@ def validate_customer_eligibility(corebusiness_id, service_type):
     """API endpoint to validate customer eligibility"""
     service = CoreBusinessIntegrationService()
     return service.validate_customer_eligibility(corebusiness_id, service_type)
+

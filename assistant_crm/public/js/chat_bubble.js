@@ -43,7 +43,7 @@ class WcfcbChatBubble {
                 // Verbose logging removed
             }
         }).catch((error) => {
-            console.error('Anna Assistant configuration check failed:', error);
+            console.error('WorkCom Assistant configuration check failed:', error);
             // Don't show anything on error - more professional
             // Verbose logging removed
         });
@@ -138,7 +138,7 @@ class WcfcbChatBubble {
                     <!-- Chat Header -->
                     <div class="exn-chat-header">
                         <div>
-                            <h4 class="exn-chat-title">This is Anna, how can I help? 😊</h4>
+                            <h4 class="exn-chat-title">This is WorkCom, how can I help? 😊</h4>
                             <p class="exn-chat-subtitle">Your WCFCB AI assistant</p>
                         </div>
                         <button class="exn-chat-close" id="exnChatClose">
@@ -151,8 +151,8 @@ class WcfcbChatBubble {
                     <!-- Chat Messages -->
                     <div class="exn-chat-messages" id="exnChatMessages">
                         <div class="exn-welcome-message">
-                            <div class="anna-welcome-avatar">👩‍💼</div>
-                            <h4>Hi! I'm Anna, your WCFCB assistant!</h4>
+                            <div class="WorkCom-welcome-avatar">👩‍💼</div>
+                            <h4>Hi! I'm WorkCom, your WCFCB assistant!</h4>
                             <p>I'm here to help you with all your WCFCB needs. Ask me about:</p>
                             <ul style="text-align: left; margin: 10px 0;">
                                 <li>Workers' compensation claims and benefits</li>
@@ -1353,3 +1353,4 @@ window.initializeWcfcbChatBubble = function() {
     }
     return window.wcfcbChatBubble;
 };
+

@@ -114,10 +114,10 @@ class SLAComplianceReport(Document):
 
 @frappe.whitelist()
 def get_ai_insights(name: str, query: str):
-    """Return Antoine-style insights for an SLA Compliance Report.
+    """Return WorkCom-style insights for an SLA Compliance Report.
 
     Builds a JSON context with SLA compliance %, FRT/RT metrics, escalation
-    behaviour and trend history, and passes it to Antoine via EnhancedAIService.
+    behaviour and trend history, and passes it to WorkCom via EnhancedAIService.
     """
     doc = frappe.get_doc("SLA Compliance Report", name)
 
@@ -189,7 +189,7 @@ def get_ai_insights(name: str, query: str):
         return {
             "insights": (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
         }
 
@@ -653,4 +653,5 @@ def _get_manager_emails() -> List[str]:
             except Exception:
                 continue
     return sorted(emails)
+
 

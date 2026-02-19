@@ -242,7 +242,7 @@ def ensure_social_media_settings_seed():
 
 
 def ensure_enhanced_ai_settings_seed():
-	"""Idempotently seed Enhanced AI Settings (OpenAI for Antoine/Anna) from site config.
+	"""Idempotently seed Enhanced AI Settings (OpenAI for WorkCom/WorkCom) from site config.
 
 	Reads from frappe.conf (site_config.json):
 	- assistant_crm_openai_api_key
@@ -304,7 +304,7 @@ def ensure_enhanced_ai_settings_seed():
 
 
 def ensure_assistant_crm_settings_seed():
-	"""Idempotently seed Assistant CRM Settings (Gemini API for Anna) from site config.
+	"""Idempotently seed Assistant CRM Settings (Gemini API for WorkCom) from site config.
 
 	Reads from frappe.conf (site_config.json):
 	- assistant_crm_gemini_api_key (or assistant_crm_api_key)
@@ -341,7 +341,7 @@ def ensure_assistant_crm_settings_seed():
 				doc.set(field, value)
 				updated = True
 
-		# Gemini API Key (main AI provider for Anna)
+		# Gemini API Key (main AI provider for WorkCom)
 		gemini_key = conf.get("assistant_crm_gemini_api_key") or conf.get("assistant_crm_api_key")
 		set_if_absent("api_key", gemini_key, is_password=True)
 
@@ -1070,4 +1070,6 @@ def after_migrate():
             frappe.clear_cache(doctype="Contact")
         except Exception:
             pass
+
+
 

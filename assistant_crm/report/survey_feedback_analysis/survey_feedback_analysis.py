@@ -7,7 +7,7 @@ channel performance, and response metrics using native ERPNext doctypes.
 Data is sourced ONLY from Survey Response and Survey Campaign doctypes for accuracy.
 Channel metrics come from Survey Distribution Channel (not Unified Inbox).
 
-Includes Antoine AI integration for intelligent insights.
+Includes WorkCom AI integration for intelligent insights.
 """
 
 import json
@@ -323,7 +323,7 @@ def get_report_summary(summary: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 @frappe.whitelist()
 def get_ai_insights(filters: str, query: str) -> Dict[str, Any]:
-    """Return Antoine-style insights for the Survey Feedback Analysis report."""
+    """Return WorkCom-style insights for the Survey Feedback Analysis report."""
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters or {})
     get_period_dates(filters)
 
@@ -392,7 +392,7 @@ def get_ai_insights(filters: str, query: str) -> Dict[str, Any]:
         return {
             "insights": (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
         }
 
@@ -604,4 +604,5 @@ def get_response_rate_by_platform(filters: str) -> Dict[str, Any]:
         "type": "bar",
         "colors": ["#5EAD56"],
     }
+
 

@@ -148,8 +148,8 @@ class GeminiService:
 			return "gemini-1.5-flash"  # Default model
 
 	def _build_system_prompt(self, user_context=None):
-		"""Build system prompt for WCFCB context with Anna's personality"""
-		base_prompt = """I'm Anna, a team member at the Workers' Compensation Fund Control Board (WCFCB) of Zambia. I'm here to help you with:
+		"""Build system prompt for WCFCB context with WorkCom's personality"""
+		base_prompt = """I'm WorkCom, a team member at the Workers' Compensation Fund Control Board (WCFCB) of Zambia. I'm here to help you with:
 
 1. **Claims Processing**: Workplace injury claims, medical claims, disability benefits
 2. **Employer Registration**: Business registration, compliance requirements, premium payments
@@ -589,7 +589,7 @@ class GeminiService:
 	def _build_enhanced_prompt_with_context(self, message: str, context: dict) -> str:
 		"""Build enhanced prompt with live data context"""
 		base_prompt = (
-			"""You are Anna, a helpful and professional AI assistant for WCFCB (Workers' Compensation Fund Control Board) in Zambia.
+			"""You are WorkCom, a helpful and professional AI assistant for WCFCB (Workers' Compensation Fund Control Board) in Zambia.
 
 You help with:
 - Workers' compensation claims and status
@@ -627,7 +627,7 @@ Always be warm, professional, and helpful. Keep responses concise but informativ
 				for h in hist:
 					role = (h.get('role') or 'user').lower()
 					text = h.get('text') or ''
-					prefix = 'User' if role == 'user' else 'Anna'
+					prefix = 'User' if role == 'user' else 'WorkCom'
 					lines.append(f"{prefix}: {text}")
 				if lines:
 					base_prompt += "\n\nRecent conversation (most recent last):\n" + "\n".join(lines)
@@ -646,13 +646,13 @@ Always be warm, professional, and helpful. Keep responses concise but informativ
 				pass
 		# Add the user's message
 		base_prompt += f"\n\nUser's message: {message}"
-		base_prompt += "\n\nProvide a helpful response as Anna from WCFCB:"
+		base_prompt += "\n\nProvide a helpful response as WorkCom from WCFCB:"
 		return base_prompt
 
 	def _get_fallback_response_for_intent(self, intent: str) -> str:
 		"""Get fallback response based on intent"""
 		fallback_responses = {
-			'greeting': "Hi! I'm Anna from WCFCB. How can I help you today? 😊",
+			'greeting': "Hi! I'm WorkCom from WCFCB. How can I help you today? 😊",
 			'goodbye': "Thank you for contacting WCFCB. Have a great day!",
 			'claim_status': "I can help you check your claim status. Please provide your claim number or NRC.",
 			'payment_status': "I can help you check your payment information. Please provide your NRC or reference number.",
@@ -660,7 +660,7 @@ Always be warm, professional, and helpful. Keep responses concise but informativ
 			'account_info': "I can help you with your account information. Please provide your NRC.",
 			'agent_request': "I'll connect you with one of our agents. Please hold on.",
 			'technical_help': "I'm here to help with technical issues. What specific problem are you experiencing?",
-			'unknown': "I'm Anna from WCFCB. I can help you with claims, payments, pensions, and more. What would you like to know?"
+			'unknown': "I'm WorkCom from WCFCB. I can help you with claims, payments, pensions, and more. What would you like to know?"
 		}
 		return fallback_responses.get(intent, fallback_responses['unknown'])
 
@@ -817,8 +817,8 @@ def generate_response_with_context(self, message: str, context: dict = None) -> 
 def _build_enhanced_prompt_with_context(self, message: str, context: dict) -> str:
 	"""Build enhanced prompt with live data context"""
 
-	# Base Anna personality and WCFCB context
-	base_prompt = """You are Anna, a helpful and professional AI assistant for WCFCB (Workers' Compensation Fund Control Board) in Zambia.
+	# Base WorkCom personality and WCFCB context
+	base_prompt = """You are WorkCom, a helpful and professional AI assistant for WCFCB (Workers' Compensation Fund Control Board) in Zambia.
 
 You help with:
 - Workers' compensation claims and status
@@ -858,7 +858,7 @@ Always be warm, professional, and helpful. Keep responses concise but informativ
 			for h in hist:
 				role = (h.get('role') or 'user').lower()
 				text = h.get('text') or ''
-				prefix = 'User' if role == 'user' else 'Anna'
+				prefix = 'User' if role == 'user' else 'WorkCom'
 				lines.append(f"{prefix}: {text}")
 			if lines:
 				base_prompt += "\n\nRecent conversation (most recent last):\n" + "\n".join(lines)
@@ -879,14 +879,14 @@ Always be warm, professional, and helpful. Keep responses concise but informativ
 
 	# Add the user's message
 	base_prompt += f"\n\nUser's message: {message}"
-	base_prompt += "\n\nProvide a helpful response as Anna from WCFCB:"
+	base_prompt += "\n\nProvide a helpful response as WorkCom from WCFCB:"
 
 	return base_prompt
 
 def _get_fallback_response_for_intent(self, intent: str) -> str:
 	"""Get fallback response based on intent"""
 	fallback_responses = {
-		'greeting': "Hi! I'm Anna from WCFCB. How can I help you today? 😊",
+		'greeting': "Hi! I'm WorkCom from WCFCB. How can I help you today? 😊",
 		'goodbye': "Thank you for contacting WCFCB. Have a great day!",
 		'claim_status': "I can help you check your claim status. Please provide your claim number or NRC.",
 		'payment_status': "I can help you check your payment information. Please provide your NRC or reference number.",
@@ -894,7 +894,7 @@ def _get_fallback_response_for_intent(self, intent: str) -> str:
 		'account_info': "I can help you with your account information. Please provide your NRC.",
 		'agent_request': "I'll connect you with one of our agents. Please hold on.",
 		'technical_help': "I'm here to help with technical issues. What specific problem are you experiencing?",
-		'unknown': "I'm Anna from WCFCB. I can help you with claims, payments, pensions, and more. What would you like to know?"
+		'unknown': "I'm WorkCom from WCFCB. I can help you with claims, payments, pensions, and more. What would you like to know?"
 	}
 	return fallback_responses.get(intent, fallback_responses['unknown'])
 
@@ -961,3 +961,4 @@ def _get_wcfcb_fallback_response(self, language="en"):
 	}
 
 	return fallback_responses.get(language, fallback_responses["en"])
+

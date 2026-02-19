@@ -259,7 +259,7 @@ class CoreIntegrationOrchestrator:
                     "source": "error"
                 }
             
-            # Step 2: Assemble response with Anna's personality
+            # Step 2: Assemble response with WorkCom's personality
             assembled_response = self.response_assembler.assemble_live_data_response(
                 optimized_data_result.get("data", {}),
                 intent_result.data_category,
@@ -310,7 +310,7 @@ class CoreIntegrationOrchestrator:
             frappe.log_error(f"General conversation error: {str(e)}")
             return {
                 "success": True,
-                "response": "Hi there! I'm Anna, your WCFCB assistant. 😊\n\nHow can I help you today?",
+                "response": "Hi there! I'm WorkCom, your WCFCB assistant. 😊\n\nHow can I help you today?",
                 "data_provided": False,
                 "source": "fallback"
             }
@@ -523,7 +523,7 @@ def test_core_integration():
         test_scenarios = [
             {
                 "name": "Beneficiary Claim Status Request",
-                "message": "Hi Anna, can you check my claim status?",
+                "message": "Hi WorkCom, can you check my claim status?",
                 "user_context": {"user_type": "beneficiary"},
                 "expected_intent": "live_data"
             },
@@ -592,3 +592,4 @@ def test_core_integration():
             "success": False,
             "error": str(e)
         }
+

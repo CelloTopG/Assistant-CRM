@@ -1,7 +1,7 @@
 /**
  * Employer Status Analysis - Script Report Frontend
  *
- * Production-ready ERPNext Script Report with filters, charts, and Antoine AI integration.
+ * Production-ready ERPNext Script Report with filters, charts, and WorkCom AI integration.
  * Uses Employer doctype as the data source.
  */
 
@@ -53,9 +53,9 @@ frappe.query_reports["Employer Status Analysis"] = {
     ],
 
     onload: function (report) {
-        // Add Antoine AI button
-        report.page.add_inner_button(__("Ask Antoine"), function () {
-            show_antoine_dialog(report);
+        // Add WorkCom AI button
+        report.page.add_inner_button(__("Ask WorkCom"), function () {
+            show_WorkCom_dialog(report);
         }, __("AI Insights"));
 
         // Add additional chart buttons
@@ -94,9 +94,9 @@ frappe.query_reports["Employer Status Analysis"] = {
     }
 };
 
-function show_antoine_dialog(report) {
+function show_WorkCom_dialog(report) {
     let d = new frappe.ui.Dialog({
-        title: __("Ask Antoine - AI Analytics Assistant"),
+        title: __("Ask WorkCom - AI Analytics Assistant"),
         fields: [
             {
                 fieldname: "query",
@@ -108,18 +108,18 @@ function show_antoine_dialog(report) {
             {
                 fieldname: "response_section",
                 fieldtype: "Section Break",
-                label: __("Antoine's Response")
+                label: __("WorkCom's Response")
             },
             {
                 fieldname: "response",
                 fieldtype: "HTML",
-                options: '<div class="antoine-response" style="min-height:100px;padding:10px;background:#f5f7fa;border-radius:4px;"><em>Ask a question to get AI-powered insights...</em></div>'
+                options: '<div class="WorkCom-response" style="min-height:100px;padding:10px;background:#f5f7fa;border-radius:4px;"><em>Ask a question to get AI-powered insights...</em></div>'
             }
         ],
-        primary_action_label: __("Ask Antoine"),
+        primary_action_label: __("Ask WorkCom"),
         primary_action: function (values) {
-            let $response = d.$wrapper.find(".antoine-response");
-            $response.html('<div class="text-muted"><i class="fa fa-spinner fa-spin"></i> Antoine is thinking...</div>');
+            let $response = d.$wrapper.find(".WorkCom-response");
+            $response.html('<div class="text-muted"><i class="fa fa-spinner fa-spin"></i> WorkCom is thinking...</div>');
 
             frappe.call({
                 method: "assistant_crm.assistant_crm.report.employer_status_analysis.employer_status_analysis.get_ai_insights",
@@ -193,4 +193,5 @@ function show_chart_dialog(title, chart_data) {
         colors: chart_data.colors || ["#5e64ff"]
     });
 }
+
 

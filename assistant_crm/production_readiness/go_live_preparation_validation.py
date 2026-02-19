@@ -123,10 +123,10 @@ class GoLivePreparationValidation:
                 result={}
             ),
             ValidationCheckpoint(
-                checkpoint_id="anna_personality_consistency",
-                checkpoint_name="Anna Personality Consistency Validation",
+                checkpoint_id="WorkCom_personality_consistency",
+                checkpoint_name="WorkCom Personality Consistency Validation",
                 category="system_integration",
-                description="Validate Anna's personality consistency across all interactions",
+                description="Validate WorkCom's personality consistency across all interactions",
                 validation_criteria={
                     "personality_consistency_score": 4.2,
                     "brand_alignment_score": 4.0,
@@ -154,7 +154,7 @@ class GoLivePreparationValidation:
                 validation_criteria={
                     "avg_response_time": 2.0,  # < 2 seconds
                     "p95_response_time": 3.0,  # < 3 seconds
-                    "anna_response_time": 1.8,  # < 1.8 seconds
+                    "WorkCom_response_time": 1.8,  # < 1.8 seconds
                     "sla_compliance_rate": 0.99
                 },
                 dependencies=["production_systems_integration"],
@@ -327,7 +327,7 @@ class GoLivePreparationValidation:
                     "overall_satisfaction": 4.0,
                     "task_completion_rate": 0.9
                 },
-                dependencies=["anna_personality_consistency"],
+                dependencies=["WorkCom_personality_consistency"],
                 status="pending",
                 result={}
             ),
@@ -443,7 +443,7 @@ class GoLivePreparationValidation:
                         "user_satisfaction": 4.0,
                         "error_rate": 0.005,
                         "performance_targets_met": True,
-                        "anna_consistency_maintained": True
+                        "WorkCom_consistency_maintained": True
                     },
                     rollback_plan={
                         "trigger_conditions": ["system_instability", "critical_errors", "user_complaints"],
@@ -711,7 +711,7 @@ class GoLivePreparationValidation:
                     },
                     "criteria_met": True
                 }
-            elif checkpoint.checkpoint_id == "anna_personality_consistency":
+            elif checkpoint.checkpoint_id == "WorkCom_personality_consistency":
                 return {
                     "success": True,
                     "validation_results": {
@@ -744,7 +744,7 @@ class GoLivePreparationValidation:
                     "validation_results": {
                         "avg_response_time": 1.8,
                         "p95_response_time": 2.7,
-                        "anna_response_time": 1.6,
+                        "WorkCom_response_time": 1.6,
                         "sla_compliance_rate": 0.995
                     },
                     "criteria_met": True
@@ -1159,3 +1159,4 @@ def get_go_live_preparation_status():
             "success": False,
             "error": str(e)
         }
+

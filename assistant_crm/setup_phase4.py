@@ -141,7 +141,7 @@ This is a friendly reminder that your Workers' Compensation premium payment is d
 4. Visit our offices for cash payment
 
 Best regards,
-Anna - WCFCB Virtual Assistant
+WorkCom - WCFCB Virtual Assistant
 Workers' Compensation Fund Control Board""",
             "is_active": 1
         },
@@ -164,7 +164,7 @@ Your Workers' Compensation premium payment is now {days_overdue} days overdue.
 This is a serious matter requiring immediate attention.
 
 Best regards,
-Anna - WCFCB Virtual Assistant
+WorkCom - WCFCB Virtual Assistant
 Workers' Compensation Fund Control Board""",
             "is_active": 1
         }
@@ -286,3 +286,4 @@ def test_phase4_services():
 if __name__ == "__main__":
     setup_phase4()
     test_phase4_services()
+

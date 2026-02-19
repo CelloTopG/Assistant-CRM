@@ -11,12 +11,12 @@
 
 ## 🔥 **ENHANCED CORE DOCTYPES - DETAILED SPECIFICATIONS**
 
-### **1. Anna Chat** ⭐ *[FLAGSHIP ENHANCED]*
+### **1. WorkCom Chat** ⭐ *[FLAGSHIP ENHANCED]*
 
 **Technical Specifications:**
 ```json
 {
-  "doctype": "Anna Chat",
+  "doctype": "WorkCom Chat",
   "module": "Assistant CRM",
   "is_submittable": 0,
   "track_changes": 1,
@@ -393,7 +393,7 @@ data_protection_compliance: Check
 ### **Enhanced DocTypes Summary:**
 | **DocType** | **Fields** | **JSON Fields** | **Calculated Fields** | **Integration Points** |
 |-------------|------------|-----------------|----------------------|----------------------|
-| **Anna Chat** | 40 | 3 | 8 | 5 APIs |
+| **WorkCom Chat** | 40 | 3 | 8 | 5 APIs |
 | **Message Template** | 27 | 4 | 5 | 3 APIs |
 | **Survey Campaign** | 38 | 6 | 7 | 4 APIs |
 | **Performance Metrics** | 22 | 2 | 6 | 6 APIs |
@@ -416,3 +416,4 @@ data_protection_compliance: Check
 ---
 
 **This technical specification provides the foundation for implementing, maintaining, and optimizing the 35 consolidated doctypes in the assistant_crm system.**
+

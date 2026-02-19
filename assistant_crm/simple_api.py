@@ -17,7 +17,7 @@ def ping():
 
 @frappe.whitelist(allow_guest=True)
 def ask_bot_simple(message=None):
-    """Simplified version with Anna's empathetic personality"""
+    """Simplified version with WorkCom's empathetic personality"""
     if not message:
         return {
             "success": False,
@@ -34,15 +34,16 @@ def ask_bot_simple(message=None):
             "reply": reply,
             "message": message,
             "timestamp": frappe.utils.now(),
-            "personality": "Anna - WCFCB Team Member"
+            "personality": "WorkCom - WCFCB Team Member"
         }
     except Exception as e:
-        # Fallback with Anna's empathetic tone
+        # Fallback with WorkCom's empathetic tone
         return {
             "success": True,
-            "reply": f"I understand you're reaching out about: {message}. I'm Anna from the WCFCB team, and I want to help you with this. While I'm having some technical difficulties accessing all my resources right now, I'm still here to assist you. Could you tell me if this is about claims, payments, employer services, or something else? I'll do my best to guide you in the right direction.",
+            "reply": f"I understand you're reaching out about: {message}. I'm WorkCom from the WCFCB team, and I want to help you with this. While I'm having some technical difficulties accessing all my resources right now, I'm still here to assist you. Could you tell me if this is about claims, payments, employer services, or something else? I'll do my best to guide you in the right direction.",
             "message": message,
             "timestamp": frappe.utils.now(),
-            "personality": "Anna - WCFCB Team Member",
+            "personality": "WorkCom - WCFCB Team Member",
             "fallback_used": True
         }
+

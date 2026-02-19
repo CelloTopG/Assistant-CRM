@@ -6,7 +6,7 @@ WCFCB Assistant CRM - Streamlined Reply Service
 
 Streamlined reply service with live data integration as core feature.
 Maintains 100% API compatibility with legacy reply service while providing
-reliable live data integration and preserving Anna's personality.
+reliable live data integration and preserving WorkCom's personality.
 
 Author: WCFCB Development Team
 Created: 2025-08-11
@@ -14,10 +14,10 @@ License: MIT
 
 Architecture:
 ------------
-1. Input Validation → Intent Detection → Live Data Check → Knowledge Base Fallback → Anna Personality Application
+1. Input Validation → Intent Detection → Live Data Check → Knowledge Base Fallback → WorkCom Personality Application
 2. Live data integration as primary feature (not afterthought)
 3. Graceful fallbacks with zero regression guarantee
-4. Anna personality and WCFCB brand preservation
+4. WorkCom personality and WCFCB brand preservation
 """
 
 import re
@@ -288,7 +288,7 @@ class StreamlinedReplyService:
             session_id (str, optional): Session identifier for conversation tracking
 
         Returns:
-            str: Generated bot response with Anna's personality and WCFCB branding
+            str: Generated bot response with WorkCom's personality and WCFCB branding
         """
         # Initialize comprehensive logging for this request
         request_id = self.intent_logger.generate_request_id() if self.intent_logger else str(uuid.uuid4())[:8]
@@ -352,7 +352,7 @@ class StreamlinedReplyService:
                     live_response = self._get_live_data_response(message, intent, user_context, session_id)
                     if live_response and isinstance(live_response, str) and len(live_response.strip()) > 0:
                         safe_log_error(f"Live data response generated successfully: {live_response[:100]}...", "Live Data Success")
-                        # Live data response already includes Anna's personality
+                        # Live data response already includes WorkCom's personality
                         return live_response
                     else:
                         safe_log_error(f"Live data response was invalid: {type(live_response)} - {live_response}", "Live Data Warning")
@@ -395,20 +395,20 @@ class StreamlinedReplyService:
             # REMOVED: Response state transitions - using stateless operation
             # State management removed to eliminate session dependencies
 
-            # Step 5: Apply Anna Personality and WCFCB Branding (SURGICAL FIX: Enhanced Context-Aware)
+            # Step 5: Apply WorkCom Personality and WCFCB Branding (SURGICAL FIX: Enhanced Context-Aware)
             try:
-                safe_log_error(f"Applying Anna personality for intent: {intent}", "Anna Personality Debug")
-                final_response = self._apply_anna_personality_with_context(
+                safe_log_error(f"Applying WorkCom personality for intent: {intent}", "WorkCom Personality Debug")
+                final_response = self._apply_WorkCom_personality_with_context(
                     knowledge_response, intent, user_context, message, session_state, session_id
                 )
                 if not final_response or len(final_response.strip()) == 0:
-                    safe_log_error(f"Anna personality application returned empty response", "Anna Personality Warning")
-                    final_response = self._apply_anna_personality(knowledge_response, intent, user_context, message)
+                    safe_log_error(f"WorkCom personality application returned empty response", "WorkCom Personality Warning")
+                    final_response = self._apply_WorkCom_personality(knowledge_response, intent, user_context, message)
                 else:
-                    safe_log_error(f"Anna personality applied successfully: {final_response[:100]}...", "Anna Personality Success")
-            except Exception as anna_error:
-                safe_log_error(f"Anna personality application failed: {str(anna_error)}", "Anna Personality Error")
-                final_response = self._apply_anna_personality(knowledge_response, intent, user_context, message)
+                    safe_log_error(f"WorkCom personality applied successfully: {final_response[:100]}...", "WorkCom Personality Success")
+            except Exception as WorkCom_error:
+                safe_log_error(f"WorkCom personality application failed: {str(WorkCom_error)}", "WorkCom Personality Error")
+                final_response = self._apply_WorkCom_personality(knowledge_response, intent, user_context, message)
 
             # Step 6: Grammar and Quality Enhancement with Validation
             try:
@@ -540,7 +540,7 @@ class StreamlinedReplyService:
 
         specific_prompt = auth_prompts.get(intent, "To access your personal information, I'll need to verify your identity first.")
 
-        return f"Hi! I'm Anna from WCFCB. {specific_prompt} This helps me provide you with accurate, personalized information while keeping your data secure. You can provide them in the format: NationalID AccountNumber"
+        return f"Hi! I'm WorkCom from WCFCB. {specific_prompt} This helps me provide you with accurate, personalized information while keeping your data secure. You can provide them in the format: NationalID AccountNumber"
 
     def process_authentication_input(self, message: str, intent: str, user_context: Dict, session_id: str) -> Dict[str, Any]:
         """
@@ -889,7 +889,7 @@ class StreamlinedReplyService:
             currency_symbol = "P" if latest_payment.get('currency') == 'BWP' else "K"
             amount = latest_payment.get('amount', 0)
 
-            response = f"Hi! I'm Anna from WCFCB. I've found your payment information:\n\n"
+            response = f"Hi! I'm WorkCom from WCFCB. I've found your payment information:\n\n"
             response += f"💰 **Payment Status:** {latest_payment.get('status', 'Unknown')}\n"
             response += f"📅 **Last Payment:** {latest_payment.get('payment_date', 'Not available')}\n"
             response += f"💵 **Amount:** {currency_symbol}{amount:,.2f}\n"
@@ -912,7 +912,7 @@ class StreamlinedReplyService:
 
     def _get_fallback_payment_response(self, user_id: str) -> str:
         """Fallback payment response when live data is unavailable."""
-        return (f"Hi! I'm Anna from WCFCB. I've found your payment information:\n\n"
+        return (f"Hi! I'm WorkCom from WCFCB. I've found your payment information:\n\n"
                 f"💰 **Payment Status:** Processed\n"
                 f"📅 **Last Payment:** December 15, 2024\n"
                 f"💵 **Amount:** K1,247.50\n"
@@ -943,7 +943,7 @@ class StreamlinedReplyService:
 
             latest_claim = claims[0]
 
-            response = f"Hi! I'm Anna from WCFCB. I've found your claim information:\n\n"
+            response = f"Hi! I'm WorkCom from WCFCB. I've found your claim information:\n\n"
             response += f"📋 **Claim Details:**\n"
             response += f"• Claim Number: {latest_claim.get('claim_id', 'N/A')}\n"
             response += f"• Type: {latest_claim.get('claim_type', 'N/A')}\n"
@@ -977,7 +977,7 @@ class StreamlinedReplyService:
 
     def _get_fallback_claim_response(self, user_id: str) -> str:
         """Fallback claim response when live data is unavailable."""
-        return (f"Hi! I'm Anna from WCFCB. I've found your claim information:\n\n"
+        return (f"Hi! I'm WorkCom from WCFCB. I've found your claim information:\n\n"
                 f"📋 **Claim Details:**\n"
                 f"• Claim Number: CL-2024-{user_id[-3:] if len(user_id) >= 3 else '001'}\n"
                 f"• Status: Under Medical Review\n"
@@ -990,7 +990,7 @@ class StreamlinedReplyService:
 
     def _get_simulated_pension_response(self, user_id: str, message: str) -> str:
         """Generate simulated pension inquiry response."""
-        return (f"Hi! I'm Anna from WCFCB. Here's your pension information:\n\n"
+        return (f"Hi! I'm WorkCom from WCFCB. Here's your pension information:\n\n"
                 f"🏦 **Pension Details:**\n"
                 f"• Monthly Pension: K2,150.00\n"
                 f"• Beneficiary Number: BN-{user_id[-6:] if len(user_id) >= 6 else '000001'}\n"
@@ -1014,7 +1014,7 @@ class StreamlinedReplyService:
 
     def _get_fallback_account_response(self, user_id: str) -> str:
         """Fallback account response when live data is unavailable."""
-        return (f"Hi! I'm Anna from WCFCB. Here's your account information:\n\n"
+        return (f"Hi! I'm WorkCom from WCFCB. Here's your account information:\n\n"
                 f"👤 **Account Status:** Active\n"
                 f"📅 **Member Since:** January 2020\n"
                 f"🆔 **Member ID:** {user_id}\n"
@@ -1026,49 +1026,49 @@ class StreamlinedReplyService:
                 f"Your account is in good standing. What would you like to know more about?")
 
     def _format_payment_response(self, payment_info: Dict, reference: str) -> str:
-        """Format payment status response with Anna's personality"""
+        """Format payment status response with WorkCom's personality"""
         status = payment_info.get('status', 'Unknown')
         amount = payment_info.get('amount', 0)
         date = payment_info.get('payment_date', 'Unknown')
 
-        return f"Hello! I'm Anna from WCFCB. I've found your payment information for reference {reference}. " \
+        return f"Hello! I'm WorkCom from WCFCB. I've found your payment information for reference {reference}. " \
                f"Your payment status is: {status}. The amount is K{amount:,} and it was processed on {date}. " \
                f"If you have any questions about this payment, I'm here to help!"
 
     def _format_claim_response(self, claim_info: Dict, claim_number: str) -> str:
-        """Format claim status response with Anna's personality"""
+        """Format claim status response with WorkCom's personality"""
         status = claim_info.get('status', 'Unknown')
         submitted = claim_info.get('submitted_date', 'Unknown')
         next_action = claim_info.get('next_action', 'We will update you soon')
 
-        return f"Hi there! I'm Anna from WCFCB. I've checked your claim {claim_number} for you. " \
+        return f"Hi there! I'm WorkCom from WCFCB. I've checked your claim {claim_number} for you. " \
                f"Current status: {status}. It was submitted on {submitted}. " \
                f"Next step: {next_action}. I'll keep you updated on any changes!"
 
     def _format_employer_response(self, employer_info: Dict, employer_id: str) -> str:
-        """Format employer information response with Anna's personality"""
+        """Format employer information response with WorkCom's personality"""
         company = employer_info.get('company_name', 'Your company')
         status = employer_info.get('registration_status', 'Unknown')
         employees = employer_info.get('employees_count', 0)
 
-        return f"Hello! I'm Anna from WCFCB. Here's the information for {company} (ID: {employer_id}): " \
+        return f"Hello! I'm WorkCom from WCFCB. Here's the information for {company} (ID: {employer_id}): " \
                f"Registration status is {status} with {employees} employees registered. " \
                f"Everything looks good! Let me know if you need any other information."
 
     def _format_beneficiary_response(self, beneficiary_info: Dict, beneficiary_id: str) -> str:
-        """Format beneficiary information response with Anna's personality"""
+        """Format beneficiary information response with WorkCom's personality"""
         name = beneficiary_info.get('name', 'Unknown')
         status = beneficiary_info.get('status', 'Unknown')
         benefit_type = beneficiary_info.get('benefit_type', 'Unknown')
         amount = beneficiary_info.get('monthly_amount', 0)
 
-        return f"Hello {name}! I'm Anna from WCFCB. I've found your beneficiary information (ID: {beneficiary_id}). " \
+        return f"Hello {name}! I'm WorkCom from WCFCB. I've found your beneficiary information (ID: {beneficiary_id}). " \
                f"Your status is {status} for {benefit_type} with a monthly amount of K{amount:,}. " \
                f"Is there anything specific you'd like to know about your benefits?"
 
     def _format_error_response(self, error_message: str) -> str:
-        """Format error response with Anna's personality and helpful guidance"""
-        return f"I'm Anna from WCFCB, and I understand how important this information is to you. " \
+        """Format error response with WorkCom's personality and helpful guidance"""
+        return f"I'm WorkCom from WCFCB, and I understand how important this information is to you. " \
                f"{error_message} Please try again in a few moments, or if this continues, " \
                f"you can contact our office directly at +260-211-123456. I'm here to help in any way I can!"
 
@@ -1274,8 +1274,8 @@ class StreamlinedReplyService:
     def _get_general_template(self, intent: str) -> str:
         """Get general response templates for unidentified users."""
         templates = {
-            'simple_greeting': "Hi! I'm Anna from WCFCB. How can I help you today?",
-            'greeting': "I'm Anna from the WCFCB team, and I'm here to help you resolve any workplace compensation matters you have.",
+            'simple_greeting': "Hi! I'm WorkCom from WCFCB. How can I help you today?",
+            'greeting': "I'm WorkCom from the WCFCB team, and I'm here to help you resolve any workplace compensation matters you have.",
             'claim_status': "I'll help you check your claim status. To provide you with accurate information, I'll need to verify your identity first.",
             'payment_status': "I can help you with payment information. For security purposes, I'll need to verify your identity before accessing your account details.",
             'employer_registration': "I'll help you with employer registration. This is an important step that protects both your business and your employees.",
@@ -1290,52 +1290,52 @@ class StreamlinedReplyService:
 
         return templates.get(intent, "I'm here to help you with WCFCB services. What can I assist you with today?")
 
-    def _apply_anna_personality(self, response: str, intent: str, user_context: Dict, message: str) -> str:
+    def _apply_WorkCom_personality(self, response: str, intent: str, user_context: Dict, message: str) -> str:
         """
-        Apply Anna's personality and WCFCB branding to response.
-        CRITICAL: Maintains Anna's empathy, warmth, and professional identity.
+        Apply WorkCom's personality and WCFCB branding to response.
+        CRITICAL: Maintains WorkCom's empathy, warmth, and professional identity.
         """
-        # Skip personality application if response already has Anna's voice
-        if "I'm Anna" in response or "I'll check" in response or "I understand" in response:
+        # Skip personality application if response already has WorkCom's voice
+        if "I'm WorkCom" in response or "I'll check" in response or "I understand" in response:
             return response
 
         # Generate acknowledgment based on intent and tone
         acknowledgment = self._generate_acknowledgment(message, intent)
 
-        # Apply Anna's identity and empathy
+        # Apply WorkCom's identity and empathy
         if intent == 'simple_greeting':
-            return "Hi! I'm Anna from WCFCB. How can I help you today?"
+            return "Hi! I'm WorkCom from WCFCB. How can I help you today?"
 
         elif intent == 'greeting':
             user_name = self._extract_user_name(message)
             if user_name:
-                return f"Hi {user_name}! I'm Anna from WCFCB. {response}"
+                return f"Hi {user_name}! I'm WorkCom from WCFCB. {response}"
             else:
-                return f"Hi! I'm Anna from WCFCB. {response}"
+                return f"Hi! I'm WorkCom from WCFCB. {response}"
 
         elif intent in ['claim_status', 'payment_status', 'pension_inquiry']:
-            return f"{acknowledgment} I'm Anna from WCFCB. {response}"
+            return f"{acknowledgment} I'm WorkCom from WCFCB. {response}"
 
         elif intent == 'complaint':
-            return f"I'm Anna from WCFCB. I'm truly sorry you're experiencing this issue. {response}"
+            return f"I'm WorkCom from WCFCB. I'm truly sorry you're experiencing this issue. {response}"
 
         elif intent == 'agent_request':
-            return f"I'm Anna from WCFCB. {acknowledgment} {response}"
+            return f"I'm WorkCom from WCFCB. {acknowledgment} {response}"
 
         elif intent == 'goodbye':
-            return f"{acknowledgment} I'm Anna from WCFCB. {response}"
+            return f"{acknowledgment} I'm WorkCom from WCFCB. {response}"
 
         elif intent == 'unknown':
-            return f"I'm Anna from WCFCB. {response}"
+            return f"I'm WorkCom from WCFCB. {response}"
 
         else:
-            # Default Anna introduction for all other intents
-            return f"I'm Anna from WCFCB. {response}"
+            # Default WorkCom introduction for all other intents
+            return f"I'm WorkCom from WCFCB. {response}"
 
     def _generate_acknowledgment(self, message: str, intent: str) -> str:
         """
         Generate empathetic acknowledgment based on message tone and intent.
-        CRITICAL: Maintains Anna's empathy patterns from legacy service.
+        CRITICAL: Maintains WorkCom's empathy patterns from legacy service.
         """
         message_lower = message.lower()
 
@@ -1469,7 +1469,7 @@ class StreamlinedReplyService:
             api_key = "AIzaSyBJYdJ6NaBuFmSXzgTWlFR8kkPrtycnetQ"  # Fallback key
 
             # Enhanced system prompt with live data context
-            system_prompt = """I'm Anna, your WCFCB assistant. I help with workers' compensation claims, employer registration, payments, and safety guidelines. I'm empathetic, professional, and always ready to help with your WCFCB needs."""
+            system_prompt = """I'm WorkCom, your WCFCB assistant. I help with workers' compensation claims, employer registration, payments, and safety guidelines. I'm empathetic, professional, and always ready to help with your WCFCB needs."""
 
             # SURGICAL FIX: Add live data context if available
             context_info = ""
@@ -1505,7 +1505,7 @@ class StreamlinedReplyService:
             payload = {
                 "contents": [{
                     "parts": [{
-                        "text": f"{system_prompt}{context_info}\n\nUser: {message}\n\nAnna (respond naturally using any available data):"
+                        "text": f"{system_prompt}{context_info}\n\nUser: {message}\n\nWorkCom (respond naturally using any available data):"
                     }]
                 }],
                 "generationConfig": {
@@ -1530,7 +1530,7 @@ class StreamlinedReplyService:
             safe_log_error(f"Direct Gemini fallback failed: {str(e)}", "Direct Gemini Error")
             if frappe:
                 frappe.log_error(f"Direct Gemini fallback failed: {str(e)}", "Direct Gemini Fallback")
-            return "Hello! I'm Anna from WCFCB. I'm here to help you with workers' compensation claims, employer registration, payments, and safety guidelines. How can I assist you today?"
+            return "Hello! I'm WorkCom from WCFCB. I'm here to help you with workers' compensation claims, employer registration, payments, and safety guidelines. How can I assist you today?"
 
     def _get_error_fallback_response(self, user_context: Dict) -> str:
         """Get graceful fallback response for system errors."""
@@ -1579,21 +1579,21 @@ class StreamlinedReplyService:
         # STATELESS OPERATION: Always allow context changes
         return "I understand you'd like to discuss something different. How can I help you?"
 
-    def _apply_anna_personality_with_context(self, response: str, intent: str, user_context: Dict,
+    def _apply_WorkCom_personality_with_context(self, response: str, intent: str, user_context: Dict,
                                            message: str, session_state: Dict, session_id: str) -> str:
         """
-        Phase 2: Apply Anna personality with session context awareness
+        Phase 2: Apply WorkCom personality with session context awareness
         """
-        # REMOVED: Session context awareness - using stateless Anna personality
+        # REMOVED: Session context awareness - using stateless WorkCom personality
         # Session management removed to eliminate "Conversation Session not found" errors
         try:
-            # STATELESS OPERATION: Always apply full Anna personality
-            return self._apply_anna_personality(response, intent, user_context, message)
+            # STATELESS OPERATION: Always apply full WorkCom personality
+            return self._apply_WorkCom_personality(response, intent, user_context, message)
 
         except Exception as e:
-            safe_log_error(f"Error applying Anna personality: {str(e)}")
-            # Fallback to original response with basic Anna greeting
-            return f"Hi! I'm Anna from WCFCB. {response}"
+            safe_log_error(f"Error applying WorkCom personality: {str(e)}")
+            # Fallback to original response with basic WorkCom greeting
+            return f"Hi! I'm WorkCom from WCFCB. {response}"
 
     def _apply_continuing_conversation_tone(self, response: str, locked_intent: str, turn: int) -> str:
         """
@@ -1622,7 +1622,7 @@ class StreamlinedReplyService:
                 elif turn > 2:
                     response = f"Regarding your pension... {response}"
 
-            # Ensure Anna's warm tone is maintained
+            # Ensure WorkCom's warm tone is maintained
             if not any(phrase in response.lower() for phrase in ['i understand', 'i can help', 'let me']):
                 response = f"I understand you're continuing with this topic. {response}"
 
@@ -1676,8 +1676,8 @@ class StreamlinedReplyService:
 
             safe_log_error(f"Gemini response received successfully: {ai_response[:100]}...", "Gemini Processing Success")
 
-            # Apply Anna's personality and WCFCB branding
-            final_response = self._apply_anna_personality_to_live_data_response(ai_response, intent)
+            # Apply WorkCom's personality and WCFCB branding
+            final_response = self._apply_WorkCom_personality_to_live_data_response(ai_response, intent)
 
             return final_response
 
@@ -1701,7 +1701,7 @@ class StreamlinedReplyService:
 
             # Build enhanced context based on available data
             context_parts = [
-                f"You are Anna, a friendly WCFCB (Workers' Compensation Fund Control Board) assistant.",
+                f"You are WorkCom, a friendly WCFCB (Workers' Compensation Fund Control Board) assistant.",
                 f"User's question: {message}",
                 f"User's name: {user_name}",
                 f"Intent detected: {intent}",
@@ -1767,7 +1767,7 @@ class StreamlinedReplyService:
             if data_added:
                 context_parts.extend([
                     "Instructions:",
-                    "1. Respond as Anna with a warm, helpful tone",
+                    "1. Respond as WorkCom with a warm, helpful tone",
                     "2. Use the live data above to provide specific, accurate information",
                     "3. Keep response concise (20-35 words)",
                     "4. Include relevant numbers and dates from the data",
@@ -1779,7 +1779,7 @@ class StreamlinedReplyService:
             else:
                 context_parts.extend([
                     "Instructions:",
-                    "1. Respond as Anna with a warm, helpful tone",
+                    "1. Respond as WorkCom with a warm, helpful tone",
                     "2. Acknowledge the user's request professionally",
                     "3. Keep response concise (20-35 words)",
                     "4. Offer to help and provide guidance",
@@ -1793,35 +1793,35 @@ class StreamlinedReplyService:
 
         except Exception as e:
             safe_log_error(f"Error building Gemini context: {str(e)}", "Context Building Error")
-            return f"You are Anna from WCFCB. Answer this question naturally and helpfully: {message}"
+            return f"You are WorkCom from WCFCB. Answer this question naturally and helpfully: {message}"
 
-    def _apply_anna_personality_to_live_data_response(self, ai_response: str, intent: str) -> str:
-        """SURGICAL FIX: Enhanced Anna personality application with comprehensive validation"""
+    def _apply_WorkCom_personality_to_live_data_response(self, ai_response: str, intent: str) -> str:
+        """SURGICAL FIX: Enhanced WorkCom personality application with comprehensive validation"""
         try:
-            safe_log_error(f"Applying Anna personality to response: {ai_response[:100]}...", "Anna Personality Debug")
+            safe_log_error(f"Applying WorkCom personality to response: {ai_response[:100]}...", "WorkCom Personality Debug")
 
             if not ai_response or not isinstance(ai_response, str):
-                safe_log_error(f"Invalid AI response for personality application: {type(ai_response)}", "Anna Personality Warning")
-                return "Hi! I'm Anna from WCFCB. How can I help you today?"
+                safe_log_error(f"Invalid AI response for personality application: {type(ai_response)}", "WorkCom Personality Warning")
+                return "Hi! I'm WorkCom from WCFCB. How can I help you today?"
 
             # Clean and validate response
             cleaned_response = ai_response.strip()
             if len(cleaned_response) == 0:
-                safe_log_error(f"Empty AI response after cleaning", "Anna Personality Warning")
-                return "Hi! I'm Anna from WCFCB. How can I help you today?"
+                safe_log_error(f"Empty AI response after cleaning", "WorkCom Personality Warning")
+                return "Hi! I'm WorkCom from WCFCB. How can I help you today?"
 
-            # SURGICAL FIX: Enhanced Anna greeting application
+            # SURGICAL FIX: Enhanced WorkCom greeting application
             response_lower = cleaned_response.lower()
 
-            # Check if Anna is already properly introduced
-            has_anna_intro = any(phrase in response_lower for phrase in [
-                "i'm anna", "i am anna", "this is anna", "anna from wcfcb", "anna here"
+            # Check if WorkCom is already properly introduced
+            has_WorkCom_intro = any(phrase in response_lower for phrase in [
+                "i'm WorkCom", "i am WorkCom", "this is WorkCom", "WorkCom from wcfcb", "WorkCom here"
             ])
 
-            # Apply Anna greeting if not present
-            if not has_anna_intro and not response_lower.startswith(('hi', 'hello', 'good morning', 'good afternoon')):
+            # Apply WorkCom greeting if not present
+            if not has_WorkCom_intro and not response_lower.startswith(('hi', 'hello', 'good morning', 'good afternoon')):
                 if response_lower.startswith(('your', 'the', 'according')):
-                    cleaned_response = f"Hi! I'm Anna from WCFCB. {cleaned_response}"
+                    cleaned_response = f"Hi! I'm WorkCom from WCFCB. {cleaned_response}"
                 else:
                     cleaned_response = f"Hi! {cleaned_response}"
 
@@ -1835,12 +1835,12 @@ class StreamlinedReplyService:
             if cleaned_response and not cleaned_response.endswith(('.', '!', '?')):
                 cleaned_response += '.'
 
-            safe_log_error(f"Anna personality applied successfully", "Anna Personality Success")
+            safe_log_error(f"WorkCom personality applied successfully", "WorkCom Personality Success")
             return cleaned_response
 
         except Exception as e:
-            safe_log_error(f"Error applying Anna personality: {str(e)}", "Anna Personality Error")
-            return ai_response if ai_response else "Hi! I'm Anna from WCFCB. How can I help you today?"
+            safe_log_error(f"Error applying WorkCom personality: {str(e)}", "WorkCom Personality Error")
+            return ai_response if ai_response else "Hi! I'm WorkCom from WCFCB. How can I help you today?"
 
     def _format_live_data_response_fallback(self, message: str, intent: str, live_data: Dict) -> str:
         """Fallback method to format live data without Gemini"""
@@ -1867,7 +1867,7 @@ class StreamlinedReplyService:
 
         except Exception as e:
             safe_log_error(f"Error in live data fallback formatting: {str(e)}")
-            return "Hi! I'm Anna from WCFCB. How can I help you today?"
+            return "Hi! I'm WorkCom from WCFCB. How can I help you today?"
 
     def _format_no_data_found_response(self, message: str, intent: str, user_identifier: str) -> str:
         """SURGICAL FIX: Enhanced no data found response with comprehensive error handling"""
@@ -1883,7 +1883,7 @@ class StreamlinedReplyService:
                 raise Exception("Gemini service not properly initialized")
 
             # Build enhanced context for "no data found" response
-            context_prompt = f"""You are Anna, a helpful WCFCB assistant.
+            context_prompt = f"""You are WorkCom, a helpful WCFCB assistant.
 
 User's question: {message}
 User identifier provided: {user_identifier}
@@ -1892,7 +1892,7 @@ Intent: {intent}
 The user provided their identifier ({user_identifier}) but no records were found in our system.
 
 Instructions:
-1. Respond as Anna with a warm, helpful tone
+1. Respond as WorkCom with a warm, helpful tone
 2. Acknowledge that they provided their identifier
 3. Explain that no records were found for that identifier
 4. Suggest they verify the identifier or contact WCFCB directly
@@ -1918,10 +1918,10 @@ Generate a natural, helpful response:"""
             if not ai_response or len(ai_response.strip()) == 0:
                 raise Exception("Gemini returned empty response")
 
-            # Apply Anna personality enhancements
+            # Apply WorkCom personality enhancements
             ai_response = ai_response.strip()
 
-            # Ensure it starts with Anna's greeting
+            # Ensure it starts with WorkCom's greeting
             if not ai_response.lower().startswith(('hi', 'hello', 'good')):
                 ai_response = f"Hi! {ai_response}"
 
@@ -1935,7 +1935,7 @@ Generate a natural, helpful response:"""
         except Exception as e:
             safe_log_error(f"Error formatting no data found response: {str(e)}", "No Data Response Error")
             # Enhanced fallback response
-            return f"Hi! I'm Anna from WCFCB. I searched for records using {user_identifier}, but couldn't find any information. Please verify your identifier or contact WCFCB directly for assistance. How else can I help you today?"
+            return f"Hi! I'm WorkCom from WCFCB. I searched for records using {user_identifier}, but couldn't find any information. Please verify your identifier or contact WCFCB directly for assistance. How else can I help you today?"
 
 
 # Create global instance for backward compatibility
@@ -1947,3 +1947,4 @@ def get_bot_reply(message: str, user_context: Dict = None, session_id: str = Non
     This maintains 100% compatibility with existing integrations.
     """
     return _streamlined_service.get_bot_reply(message, user_context, session_id)
+

@@ -265,11 +265,11 @@ def email_report(name: str, recipients: Optional[List[str]] | None = None) -> Di
 
 @frappe.whitelist()
 def get_ai_insights(name: str, query: str) -> Dict[str, Any]:
-    """Return Antoine-style insights for a Claims Status Report.
+    """Return WorkCom-style insights for a Claims Status Report.
 
     We build a compact JSON context with the current window, high-level KPIs,
     full lifecycle status breakdown for the window, and a small history of
-    previous reports. This is then passed to the Antoine (OpenAI) engine via
+    previous reports. This is then passed to the WorkCom (OpenAI) engine via
     EnhancedAIService.
     """
 
@@ -293,7 +293,7 @@ def get_ai_insights(name: str, query: str) -> Dict[str, Any]:
         limit=12,
     )
 
-    # Re-aggregate using the latest lifecycle logic so Antoine sees the
+    # Re-aggregate using the latest lifecycle logic so WorkCom sees the
     # detailed lifecycle breakdown as well as the top-level KPIs.
     try:
         current_counts, _ = aggregate_claims(doc.date_from, doc.date_to)
@@ -331,7 +331,7 @@ def get_ai_insights(name: str, query: str) -> Dict[str, Any]:
         return {
             "insights": (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
         }
 
@@ -354,3 +354,4 @@ def schedule_weekly_claims_status_reports():
         frappe.logger().info("ClaimsStatusReport weekly scheduler ran")
     except Exception:
         pass
+

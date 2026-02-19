@@ -1,7 +1,7 @@
 /**
  * Payout Summary Analysis - Native ERPNext Script Report Frontend
  *
- * Comprehensive payout summary analysis with filters, charts, and Antoine AI integration.
+ * Comprehensive payout summary analysis with filters, charts, and WorkCom AI integration.
  * Uses Payment Entry as the primary reference doctype.
  */
 
@@ -68,9 +68,9 @@ frappe.query_reports["Payout Summary Analysis"] = {
     ],
 
     onload: function (report) {
-        // Add Antoine AI button
-        report.page.add_inner_button(__("Ask Antoine"), function () {
-            show_antoine_dialog(report);
+        // Add WorkCom AI button
+        report.page.add_inner_button(__("Ask WorkCom"), function () {
+            show_WorkCom_dialog(report);
         }, __("AI Insights"));
 
         // Add chart buttons
@@ -154,12 +154,12 @@ function get_year_options() {
 }
 
 // =====================
-// Antoine AI Dialog
+// WorkCom AI Dialog
 // =====================
 
-function show_antoine_dialog(report) {
+function show_WorkCom_dialog(report) {
     let d = new frappe.ui.Dialog({
-        title: __("Ask Antoine - Payout Summary Insights"),
+        title: __("Ask WorkCom - Payout Summary Insights"),
         size: "large",
         fields: [
             {
@@ -172,7 +172,7 @@ function show_antoine_dialog(report) {
             {
                 fieldname: "response_section",
                 fieldtype: "Section Break",
-                label: __("Antoine's Response")
+                label: __("WorkCom's Response")
             },
             {
                 fieldname: "response_html",
@@ -192,7 +192,7 @@ function show_antoine_dialog(report) {
                     <div class="spinner-border text-primary" role="status">
                         <span class="sr-only">${__("Loading...")}</span>
                     </div>
-                    <p class="mt-3 text-muted">${__("Antoine is analyzing your payout data...")}</p>
+                    <p class="mt-3 text-muted">${__("WorkCom is analyzing your payout data...")}</p>
                 </div>
             `);
 
@@ -231,7 +231,7 @@ function show_antoine_dialog(report) {
     d.fields_dict.response_html.$wrapper.html(`
         <div class="text-muted text-center" style="padding: 30px;">
             <i class="fa fa-comments fa-3x mb-3" style="color: #5e64ff;"></i>
-            <p>${__("Ask Antoine about payout trends, exceptions, employer breakdowns, or any insights about your payout data.")}</p>
+            <p>${__("Ask WorkCom about payout trends, exceptions, employer breakdowns, or any insights about your payout data.")}</p>
         </div>
     `);
 
@@ -374,4 +374,5 @@ function format_currency(value) {
     if (typeof value !== "number") return value;
     return frappe.format(value, { fieldtype: "Currency" });
 }
+
 

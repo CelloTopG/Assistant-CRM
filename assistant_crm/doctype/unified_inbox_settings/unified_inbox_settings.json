@@ -1,447 +1,447 @@
 {
- "actions": [],
- "creation": "2025-08-27 12:00:00.000000",
- "doctype": "DocType",
- "editable_grid": 1,
- "engine": "InnoDB",
- "field_order": [
-  "general_settings_section",
-  "enable_unified_inbox",
-  "auto_assign_agents",
-  "default_priority",
-  "column_break_4",
-  "response_time_sla_minutes",
-  "max_conversations_per_agent",
-  "enable_real_time_notifications",
-  "ai_settings_section",
-  "enable_ai_first_response",
-  "ai_confidence_threshold",
-  "auto_escalate_low_confidence",
-  "column_break_12",
-  "ai_response_delay_seconds",
-  "enable_ai_learning",
-  "ai_model_preference",
-  "tawk_to_settings_section",
-  "tawk_to_api_key",
-  "tawk_to_property_id",
-  "enable_tawk_to_sync",
-  "column_break_19",
-  "tawk_to_sync_interval_minutes",
-  "tawk_to_webhook_url",
-  "bypass_ai_for_tawk_to",
-  "social_media_settings_section",
-  "whatsapp_section",
-  "enable_whatsapp",
-  "whatsapp_access_token",
-  "whatsapp_phone_number_id",
-  "column_break_27",
-  "whatsapp_webhook_verify_token",
-  "whatsapp_app_secret",
-  "facebook_section",
-  "enable_facebook",
-  "facebook_page_access_token",
-  "facebook_app_secret",
-  "column_break_34",
-  "facebook_verify_token",
-  "instagram_section",
-  "enable_instagram",
-  "instagram_access_token",
-  "instagram_business_account_id",
-  "column_break_39",
-  "instagram_app_secret",
-  "telegram_section",
-  "enable_telegram",
-  "telegram_bot_token",
-  "column_break_44",
-  "telegram_webhook_secret",
-  "escalation_settings_section",
-  "escalation_rules",
-  "auto_escalate_after_minutes",
-  "escalate_on_keywords",
-  "column_break_49",
-  "escalation_priority_mapping",
-  "notify_managers_on_escalation",
-  "notification_settings_section",
-  "enable_email_notifications",
-  "enable_sms_notifications",
-  "notification_email_template",
-  "column_break_55",
-  "notification_frequency_minutes",
-  "notify_on_new_conversation",
-  "notify_on_escalation"
- ],
- "fields": [
-  {
-   "fieldname": "general_settings_section",
-   "fieldtype": "Section Break",
-   "label": "General Settings"
-  },
-  {
-   "default": "1",
-   "fieldname": "enable_unified_inbox",
-   "fieldtype": "Check",
-   "label": "Enable Unified Inbox"
-  },
-  {
-   "default": "1",
-   "fieldname": "auto_assign_agents",
-   "fieldtype": "Check",
-   "label": "Auto Assign Agents"
-  },
-  {
-   "default": "Medium",
-   "fieldname": "default_priority",
-   "fieldtype": "Select",
-   "label": "Default Priority",
-   "options": "Low\nMedium\nHigh\nUrgent"
-  },
-  {
-   "fieldname": "column_break_4",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "15",
-   "fieldname": "response_time_sla_minutes",
-   "fieldtype": "Int",
-   "label": "Response Time SLA (minutes)"
-  },
-  {
-   "default": "10",
-   "fieldname": "max_conversations_per_agent",
-   "fieldtype": "Int",
-   "label": "Max Conversations per Agent"
-  },
-  {
-   "default": "1",
-   "fieldname": "enable_real_time_notifications",
-   "fieldtype": "Check",
-   "label": "Enable Real-time Notifications"
-  },
-  {
-   "fieldname": "ai_settings_section",
-   "fieldtype": "Section Break",
-   "label": "AI Settings"
-  },
-  {
-   "default": "1",
-   "fieldname": "enable_ai_first_response",
-   "fieldtype": "Check",
-   "label": "Enable AI First Response"
-  },
-  {
-   "default": "0.7",
-   "fieldname": "ai_confidence_threshold",
-   "fieldtype": "Float",
-   "label": "AI Confidence Threshold",
-   "precision": "2"
-  },
-  {
-   "default": "1",
-   "fieldname": "auto_escalate_low_confidence",
-   "fieldtype": "Check",
-   "label": "Auto Escalate Low Confidence"
-  },
-  {
-   "fieldname": "column_break_12",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "2",
-   "fieldname": "ai_response_delay_seconds",
-   "fieldtype": "Int",
-   "label": "AI Response Delay (seconds)"
-  },
-  {
-   "default": "1",
-   "fieldname": "enable_ai_learning",
-   "fieldtype": "Check",
-   "label": "Enable AI Learning"
-  },
-  {
-   "default": "Anna AI Assistant",
-   "fieldname": "ai_model_preference",
-   "fieldtype": "Data",
-   "label": "AI Model Preference"
-  },
-  {
-   "fieldname": "tawk_to_settings_section",
-   "fieldtype": "Section Break",
-   "label": "Tawk.to Settings"
-  },
-  {
-   "default": "47585bce62f84437dace4a6ed63ee14b1ce2a6dd",
-   "fieldname": "tawk_to_api_key",
-   "fieldtype": "Password",
-   "label": "Tawk.to API Key"
-  },
-  {
-   "default": "68ac3c63fda87419226520f9",
-   "fieldname": "tawk_to_property_id",
-   "fieldtype": "Data",
-   "label": "Tawk.to Property ID"
-  },
-  {
-   "default": "1",
-   "fieldname": "enable_tawk_to_sync",
-   "fieldtype": "Check",
-   "label": "Enable Tawk.to Sync"
-  },
-  {
-   "fieldname": "column_break_19",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "5",
-   "fieldname": "tawk_to_sync_interval_minutes",
-   "fieldtype": "Int",
-   "label": "Tawk.to Sync Interval (minutes)"
-  },
-  {
-   "fieldname": "tawk_to_webhook_url",
-   "fieldtype": "Data",
-   "label": "Tawk.to Webhook URL",
-   "read_only": 1
-  },
-  {
-   "default": "1",
-   "fieldname": "bypass_ai_for_tawk_to",
-   "fieldtype": "Check",
-   "label": "Bypass AI for Tawk.to (Direct to Agents)"
-  },
-  {
-   "fieldname": "social_media_settings_section",
-   "fieldtype": "Section Break",
-   "label": "Social Media Settings"
-  },
-  {
-   "fieldname": "whatsapp_section",
-   "fieldtype": "Section Break",
-   "label": "WhatsApp"
-  },
-  {
-   "default": "0",
-   "fieldname": "enable_whatsapp",
-   "fieldtype": "Check",
-   "label": "Enable WhatsApp"
-  },
-  {
-   "fieldname": "whatsapp_access_token",
-   "fieldtype": "Password",
-   "label": "WhatsApp Access Token"
-  },
-  {
-   "fieldname": "whatsapp_phone_number_id",
-   "fieldtype": "Data",
-   "label": "WhatsApp Phone Number ID"
-  },
-  {
-   "fieldname": "column_break_27",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "whatsapp_webhook_verify_token",
-   "fieldtype": "Data",
-   "label": "WhatsApp Webhook Verify Token"
-  },
-  {
-   "fieldname": "whatsapp_app_secret",
-   "fieldtype": "Password",
-   "label": "WhatsApp App Secret"
-  },
-  {
-   "fieldname": "facebook_section",
-   "fieldtype": "Section Break",
-   "label": "Facebook"
-  },
-  {
-   "default": "0",
-   "fieldname": "enable_facebook",
-   "fieldtype": "Check",
-   "label": "Enable Facebook"
-  },
-  {
-   "fieldname": "facebook_page_access_token",
-   "fieldtype": "Password",
-   "label": "Facebook Page Access Token"
-  },
-  {
-   "fieldname": "facebook_app_secret",
-   "fieldtype": "Password",
-   "label": "Facebook App Secret"
-  },
-  {
-   "fieldname": "column_break_34",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "facebook_verify_token",
-   "fieldtype": "Data",
-   "label": "Facebook Verify Token"
-  },
-  {
-   "fieldname": "instagram_section",
-   "fieldtype": "Section Break",
-   "label": "Instagram"
-  },
-  {
-   "default": "0",
-   "fieldname": "enable_instagram",
-   "fieldtype": "Check",
-   "label": "Enable Instagram"
-  },
-  {
-   "fieldname": "instagram_access_token",
-   "fieldtype": "Password",
-   "label": "Instagram Access Token"
-  },
-  {
-   "fieldname": "instagram_business_account_id",
-   "fieldtype": "Data",
-   "label": "Instagram Business Account ID"
-  },
-  {
-   "fieldname": "column_break_39",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "instagram_app_secret",
-   "fieldtype": "Password",
-   "label": "Instagram App Secret"
-  },
-  {
-   "fieldname": "telegram_section",
-   "fieldtype": "Section Break",
-   "label": "Telegram"
-  },
-  {
-   "default": "0",
-   "fieldname": "enable_telegram",
-   "fieldtype": "Check",
-   "label": "Enable Telegram"
-  },
-  {
-   "fieldname": "telegram_bot_token",
-   "fieldtype": "Password",
-   "label": "Telegram Bot Token"
-  },
-  {
-   "fieldname": "column_break_44",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "telegram_webhook_secret",
-   "fieldtype": "Password",
-   "label": "Telegram Webhook Secret"
-  },
-  {
-   "fieldname": "escalation_settings_section",
-   "fieldtype": "Section Break",
-   "label": "Escalation Settings"
-  },
-  {
-   "fieldname": "escalation_rules",
-   "fieldtype": "JSON",
-   "label": "Escalation Rules"
-  },
-  {
-   "default": "30",
-   "fieldname": "auto_escalate_after_minutes",
-   "fieldtype": "Int",
-   "label": "Auto Escalate After (minutes)"
-  },
-  {
-   "fieldname": "escalate_on_keywords",
-   "fieldtype": "Text",
-   "label": "Escalate on Keywords (comma separated)"
-  },
-  {
-   "fieldname": "column_break_49",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "escalation_priority_mapping",
-   "fieldtype": "JSON",
-   "label": "Escalation Priority Mapping"
-  },
-  {
-   "default": "1",
-   "fieldname": "notify_managers_on_escalation",
-   "fieldtype": "Check",
-   "label": "Notify Managers on Escalation"
-  },
-  {
-   "fieldname": "notification_settings_section",
-   "fieldtype": "Section Break",
-   "label": "Notification Settings"
-  },
-  {
-   "default": "1",
-   "fieldname": "enable_email_notifications",
-   "fieldtype": "Check",
-   "label": "Enable Email Notifications"
-  },
-  {
-   "default": "0",
-   "fieldname": "enable_sms_notifications",
-   "fieldtype": "Check",
-   "label": "Enable SMS Notifications"
-  },
-  {
-   "fieldname": "notification_email_template",
-   "fieldtype": "Link",
-   "label": "Notification Email Template",
-   "options": "Email Template"
-  },
-  {
-   "fieldname": "column_break_55",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "5",
-   "fieldname": "notification_frequency_minutes",
-   "fieldtype": "Int",
-   "label": "Notification Frequency (minutes)"
-  },
-  {
-   "default": "1",
-   "fieldname": "notify_on_new_conversation",
-   "fieldtype": "Check",
-   "label": "Notify on New Conversation"
-  },
-  {
-   "default": "1",
-   "fieldname": "notify_on_escalation",
-   "fieldtype": "Check",
-   "label": "Notify on Escalation"
-  }
- ],
- "index_web_pages_for_search": 1,
- "issingle": 1,
- "links": [],
- "modified": "2025-08-27 12:00:00.000000",
- "modified_by": "Administrator",
- "module": "Assistant CRM",
- "name": "Unified Inbox Settings",
- "owner": "Administrator",
- "permissions": [
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "print": 1,
-   "read": 1,
-   "role": "System Manager",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "read": 1,
-   "role": "Assistant CRM Manager",
-   "write": 1
-  }
- ],
- "sort_field": "modified",
- "sort_order": "DESC",
- "states": [],
- "track_changes": 1
+    "actions": [],
+    "creation": "2025-08-27 12:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "general_settings_section",
+        "enable_unified_inbox",
+        "auto_assign_agents",
+        "default_priority",
+        "column_break_4",
+        "response_time_sla_minutes",
+        "max_conversations_per_agent",
+        "enable_real_time_notifications",
+        "ai_settings_section",
+        "enable_ai_first_response",
+        "ai_confidence_threshold",
+        "auto_escalate_low_confidence",
+        "column_break_12",
+        "ai_response_delay_seconds",
+        "enable_ai_learning",
+        "ai_model_preference",
+        "tawk_to_settings_section",
+        "tawk_to_api_key",
+        "tawk_to_property_id",
+        "enable_tawk_to_sync",
+        "column_break_19",
+        "tawk_to_sync_interval_minutes",
+        "tawk_to_webhook_url",
+        "bypass_ai_for_tawk_to",
+        "social_media_settings_section",
+        "whatsapp_section",
+        "enable_whatsapp",
+        "whatsapp_access_token",
+        "whatsapp_phone_number_id",
+        "column_break_27",
+        "whatsapp_webhook_verify_token",
+        "whatsapp_app_secret",
+        "facebook_section",
+        "enable_facebook",
+        "facebook_page_access_token",
+        "facebook_app_secret",
+        "column_break_34",
+        "facebook_verify_token",
+        "instagram_section",
+        "enable_instagram",
+        "instagram_access_token",
+        "instagram_business_account_id",
+        "column_break_39",
+        "instagram_app_secret",
+        "telegram_section",
+        "enable_telegram",
+        "telegram_bot_token",
+        "column_break_44",
+        "telegram_webhook_secret",
+        "escalation_settings_section",
+        "escalation_rules",
+        "auto_escalate_after_minutes",
+        "escalate_on_keywords",
+        "column_break_49",
+        "escalation_priority_mapping",
+        "notify_managers_on_escalation",
+        "notification_settings_section",
+        "enable_email_notifications",
+        "enable_sms_notifications",
+        "notification_email_template",
+        "column_break_55",
+        "notification_frequency_minutes",
+        "notify_on_new_conversation",
+        "notify_on_escalation"
+    ],
+    "fields": [
+        {
+            "fieldname": "general_settings_section",
+            "fieldtype": "Section Break",
+            "label": "General Settings"
+        },
+        {
+            "default": "1",
+            "fieldname": "enable_unified_inbox",
+            "fieldtype": "Check",
+            "label": "Enable Unified Inbox"
+        },
+        {
+            "default": "1",
+            "fieldname": "auto_assign_agents",
+            "fieldtype": "Check",
+            "label": "Auto Assign Agents"
+        },
+        {
+            "default": "Medium",
+            "fieldname": "default_priority",
+            "fieldtype": "Select",
+            "label": "Default Priority",
+            "options": "Low\nMedium\nHigh\nUrgent"
+        },
+        {
+            "fieldname": "column_break_4",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "15",
+            "fieldname": "response_time_sla_minutes",
+            "fieldtype": "Int",
+            "label": "Response Time SLA (minutes)"
+        },
+        {
+            "default": "10",
+            "fieldname": "max_conversations_per_agent",
+            "fieldtype": "Int",
+            "label": "Max Conversations per Agent"
+        },
+        {
+            "default": "1",
+            "fieldname": "enable_real_time_notifications",
+            "fieldtype": "Check",
+            "label": "Enable Real-time Notifications"
+        },
+        {
+            "fieldname": "ai_settings_section",
+            "fieldtype": "Section Break",
+            "label": "AI Settings"
+        },
+        {
+            "default": "1",
+            "fieldname": "enable_ai_first_response",
+            "fieldtype": "Check",
+            "label": "Enable AI First Response"
+        },
+        {
+            "default": "0.7",
+            "fieldname": "ai_confidence_threshold",
+            "fieldtype": "Float",
+            "label": "AI Confidence Threshold",
+            "precision": "2"
+        },
+        {
+            "default": "1",
+            "fieldname": "auto_escalate_low_confidence",
+            "fieldtype": "Check",
+            "label": "Auto Escalate Low Confidence"
+        },
+        {
+            "fieldname": "column_break_12",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "2",
+            "fieldname": "ai_response_delay_seconds",
+            "fieldtype": "Int",
+            "label": "AI Response Delay (seconds)"
+        },
+        {
+            "default": "1",
+            "fieldname": "enable_ai_learning",
+            "fieldtype": "Check",
+            "label": "Enable AI Learning"
+        },
+        {
+            "default": "WorkCom",
+            "fieldname": "ai_model_preference",
+            "fieldtype": "Data",
+            "label": "AI Model Preference"
+        },
+        {
+            "fieldname": "tawk_to_settings_section",
+            "fieldtype": "Section Break",
+            "label": "Tawk.to Settings"
+        },
+        {
+            "default": "47585bce62f84437dace4a6ed63ee14b1ce2a6dd",
+            "fieldname": "tawk_to_api_key",
+            "fieldtype": "Password",
+            "label": "Tawk.to API Key"
+        },
+        {
+            "default": "68ac3c63fda87419226520f9",
+            "fieldname": "tawk_to_property_id",
+            "fieldtype": "Data",
+            "label": "Tawk.to Property ID"
+        },
+        {
+            "default": "1",
+            "fieldname": "enable_tawk_to_sync",
+            "fieldtype": "Check",
+            "label": "Enable Tawk.to Sync"
+        },
+        {
+            "fieldname": "column_break_19",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "5",
+            "fieldname": "tawk_to_sync_interval_minutes",
+            "fieldtype": "Int",
+            "label": "Tawk.to Sync Interval (minutes)"
+        },
+        {
+            "fieldname": "tawk_to_webhook_url",
+            "fieldtype": "Data",
+            "label": "Tawk.to Webhook URL",
+            "read_only": 1
+        },
+        {
+            "default": "1",
+            "fieldname": "bypass_ai_for_tawk_to",
+            "fieldtype": "Check",
+            "label": "Bypass AI for Tawk.to (Direct to Agents)"
+        },
+        {
+            "fieldname": "social_media_settings_section",
+            "fieldtype": "Section Break",
+            "label": "Social Media Settings"
+        },
+        {
+            "fieldname": "whatsapp_section",
+            "fieldtype": "Section Break",
+            "label": "WhatsApp"
+        },
+        {
+            "default": "0",
+            "fieldname": "enable_whatsapp",
+            "fieldtype": "Check",
+            "label": "Enable WhatsApp"
+        },
+        {
+            "fieldname": "whatsapp_access_token",
+            "fieldtype": "Password",
+            "label": "WhatsApp Access Token"
+        },
+        {
+            "fieldname": "whatsapp_phone_number_id",
+            "fieldtype": "Data",
+            "label": "WhatsApp Phone Number ID"
+        },
+        {
+            "fieldname": "column_break_27",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "whatsapp_webhook_verify_token",
+            "fieldtype": "Data",
+            "label": "WhatsApp Webhook Verify Token"
+        },
+        {
+            "fieldname": "whatsapp_app_secret",
+            "fieldtype": "Password",
+            "label": "WhatsApp App Secret"
+        },
+        {
+            "fieldname": "facebook_section",
+            "fieldtype": "Section Break",
+            "label": "Facebook"
+        },
+        {
+            "default": "0",
+            "fieldname": "enable_facebook",
+            "fieldtype": "Check",
+            "label": "Enable Facebook"
+        },
+        {
+            "fieldname": "facebook_page_access_token",
+            "fieldtype": "Password",
+            "label": "Facebook Page Access Token"
+        },
+        {
+            "fieldname": "facebook_app_secret",
+            "fieldtype": "Password",
+            "label": "Facebook App Secret"
+        },
+        {
+            "fieldname": "column_break_34",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "facebook_verify_token",
+            "fieldtype": "Data",
+            "label": "Facebook Verify Token"
+        },
+        {
+            "fieldname": "instagram_section",
+            "fieldtype": "Section Break",
+            "label": "Instagram"
+        },
+        {
+            "default": "0",
+            "fieldname": "enable_instagram",
+            "fieldtype": "Check",
+            "label": "Enable Instagram"
+        },
+        {
+            "fieldname": "instagram_access_token",
+            "fieldtype": "Password",
+            "label": "Instagram Access Token"
+        },
+        {
+            "fieldname": "instagram_business_account_id",
+            "fieldtype": "Data",
+            "label": "Instagram Business Account ID"
+        },
+        {
+            "fieldname": "column_break_39",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "instagram_app_secret",
+            "fieldtype": "Password",
+            "label": "Instagram App Secret"
+        },
+        {
+            "fieldname": "telegram_section",
+            "fieldtype": "Section Break",
+            "label": "Telegram"
+        },
+        {
+            "default": "0",
+            "fieldname": "enable_telegram",
+            "fieldtype": "Check",
+            "label": "Enable Telegram"
+        },
+        {
+            "fieldname": "telegram_bot_token",
+            "fieldtype": "Password",
+            "label": "Telegram Bot Token"
+        },
+        {
+            "fieldname": "column_break_44",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "telegram_webhook_secret",
+            "fieldtype": "Password",
+            "label": "Telegram Webhook Secret"
+        },
+        {
+            "fieldname": "escalation_settings_section",
+            "fieldtype": "Section Break",
+            "label": "Escalation Settings"
+        },
+        {
+            "fieldname": "escalation_rules",
+            "fieldtype": "JSON",
+            "label": "Escalation Rules"
+        },
+        {
+            "default": "30",
+            "fieldname": "auto_escalate_after_minutes",
+            "fieldtype": "Int",
+            "label": "Auto Escalate After (minutes)"
+        },
+        {
+            "fieldname": "escalate_on_keywords",
+            "fieldtype": "Text",
+            "label": "Escalate on Keywords (comma separated)"
+        },
+        {
+            "fieldname": "column_break_49",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "escalation_priority_mapping",
+            "fieldtype": "JSON",
+            "label": "Escalation Priority Mapping"
+        },
+        {
+            "default": "1",
+            "fieldname": "notify_managers_on_escalation",
+            "fieldtype": "Check",
+            "label": "Notify Managers on Escalation"
+        },
+        {
+            "fieldname": "notification_settings_section",
+            "fieldtype": "Section Break",
+            "label": "Notification Settings"
+        },
+        {
+            "default": "1",
+            "fieldname": "enable_email_notifications",
+            "fieldtype": "Check",
+            "label": "Enable Email Notifications"
+        },
+        {
+            "default": "0",
+            "fieldname": "enable_sms_notifications",
+            "fieldtype": "Check",
+            "label": "Enable SMS Notifications"
+        },
+        {
+            "fieldname": "notification_email_template",
+            "fieldtype": "Link",
+            "label": "Notification Email Template",
+            "options": "Email Template"
+        },
+        {
+            "fieldname": "column_break_55",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "5",
+            "fieldname": "notification_frequency_minutes",
+            "fieldtype": "Int",
+            "label": "Notification Frequency (minutes)"
+        },
+        {
+            "default": "1",
+            "fieldname": "notify_on_new_conversation",
+            "fieldtype": "Check",
+            "label": "Notify on New Conversation"
+        },
+        {
+            "default": "1",
+            "fieldname": "notify_on_escalation",
+            "fieldtype": "Check",
+            "label": "Notify on Escalation"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "issingle": 1,
+    "links": [],
+    "modified": "2025-08-27 12:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Assistant CRM",
+    "name": "Unified Inbox Settings",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "print": 1,
+            "read": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "read": 1,
+            "role": "Assistant CRM Manager",
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
 }

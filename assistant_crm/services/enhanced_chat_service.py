@@ -226,11 +226,11 @@ class EnhancedChatService:
     def _generate_fallback_persona_response(self, persona: str, intent_category: str) -> Dict:
         """Generate fallback response when service is unavailable"""
         responses = {
-            "employer": "Hello! I'm Anna, your WCFCB business assistant. How can I help you with your business needs today?",
-            "beneficiary": "Hello! I'm Anna, and I'm here to help you with your benefits. What can I assist you with?",
-            "supplier": "Good day! I'm Anna, your WCFCB procurement assistant. How can I help you today?",
-            "wcfcb_staff": "Hi! I'm Anna, your internal assistant. What can I help you with?",
-            "general": "Hello! I'm Anna, your WCFCB assistant. How can I help you today?"
+            "employer": "Hello! I'm WorkCom, your WCFCB business assistant. How can I help you with your business needs today?",
+            "beneficiary": "Hello! I'm WorkCom, and I'm here to help you with your benefits. What can I assist you with?",
+            "supplier": "Good day! I'm WorkCom, your WCFCB procurement assistant. How can I help you today?",
+            "wcfcb_staff": "Hi! I'm WorkCom, your internal assistant. What can I help you with?",
+            "general": "Hello! I'm WorkCom, your WCFCB assistant. How can I help you today?"
         }
         
         return {
@@ -305,3 +305,4 @@ class EnhancedChatService:
             },
             "fallback_mode": True
         }
+

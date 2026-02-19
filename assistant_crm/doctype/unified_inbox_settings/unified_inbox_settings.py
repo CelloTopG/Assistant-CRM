@@ -130,7 +130,7 @@ class UnifiedInboxSettings(Document):
             "auto_escalate_low_confidence": self.auto_escalate_low_confidence,
             "ai_response_delay_seconds": self.ai_response_delay_seconds or 2,
             "enable_ai_learning": self.enable_ai_learning,
-            "ai_model_preference": self.ai_model_preference or "Anna AI Assistant",
+            "ai_model_preference": self.ai_model_preference or "WorkCom",
             "bypass_ai_for_tawk_to": self.bypass_ai_for_tawk_to
         }
 

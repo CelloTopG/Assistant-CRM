@@ -23,7 +23,7 @@ def update_new_api_key():
         settings.ai_provider = "Google Gemini"
         settings.enabled = 1
         settings.response_timeout = 30
-        settings.welcome_message = "Hello! I'm Anna, your WCFCB assistant. How can I help you today?"
+        settings.welcome_message = "Hello! I'm WorkCom, your WCFCB assistant. How can I help you today?"
         settings.save()
         frappe.db.commit()
         
@@ -76,3 +76,4 @@ gemini_model={model}"""
 # Run update if called directly
 if __name__ == "__main__":
     update_new_api_key()
+

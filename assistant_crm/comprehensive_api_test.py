@@ -118,7 +118,7 @@ def comprehensive_api_test():
         from assistant_crm.api.chat import send_message
         
         result = send_message(
-            message="Hello Anna, this is a test with the new API key",
+            message="Hello WorkCom, this is a test with the new API key",
             session_id="comprehensive_test_456"
         )
         
@@ -143,3 +143,4 @@ def comprehensive_api_test():
 # Run test if called directly
 if __name__ == "__main__":
     comprehensive_api_test()
+

@@ -102,11 +102,11 @@ def test_deployment():
         print(f"✅ Live Data Used: {live_data_used}")
         print(f"✅ Reply Length: {len(reply)} chars")
         
-        # Check for Anna and WCFCB
-        anna_present = 'Anna' in reply
+        # Check for WorkCom and WCFCB
+        WorkCom_present = 'WorkCom' in reply
         wcfcb_present = 'WCFCB' in reply
         
-        print(f"✅ Anna Personality: {anna_present}")
+        print(f"✅ WorkCom Personality: {WorkCom_present}")
         print(f"✅ WCFCB Branding: {wcfcb_present}")
         
         api_success = success and live_data_used and len(reply) > 0
@@ -156,7 +156,7 @@ def test_deployment():
     if passed == total:
         print("\n🎉 DEPLOYMENT VALIDATION: COMPLETE SUCCESS!")
         print("✅ Assistant CRM with 8 live data intents is fully operational")
-        print("✅ Anna personality and WCFCB branding preserved")
+        print("✅ WorkCom personality and WCFCB branding preserved")
         print("✅ Ready for production use")
         return True
     else:
@@ -240,3 +240,4 @@ if __name__ == "__main__":
             print("\n⚠️  Some live data intents need attention")
     else:
         print("\n⚠️  Basic deployment issues detected")
+

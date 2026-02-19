@@ -107,13 +107,13 @@ def get_user_profile_data(user_id: str = None):
 
 @frappe.whitelist(allow_guest=True)
 def get_document_status(user_id: str = None, document_type: str = None):
-    """Get real-time document status for user with Anna's helpful guidance."""
+    """Get real-time document status for user with WorkCom's helpful guidance."""
     try:
         if not user_id or user_id == "guest_user":
             return {
                 "status": "error",
                 "message": "Authentication required",
-                "anna_response": "I'd be happy to check your documents! First, I need to verify who you are. Could you share your National ID number?"
+                "WorkCom_response": "I'd be happy to check your documents! First, I need to verify who you are. Could you share your National ID number?"
             }
 
         # Get user documents from database
@@ -132,22 +132,22 @@ def get_document_status(user_id: str = None, document_type: str = None):
             pending_docs = [d for d in documents if d.status == "Pending"]
             expired_docs = [d for d in documents if d.status == "Expired"]
 
-            anna_response = f"Great! I found {len(documents)} documents in your file:\n\n"
+            WorkCom_response = f"Great! I found {len(documents)} documents in your file:\n\n"
 
             if verified_docs:
-                anna_response += f"✅ {len(verified_docs)} verified documents\n"
+                WorkCom_response += f"✅ {len(verified_docs)} verified documents\n"
             if pending_docs:
-                anna_response += f"⏳ {len(pending_docs)} pending verification\n"
+                WorkCom_response += f"⏳ {len(pending_docs)} pending verification\n"
             if expired_docs:
-                anna_response += f"⚠️ {len(expired_docs)} expired documents\n"
+                WorkCom_response += f"⚠️ {len(expired_docs)} expired documents\n"
 
             # Add helpful next steps based on document status
             if expired_docs:
-                anna_response += "\n💡 I notice you have expired documents. Would you like help renewing them?"
+                WorkCom_response += "\n💡 I notice you have expired documents. Would you like help renewing them?"
             elif pending_docs:
-                anna_response += "\n💡 Some documents are still being verified. I can check the status for you."
+                WorkCom_response += "\n💡 Some documents are still being verified. I can check the status for you."
             else:
-                anna_response += "\n💡 All your documents look good! Would you like me to show you details for any specific document?"
+                WorkCom_response += "\n💡 All your documents look good! Would you like me to show you details for any specific document?"
 
             return {
                 "status": "success",
@@ -159,7 +159,7 @@ def get_document_status(user_id: str = None, document_type: str = None):
                     "pending": len(pending_docs),
                     "expired": len(expired_docs)
                 },
-                "anna_response": anna_response,
+                "WorkCom_response": WorkCom_response,
                 "quick_replies": [
                     "Show document details",
                     "Upload new document",
@@ -173,7 +173,7 @@ def get_document_status(user_id: str = None, document_type: str = None):
                 "status": "success",
                 "documents": [],
                 "documents_found": False,  # Explicit flag for validation
-                "anna_response": "I don't see any documents on file for you yet, but that's okay! I'm here to help you get started. Would you like me to guide you through what documents you might need for your WCFCB services?\n\n💡 Common documents include:\n• National ID copy\n• Employment certificate\n• Medical certificates (if applicable)\n• Bank account details\n\nI can help you understand exactly what you need based on your situation.",
+                "WorkCom_response": "I don't see any documents on file for you yet, but that's okay! I'm here to help you get started. Would you like me to guide you through what documents you might need for your WCFCB services?\n\n💡 Common documents include:\n• National ID copy\n• Employment certificate\n• Medical certificates (if applicable)\n• Bank account details\n\nI can help you understand exactly what you need based on your situation.",
                 "quick_replies": [
                     "What documents do I need?",
                     "Upload documents",
@@ -198,7 +198,7 @@ def get_document_status(user_id: str = None, document_type: str = None):
         return {
             "status": "error",
             "error": str(e),
-            "anna_response": "I'm having trouble accessing your documents right now. Let me try again, or I can connect you with our support team if this continues."
+            "WorkCom_response": "I'm having trouble accessing your documents right now. Let me try again, or I can connect you with our support team if this continues."
         }
 
 @frappe.whitelist(allow_guest=True)
@@ -211,7 +211,7 @@ def submit_new_claim(user_id: str = None, claim_type: str = None, description: s
             return {
                 "status": "error",
                 "message": "Hi! I need to verify your identity before I can help you submit a claim. Could you please provide your National ID number?",
-                "anna_response": "I'd love to help you submit your claim! For security, I'll need to verify your identity first. What's your National ID number?"
+                "WorkCom_response": "I'd love to help you submit your claim! For security, I'll need to verify your identity first. What's your National ID number?"
             }
 
         # Validate required fields
@@ -219,10 +219,10 @@ def submit_new_claim(user_id: str = None, claim_type: str = None, description: s
             return {
                 "status": "error",
                 "message": "Please provide both claim type and description",
-                "anna_response": "I need a bit more information to submit your claim. What type of claim is this, and could you describe what happened?"
+                "WorkCom_response": "I need a bit more information to submit your claim. What type of claim is this, and could you describe what happened?"
             }
 
-        # Create claim record with Anna's supportive messaging
+        # Create claim record with WorkCom's supportive messaging
         claim_number = f"CLM-{frappe.utils.nowdate().replace('-', '')}-{frappe.generate_hash(length=6)}"
 
         claim_doc = frappe.get_doc({
@@ -237,23 +237,23 @@ def submit_new_claim(user_id: str = None, claim_type: str = None, description: s
         })
         claim_doc.insert()
 
-        # Generate Anna's supportive response
-        anna_response = f"Great news! I've successfully submitted your {claim_type} claim with number {claim_number}. "
-        anna_response += "Here's what happens next:\n\n"
-        anna_response += "📋 Your claim will be reviewed within 2-3 business days\n"
-        anna_response += "📧 You'll receive email updates on progress\n"
-        anna_response += "📱 You can check status anytime by asking me\n\n"
-        anna_response += "Is there anything else I can help you with regarding your claim?"
+        # Generate WorkCom's supportive response
+        WorkCom_response = f"Great news! I've successfully submitted your {claim_type} claim with number {claim_number}. "
+        WorkCom_response += "Here's what happens next:\n\n"
+        WorkCom_response += "📋 Your claim will be reviewed within 2-3 business days\n"
+        WorkCom_response += "📧 You'll receive email updates on progress\n"
+        WorkCom_response += "📱 You can check status anytime by asking me\n\n"
+        WorkCom_response += "Is there anything else I can help you with regarding your claim?"
 
         return {
             "status": "success",
             "claim_number": claim_number,
             "message": f"Claim {claim_number} submitted successfully",
-            "anna_response": anna_response,
+            "WorkCom_response": WorkCom_response,
             "next_steps": [
                 "Upload supporting documents if needed",
                 "Await initial review (2-3 business days)",
-                "Track status updates through Anna"
+                "Track status updates through WorkCom"
             ],
             "quick_replies": [
                 "Upload documents",
@@ -268,7 +268,7 @@ def submit_new_claim(user_id: str = None, claim_type: str = None, description: s
         return {
             "status": "error",
             "message": "Unable to submit claim. Please try again.",
-            "anna_response": "I'm sorry, I'm having trouble submitting your claim right now. Could you please try again in a moment? If this keeps happening, I can connect you with our support team."
+            "WorkCom_response": "I'm sorry, I'm having trouble submitting your claim right now. Could you please try again in a moment? If this keeps happening, I can connect you with our support team."
         }
 
 @frappe.whitelist(allow_guest=True)
@@ -488,7 +488,7 @@ def get_comprehensive_system_status():
     """Get comprehensive system status and capabilities."""
     try:
         # Test core chatbot functionality
-        chatbot_test = enhanced_chat_with_live_data("Hello Anna", "status_test", '{"user_id": "status_test", "user_role": "beneficiary"}')
+        chatbot_test = enhanced_chat_with_live_data("Hello WorkCom", "status_test", '{"user_id": "status_test", "user_role": "beneficiary"}')
 
         # Get knowledge base stats
         from assistant_crm.api.system_enhancement_api import get_knowledge_base_stats
@@ -636,3 +636,4 @@ def _format_claim_progress(claim_data: dict) -> str:
 
     except Exception as e:
         return "Progress information available upon request"
+

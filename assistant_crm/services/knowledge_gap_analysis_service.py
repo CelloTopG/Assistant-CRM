@@ -14,7 +14,7 @@ from collections import defaultdict, Counter
 class KnowledgeGapAnalysisService:
     """
     Service to analyze knowledge base gaps and provide recommendations
-    for improving Anna's response capabilities
+    for improving WorkCom's response capabilities
     """
     
     def __init__(self):
@@ -535,3 +535,4 @@ class KnowledgeGapAnalysisService:
             return 'fair'
         else:
             return 'needs_improvement'
+

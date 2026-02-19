@@ -86,7 +86,7 @@ function render_ai_sidebar(frm) {
   const wrapper = $(
     '<div class="frappe-control"><div class="control-input-wrapper">' +
     '<div class="control-input flex"><input class="form-control" type="text" ' +
-    'placeholder="This is Antoine, how can I help with SLA performance?" />' +
+    'placeholder="This is WorkCom, how can I help with SLA performance?" />' +
     '<button class="btn btn-default" style="margin-left:6px">Ask</button></div>' +
     '<div class="help-box small text-muted" style="margin-top:6px">Uses current and historical SLA reports for trend and risk analysis.</div>' +
     '<div class="ai-output" style="white-space:pre-wrap; margin-top:8px"></div>' +
@@ -112,4 +112,5 @@ function render_ai_sidebar(frm) {
     });
   }
 }
+
 

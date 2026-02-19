@@ -599,7 +599,7 @@ class SurveyFeedbackReport(Document):
 
 @frappe.whitelist()
 def get_ai_insights(name: str, query: str):
-    """Return Antoine-style insights for a Survey Feedback Report."""
+    """Return WorkCom-style insights for a Survey Feedback Report."""
     doc = frappe.get_doc("Survey Feedback Report", name)
 
     history = frappe.get_all(
@@ -668,7 +668,7 @@ def get_ai_insights(name: str, query: str):
         return {
             "insights": (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
         }
 
@@ -747,4 +747,5 @@ def email_report(name: str = None, recipients=None):
 
 def schedule_quarterly_survey_feedback_reports():
     _create_and_send("Quarterly")
+
 

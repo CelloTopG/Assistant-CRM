@@ -162,7 +162,7 @@ def test_webhook_simulation():
             "data": {
                 "message": {
                     "id": "test_123",
-                    "content": "Hello Anna, this is a test message from tunnel",
+                    "content": "Hello WorkCom, this is a test message from tunnel",
                     "type": "text"
                 },
                 "sender": {
@@ -175,11 +175,11 @@ def test_webhook_simulation():
             }
         }
         
-        # Simulate Anna's response
-        anna_response = {
-            "reply": "Hi! I'm Anna from WCFCB. I received your test message through the ngrok tunnel. The connection is working perfectly! How can I help you today?",
+        # Simulate WorkCom's response
+        WorkCom_response = {
+            "reply": "Hi! I'm WorkCom from WCFCB. I received your test message through the ngrok tunnel. The connection is working perfectly! How can I help you today?",
             "actions": [],
-            "personality": "Anna - WCFCB Team Member",
+            "personality": "WorkCom - WCFCB Team Member",
             "confidence": 0.95
         }
         
@@ -190,7 +190,7 @@ def test_webhook_simulation():
             "test_payload": test_payload,
             "simulated_response": {
                 "success": True,
-                "response": anna_response,
+                "response": WorkCom_response,
                 "conversation_id": f"conv_test_{now()}",
                 "platform": "test",
                 "processing_time": "< 1 second"
@@ -206,3 +206,4 @@ def test_webhook_simulation():
             "details": str(e),
             "timestamp": now()
         }
+

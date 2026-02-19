@@ -315,10 +315,10 @@ class BranchPerformanceReport(Document):
 
 @frappe.whitelist()
 def get_ai_insights(name: str, query: str) -> Dict[str, Any]:
-    """Return Antoine-style insights for a Branch Performance Report.
+    """Return WorkCom-style insights for a Branch Performance Report.
 
     Builds a compact JSON context with the current window KPIs, per-branch rows,
-    regional breakdowns and recent history, and passes it to Antoine via EnhancedAIService.
+    regional breakdowns and recent history, and passes it to WorkCom via EnhancedAIService.
     """
     doc = frappe.get_doc("Branch Performance Report", name)
 
@@ -372,7 +372,7 @@ def get_ai_insights(name: str, query: str) -> Dict[str, Any]:
         return {
             "insights": (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
         }
 
@@ -1274,4 +1274,5 @@ def smoke_create_and_generate_branch_performance_report(period_type: str = "Mont
         "total_escalations": getattr(doc, "total_escalations", None),
         "overall_sla_percent": getattr(doc, "overall_sla_compliance_percent", None),
     }
+
 

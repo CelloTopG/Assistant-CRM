@@ -81,7 +81,7 @@ class UserAcceptanceTrainingCompletion:
                 "task_completion_rate_threshold": 0.9,  # 90%
                 "training_effectiveness_threshold": 0.85,  # 85%
                 "system_usability_threshold": 4.0,
-                "anna_personality_consistency_threshold": 4.2
+                "WorkCom_personality_consistency_threshold": 4.2
             },
             "testing_parameters": {
                 "test_duration_days": 7,
@@ -127,10 +127,10 @@ class UserAcceptanceTrainingCompletion:
             test_scenarios=[
                 {
                     "scenario_id": "claim_status_check",
-                    "scenario_name": "Check Claim Status with Anna",
-                    "description": "User checks their workers' compensation claim status using Anna",
+                    "scenario_name": "Check Claim Status with WorkCom",
+                    "description": "User checks their workers' compensation claim status using WorkCom",
                     "steps": [
-                        "Initiate conversation with Anna",
+                        "Initiate conversation with WorkCom",
                         "Request claim status check",
                         "Provide authentication details",
                         "Review claim status information",
@@ -141,15 +141,15 @@ class UserAcceptanceTrainingCompletion:
                         "task_completion": True,
                         "time_to_completion": 180,  # 3 minutes
                         "user_satisfaction": 4.0,
-                        "anna_helpfulness": 4.2
+                        "WorkCom_helpfulness": 4.2
                     }
                 },
                 {
                     "scenario_id": "payment_inquiry",
                     "scenario_name": "Inquire About Benefit Payments",
-                    "description": "User asks Anna about their benefit payment schedule and amounts",
+                    "description": "User asks WorkCom about their benefit payment schedule and amounts",
                     "steps": [
-                        "Start conversation with Anna",
+                        "Start conversation with WorkCom",
                         "Ask about payment information",
                         "Verify identity as required",
                         "Review payment details",
@@ -166,28 +166,28 @@ class UserAcceptanceTrainingCompletion:
                 {
                     "scenario_id": "document_submission",
                     "scenario_name": "Submit Required Documents",
-                    "description": "User submits required documents through the system with Anna's guidance",
+                    "description": "User submits required documents through the system with WorkCom's guidance",
                     "steps": [
-                        "Ask Anna about required documents",
+                        "Ask WorkCom about required documents",
                         "Understand document requirements",
                         "Upload documents through system",
                         "Confirm successful submission",
-                        "Receive confirmation from Anna"
+                        "Receive confirmation from WorkCom"
                     ],
                     "expected_outcome": "User successfully submits all required documents",
                     "success_metrics": {
                         "task_completion": True,
                         "time_to_completion": 300,  # 5 minutes
                         "process_clarity": 4.0,
-                        "anna_guidance_quality": 4.3
+                        "WorkCom_guidance_quality": 4.3
                     }
                 },
                 {
                     "scenario_id": "general_assistance",
                     "scenario_name": "Get General Workers' Compensation Information",
-                    "description": "User asks Anna general questions about workers' compensation processes",
+                    "description": "User asks WorkCom general questions about workers' compensation processes",
                     "steps": [
-                        "Engage with Anna for general information",
+                        "Engage with WorkCom for general information",
                         "Ask about workers' compensation benefits",
                         "Inquire about claim processes",
                         "Understand rights and responsibilities",
@@ -196,7 +196,7 @@ class UserAcceptanceTrainingCompletion:
                     "expected_outcome": "User receives comprehensive and accurate information",
                     "success_metrics": {
                         "information_quality": 4.2,
-                        "anna_personality_consistency": 4.4,
+                        "WorkCom_personality_consistency": 4.4,
                         "user_satisfaction": 4.0,
                         "follow_up_needed": False
                     }
@@ -205,7 +205,7 @@ class UserAcceptanceTrainingCompletion:
             success_criteria={
                 "overall_satisfaction": 4.0,
                 "task_completion_rate": 0.92,
-                "anna_personality_rating": 4.2,
+                "WorkCom_personality_rating": 4.2,
                 "system_usability": 4.0,
                 "recommendation_likelihood": 0.85
             },
@@ -401,21 +401,21 @@ class UserAcceptanceTrainingCompletion:
                     }
                 },
                 {
-                    "scenario_id": "anna_collaboration",
-                    "scenario_name": "Collaborate with Anna System",
-                    "description": "Staff member works with Anna system for customer support",
+                    "scenario_id": "WorkCom_collaboration",
+                    "scenario_name": "Collaborate with WorkCom System",
+                    "description": "Staff member works with WorkCom system for customer support",
                     "steps": [
-                        "Monitor Anna interactions",
+                        "Monitor WorkCom interactions",
                         "Handle escalated cases",
-                        "Review Anna performance",
+                        "Review WorkCom performance",
                         "Provide feedback on responses",
-                        "Optimize Anna configurations"
+                        "Optimize WorkCom configurations"
                     ],
-                    "expected_outcome": "Staff effectively collaborates with Anna system",
+                    "expected_outcome": "Staff effectively collaborates with WorkCom system",
                     "success_metrics": {
                         "collaboration_effectiveness": 4.2,
                         "escalation_handling": 4.0,
-                        "anna_optimization": 4.1,
+                        "WorkCom_optimization": 4.1,
                         "user_satisfaction": 4.3
                     }
                 }
@@ -440,10 +440,10 @@ class UserAcceptanceTrainingCompletion:
             sessions = [
                 TrainingSession(
                     session_id="beneficiary_final_training",
-                    session_name="Final Beneficiary Training - Anna Interaction",
+                    session_name="Final Beneficiary Training - WorkCom Interaction",
                     persona="beneficiary",
                     training_modules=[
-                        "anna_introduction",
+                        "WorkCom_introduction",
                         "claim_status_checking",
                         "payment_inquiries",
                         "document_submission",
@@ -494,7 +494,7 @@ class UserAcceptanceTrainingCompletion:
                         "core_integration_overview",
                         "enhanced_case_management",
                         "advanced_analytics",
-                        "anna_collaboration",
+                        "WorkCom_collaboration",
                         "system_administration"
                     ],
                     participants=[],
@@ -625,9 +625,9 @@ class UserAcceptanceTrainingCompletion:
             }
             
             # Persona-specific adjustments
-            if persona == "beneficiary" and "anna" in scenario["scenario_name"].lower():
-                scenario_result["anna_personality_rating"] = max(3.5, min(5.0, base_satisfaction + 0.2))
-                scenario_result["anna_helpfulness"] = max(3.8, min(5.0, base_satisfaction + 0.1))
+            if persona == "beneficiary" and "WorkCom" in scenario["scenario_name"].lower():
+                scenario_result["WorkCom_personality_rating"] = max(3.5, min(5.0, base_satisfaction + 0.2))
+                scenario_result["WorkCom_helpfulness"] = max(3.8, min(5.0, base_satisfaction + 0.1))
             
             return scenario_result
             
@@ -639,10 +639,10 @@ class UserAcceptanceTrainingCompletion:
         """Generate realistic feedback for scenario"""
         feedback_templates = {
             "beneficiary": [
-                "Anna was very helpful and easy to understand",
+                "WorkCom was very helpful and easy to understand",
                 "The process was straightforward and quick",
                 "I appreciated the clear explanations",
-                "Anna's personality made the interaction pleasant"
+                "WorkCom's personality made the interaction pleasant"
             ],
             "employer": [
                 "The dashboard is intuitive and comprehensive",
@@ -660,7 +660,7 @@ class UserAcceptanceTrainingCompletion:
                 "Enhanced features improve productivity significantly",
                 "Core Integration components work seamlessly",
                 "Analytics capabilities are powerful",
-                "Anna collaboration is effective"
+                "WorkCom collaboration is effective"
             ]
         }
         
@@ -688,13 +688,13 @@ class UserAcceptanceTrainingCompletion:
             
             # Persona-specific metrics
             if test.persona == "beneficiary":
-                anna_ratings = [
-                    result.get("anna_personality_rating", 0) 
+                WorkCom_ratings = [
+                    result.get("WorkCom_personality_rating", 0) 
                     for result in scenario_results.values() 
-                    if result.get("anna_personality_rating")
+                    if result.get("WorkCom_personality_rating")
                 ]
-                if anna_ratings:
-                    overall_metrics["anna_personality_consistency"] = statistics.mean(anna_ratings)
+                if WorkCom_ratings:
+                    overall_metrics["WorkCom_personality_consistency"] = statistics.mean(WorkCom_ratings)
             
             return overall_metrics
             
@@ -716,8 +716,8 @@ class UserAcceptanceTrainingCompletion:
             if "task_completion_rate" in criteria:
                 success_checks.append(metrics.get("average_task_success_rate", 0) >= criteria["task_completion_rate"])
             
-            if "anna_personality_rating" in criteria and test.persona == "beneficiary":
-                success_checks.append(metrics.get("anna_personality_consistency", 0) >= criteria["anna_personality_rating"])
+            if "WorkCom_personality_rating" in criteria and test.persona == "beneficiary":
+                success_checks.append(metrics.get("WorkCom_personality_consistency", 0) >= criteria["WorkCom_personality_rating"])
             
             # Additional persona-specific checks
             if test.persona == "staff" and "productivity_improvement" in criteria:
@@ -815,13 +815,13 @@ class UserAcceptanceTrainingCompletion:
                     "staff": {"count": 30, "avg_rating": 4.3}
                 },
                 "feedback_categories": {
-                    "anna_personality": {"avg_rating": 4.4, "count": 80},
+                    "WorkCom_personality": {"avg_rating": 4.4, "count": 80},
                     "system_usability": {"avg_rating": 4.1, "count": 150},
                     "feature_effectiveness": {"avg_rating": 4.0, "count": 120},
                     "training_quality": {"avg_rating": 4.2, "count": 100}
                 },
                 "common_themes": [
-                    "Anna's personality is warm and helpful",
+                    "WorkCom's personality is warm and helpful",
                     "System is intuitive and easy to use",
                     "Training materials are comprehensive",
                     "Performance improvements are noticeable",
@@ -992,3 +992,4 @@ def get_user_acceptance_status():
             "success": False,
             "error": str(e)
         }
+

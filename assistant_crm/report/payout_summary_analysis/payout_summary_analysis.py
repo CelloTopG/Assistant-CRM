@@ -6,7 +6,7 @@ Payout Summary Analysis - Native ERPNext Script Report
 
 This report provides comprehensive payout summary analytics using
 ERPNext Payment Entry, Salary Slip, and CoreBusiness Integration data.
-Includes Antoine AI integration for insights.
+Includes WorkCom AI integration for insights.
 """
 
 import json
@@ -624,15 +624,15 @@ def get_exception_chart(filters: str) -> Dict:
 
 
 # =====================
-# Antoine AI Integration
+# WorkCom AI Integration
 # =====================
 
 @frappe.whitelist()
 def get_ai_insights(filters: str, query: str) -> Dict:
-    """Return Antoine-style AI insights for Payout Summary Analysis.
+    """Return WorkCom-style AI insights for Payout Summary Analysis.
 
     Builds a JSON context with payout KPIs, breakdowns, and sample rows,
-    then passes it to Antoine via EnhancedAIService.
+    then passes it to WorkCom via EnhancedAIService.
     """
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters)
 
@@ -712,7 +712,7 @@ def get_ai_insights(filters: str, query: str) -> Dict:
         return {
             "insights": (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
         }
 
@@ -829,4 +829,5 @@ def _build_pdf_html(rows: List, summary_data: Dict, date_from, date_to, filters:
     """
 
     return style + header + cards + table
+
 

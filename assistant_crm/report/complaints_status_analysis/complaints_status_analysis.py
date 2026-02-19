@@ -4,7 +4,7 @@ Complaints Status Analysis - Native ERPNext Script Report
 Comprehensive analysis of complaints from the native Issue doctype and
 Unified Inbox Conversation. Provides category classification (Claims,
 Compliance, General), escalation tracking, resolution metrics, platform
-breakdown, and Antoine AI integration for intelligent insights.
+breakdown, and WorkCom AI integration for intelligent insights.
 
 This report mirrors the functionality of the Complaints Status Report
 doctype but leverages native ERPNext doctypes for improved integration.
@@ -382,7 +382,7 @@ def get_report_summary(summary: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 @frappe.whitelist()
 def get_ai_insights(filters: str, query: str) -> Dict[str, Any]:
-    """Return Antoine-style insights for the Complaints Status Analysis report."""
+    """Return WorkCom-style insights for the Complaints Status Analysis report."""
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters or {})
     _ensure_dates(filters)
 
@@ -440,7 +440,7 @@ def get_ai_insights(filters: str, query: str) -> Dict[str, Any]:
         return {
             "insights": (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
         }
 
@@ -638,3 +638,4 @@ def _ensure_override_field(doctype: str):
         })
     except Exception:
         pass
+

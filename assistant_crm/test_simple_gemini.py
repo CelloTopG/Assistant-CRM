@@ -31,7 +31,7 @@ def test_simple_gemini():
             {
                 "parts": [
                     {
-                        "text": f"You are Anna, a helpful assistant. Please respond to: {message}"
+                        "text": f"You are WorkCom, a helpful assistant. Please respond to: {message}"
                     }
                 ]
             }
@@ -67,7 +67,7 @@ def test_simple_gemini():
                 from assistant_crm.api.chat import send_message
                 
                 result = send_message(
-                    message="Hello Anna",
+                    message="Hello WorkCom",
                     session_id="simple_test_123"
                 )
                 
@@ -91,3 +91,4 @@ def test_simple_gemini():
 # Run test if called directly
 if __name__ == "__main__":
     test_simple_gemini()
+

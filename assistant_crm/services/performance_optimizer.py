@@ -708,7 +708,7 @@ def get_memory_cached_template(intent: str, user_context: Dict) -> str:
     """Get template from in-memory cache for maximum speed."""
     # Ultra-fast hardcoded templates for <1s performance
     templates = {
-        'greeting': "Hi! I'm Anna from WCFCB. How can I help you today?",
+        'greeting': "Hi! I'm WorkCom from WCFCB. How can I help you today?",
         'claim_status': "I'll check your claim status right away. Please provide your claim number for an immediate update.",
         'payment_inquiry': "I'll check your payment status immediately. Please provide your account number for current information.",
         'employer_status': "I'll check your employer status. Please provide your employer number for the latest information.",
@@ -856,7 +856,7 @@ def test_sub_second_performance():
                 "success": True,
                 "optimizations_applied": optimizations_applied,
                 "performance_impact": "Immediate improvement in response times expected",
-                "anna_message": "I've optimized my database connections for faster responses!"
+                "WorkCom_message": "I've optimized my database connections for faster responses!"
             }
 
         except Exception as e:
@@ -864,5 +864,6 @@ def test_sub_second_performance():
             return {
                 "success": False,
                 "error": str(e),
-                "anna_message": "I had some trouble optimizing my performance, but I'm still working fine!"
+                "WorkCom_message": "I had some trouble optimizing my performance, but I'm still working fine!"
             }
+

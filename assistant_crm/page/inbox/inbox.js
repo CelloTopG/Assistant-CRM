@@ -912,7 +912,7 @@ class InboxManager {
         const html = sorted.map(msg => {
             // Uniform outbound color - no distinction between AI/agent/manual
             const messageClass = msg.direction === 'Inbound' ? 'inbound' : 'outbound';
-            const isAI = msg.sender_name === 'Anna AI Assistant';
+            const isAI = msg.sender_name === 'WorkCom';
 
             return `
                 ${ticketNumber ? `
@@ -925,7 +925,7 @@ class InboxManager {
                 ` : ''}
                 <div class="message ${messageClass}">
                     <div class="message-content">
-                        ${isAI ? `<div class="mb-1 text-end"><small class="text-white-50"><i class="fas fa-robot me-1"></i>Anna AI Assistant</small></div>` : ''}
+                        ${isAI ? `<div class="mb-1 text-end"><small class="text-white-50"><i class="fas fa-robot me-1"></i>WorkCom</small></div>` : ''}
                         ${(surveyActive && (msg.direction === 'Inbound' || msg.sender_name === 'Survey Bot')) ? `<div class="mb-1"><small class="badge bg-success">Survey · ${surveyLabel || ''}</small></div>` : ''}
                         ${msg.message_content}
                     </div>

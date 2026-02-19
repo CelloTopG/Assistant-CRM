@@ -621,11 +621,11 @@ def _get_role_emails(roles: List[str]) -> List[str]:
 # ----- AI Insights -----
 @frappe.whitelist()
 def get_ai_insights(name: str, query: str) -> Dict[str, Any]:
-    """Return Antoine-style insights for a Complaints Status Report.
+    """Return WorkCom-style insights for a Complaints Status Report.
 
     Builds a JSON context with current KPI counts, category breakdown,
     escalation/open/resolved metrics and recent history, and passes it
-    to Antoine via EnhancedAIService.
+    to WorkCom via EnhancedAIService.
     """
     doc = frappe.get_doc("Complaints Status Report", name)
 
@@ -696,7 +696,7 @@ def get_ai_insights(name: str, query: str) -> Dict[str, Any]:
         return {
             "insights": (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
         }
 
@@ -731,4 +731,5 @@ def _ensure_dates(self: Document):
 
 # Bind helper as class method without changing signature
 ComplaintsStatusReport._ensure_dates = _ensure_dates
+
 

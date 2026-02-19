@@ -160,11 +160,11 @@ class PersonaResponseService:
     def _generate_default_response(self, persona: str, user_context: Dict = None) -> Dict:
         """Generate a default response when no template is found"""
         default_responses = {
-            "employer": "Hello! I'm Anna, your WCFCB business assistant. How can I help you with your business needs today?",
-            "beneficiary": "Hello! I'm Anna, and I'm here to help you with your benefits and services. What can I assist you with?",
-            "supplier": "Good day! I'm Anna, your WCFCB procurement assistant. How can I help you with your vendor needs?",
-            "wcfcb_staff": "Hi! I'm Anna, your internal assistant. What can I help you with today?",
-            "general": "Hello! I'm Anna, your WCFCB assistant. How can I help you today?"
+            "employer": "Hello! I'm WorkCom, your WCFCB business assistant. How can I help you with your business needs today?",
+            "beneficiary": "Hello! I'm WorkCom, and I'm here to help you with your benefits and services. What can I assist you with?",
+            "supplier": "Good day! I'm WorkCom, your WCFCB procurement assistant. How can I help you with your vendor needs?",
+            "wcfcb_staff": "Hi! I'm WorkCom, your internal assistant. What can I help you with today?",
+            "general": "Hello! I'm WorkCom, your WCFCB assistant. How can I help you today?"
         }
         
         response = default_responses.get(persona, default_responses["general"])
@@ -224,3 +224,4 @@ class PersonaResponseService:
             "persona": persona,
             "error": True
         }
+

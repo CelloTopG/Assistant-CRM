@@ -64,7 +64,7 @@ def make_com_webhook():
         "success": true,
         "message": "Message processed successfully",
         "response": {
-            "reply": "Anna's response",
+            "reply": "WorkCom's response",
             "actions": []
         },
         "conversation_id": "conv_id",
@@ -116,7 +116,7 @@ def make_com_webhook():
         # Log successful processing
         _log_webhook_activity(webhook_data, processing_result, "success")
         
-        # Prepare response with Anna metadata preserved
+        # Prepare response with WorkCom metadata preserved
         response = {
             "success": True,
             "message": "Webhook processed successfully",
@@ -127,10 +127,10 @@ def make_com_webhook():
             "event_type": webhook_data.get("event_type")
         }
 
-        # Include Anna-specific metadata if present
-        if processing_result.get("anna_personality"):
+        # Include WorkCom-specific metadata if present
+        if processing_result.get("WorkCom_personality"):
             response.update({
-                "anna_personality": processing_result.get("anna_personality"),
+                "WorkCom_personality": processing_result.get("WorkCom_personality"),
                 "ai_generated": processing_result.get("ai_generated"),
                 "delivery_status": processing_result.get("delivery_status"),
                 "facebook_message_id": processing_result.get("facebook_message_id"),
@@ -350,8 +350,8 @@ def _process_make_com_webhook(webhook_data: Dict[str, Any]) -> Dict[str, Any]:
         return {"success": False, "error": "Processing failed"}
 
 
-def _extract_facebook_message_for_anna(data: Dict[str, Any]) -> Dict[str, str]:
-    """Extract Facebook message data for Anna's simplified chat API"""
+def _extract_facebook_message_for_WorkCom(data: Dict[str, Any]) -> Dict[str, str]:
+    """Extract Facebook message data for WorkCom's simplified chat API"""
     try:
         message_data = data.get("message", {})
         sender_data = data.get("sender", {})
@@ -367,7 +367,7 @@ def _extract_facebook_message_for_anna(data: Dict[str, Any]) -> Dict[str, str]:
             if message_data.get("caption"):
                 message_content += f" {message_data['caption']}"
 
-        # Generate session ID for Anna
+        # Generate session ID for WorkCom
         sender_id = sender_data.get("id", "")
         session_id = f"facebook_{sender_id}" if sender_id else f"facebook_unknown_{now()}"
 
@@ -383,7 +383,7 @@ def _extract_facebook_message_for_anna(data: Dict[str, Any]) -> Dict[str, str]:
         }
 
     except Exception as e:
-        frappe.log_error(f"Facebook message extraction error: {str(e)}", "Facebook Anna Integration")
+        frappe.log_error(f"Facebook message extraction error: {str(e)}", "Facebook WorkCom Integration")
         return {
             "message": "Hello",
             "session_id": f"facebook_error_{now()}",
@@ -396,60 +396,60 @@ def _extract_facebook_message_for_anna(data: Dict[str, Any]) -> Dict[str, str]:
         }
 
 
-def _process_facebook_message_with_anna(platform: str, data: Dict[str, Any]) -> Dict[str, Any]:
-    """Process Facebook message using Anna's simplified chat API"""
+def _process_facebook_message_with_WorkCom(platform: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    """Process Facebook message using WorkCom's simplified chat API"""
     try:
-        # Extract message data for Anna
-        anna_data = _extract_facebook_message_for_anna(data)
+        # Extract message data for WorkCom
+        WorkCom_data = _extract_facebook_message_for_WorkCom(data)
 
-        # Call Anna's simplified chat API
+        # Call WorkCom's simplified chat API
         from assistant_crm.api.simplified_chat import send_message
-        anna_response = send_message(
-            message=anna_data["message"],
-            session_id=anna_data["session_id"]
+        WorkCom_response = send_message(
+            message=WorkCom_data["message"],
+            session_id=WorkCom_data["session_id"]
         )
 
-        if anna_response.get("success"):
+        if WorkCom_response.get("success"):
             # Create/update conversation in unified inbox
             conversation_id = _create_or_update_facebook_conversation(
-                anna_data["sender_id"],
-                anna_data["message"],
-                anna_response.get("response", ""),
-                anna_data
+                WorkCom_data["sender_id"],
+                WorkCom_data["message"],
+                WorkCom_response.get("response", ""),
+                WorkCom_data
             )
 
-            # Deliver Anna's response back to Facebook user
+            # Deliver WorkCom's response back to Facebook user
             delivery_result = _deliver_facebook_response(
-                anna_data["sender_id"],
-                anna_response.get("response", ""),
+                WorkCom_data["sender_id"],
+                WorkCom_response.get("response", ""),
                 conversation_id
             )
 
             return {
                 "success": True,
-                "response": anna_response.get("response"),
+                "response": WorkCom_response.get("response"),
                 "platform": "Facebook",
-                "channel_id": anna_data["sender_id"],
+                "channel_id": WorkCom_data["sender_id"],
                 "conversation_id": conversation_id,
                 "ai_generated": True,
-                "anna_personality": True,
-                "response_time": anna_response.get("response_time", 0),
+                "WorkCom_personality": True,
+                "response_time": WorkCom_response.get("response_time", 0),
                 "delivery_status": delivery_result.get("success", False),
                 "facebook_message_id": delivery_result.get("message_id"),
                 "delivery_time": delivery_result.get("response_time", 0)
             }
         else:
             # Fallback to existing system
-            frappe.log_error(f"Anna API failed: {anna_response.get('error', 'Unknown error')}", "Facebook Anna Integration")
+            frappe.log_error(f"WorkCom API failed: {WorkCom_response.get('error', 'Unknown error')}", "Facebook WorkCom Integration")
             return _process_message_event_fallback(platform, data)
 
     except Exception as e:
-        frappe.log_error(f"Anna integration error: {str(e)}", "Facebook Anna Integration")
+        frappe.log_error(f"WorkCom integration error: {str(e)}", "Facebook WorkCom Integration")
         return _process_message_event_fallback(platform, data)
 
 
 def _process_message_event_fallback(platform: str, data: Dict[str, Any]) -> Dict[str, Any]:
-    """Fallback to existing system if Anna integration fails"""
+    """Fallback to existing system if WorkCom integration fails"""
     try:
         message_data = data.get("message", {})
         sender_data = data.get("sender", {})
@@ -505,9 +505,9 @@ def _process_message_event_fallback(platform: str, data: Dict[str, Any]) -> Dict
             "channel_id": channel_id
         }
 
-        # Add Anna's personality marker
+        # Add WorkCom's personality marker
         if routing_result.get("response"):
-            response_data["personality"] = "Anna - WCFCB Team Member"
+            response_data["personality"] = "WorkCom - WCFCB Team Member"
 
         return response_data
 
@@ -520,7 +520,7 @@ def _process_message_event_fallback(platform: str, data: Dict[str, Any]) -> Dict
         }
 
 
-def _create_or_update_facebook_conversation(sender_id: str, message_content: str, anna_response: str, anna_data: Dict[str, Any]) -> Optional[str]:
+def _create_or_update_facebook_conversation(sender_id: str, message_content: str, WorkCom_response: str, WorkCom_data: Dict[str, Any]) -> Optional[str]:
     """Create or update Facebook conversation in unified inbox"""
     try:
         # Find existing conversation
@@ -539,7 +539,7 @@ def _create_or_update_facebook_conversation(sender_id: str, message_content: str
                 "doctype": "Unified Inbox Conversation",
                 "platform": "Facebook",
                 "customer_id": sender_id,
-                "customer_name": anna_data.get("sender_name", "Facebook User"),
+                "customer_name": WorkCom_data.get("sender_name", "Facebook User"),
                 "status": "AI Handled",
                 "ai_handled": 1,
                 "creation_time": now(),
@@ -548,11 +548,11 @@ def _create_or_update_facebook_conversation(sender_id: str, message_content: str
             conversation.insert(ignore_permissions=True)
 
         # Add inbound message
-        _add_message_to_conversation(conversation.name, message_content, "Inbound", anna_data)
+        _add_message_to_conversation(conversation.name, message_content, "Inbound", WorkCom_data)
 
-        # Add Anna's response
-        if anna_response:
-            _add_message_to_conversation(conversation.name, anna_response, "Outbound", anna_data)
+        # Add WorkCom's response
+        if WorkCom_response:
+            _add_message_to_conversation(conversation.name, WorkCom_response, "Outbound", WorkCom_data)
 
         frappe.db.commit()
         return conversation.name
@@ -562,7 +562,7 @@ def _create_or_update_facebook_conversation(sender_id: str, message_content: str
         return None
 
 
-def _add_message_to_conversation(conversation_id: str, message_content: str, direction: str, anna_data: Dict[str, Any]):
+def _add_message_to_conversation(conversation_id: str, message_content: str, direction: str, WorkCom_data: Dict[str, Any]):
     """Add message to unified inbox conversation"""
     try:
         message_doc = frappe.get_doc({
@@ -572,10 +572,10 @@ def _add_message_to_conversation(conversation_id: str, message_content: str, dir
             "message_content": message_content,
             "direction": direction,
             "timestamp": now(),
-            "sender_id": anna_data.get("sender_id", ""),
-            "sender_name": anna_data.get("sender_name", "Facebook User"),
-            "message_type": anna_data.get("message_type", "text"),
-            "platform_message_id": anna_data.get("original_message_id", "")
+            "sender_id": WorkCom_data.get("sender_id", ""),
+            "sender_name": WorkCom_data.get("sender_name", "Facebook User"),
+            "message_type": WorkCom_data.get("message_type", "text"),
+            "platform_message_id": WorkCom_data.get("original_message_id", "")
         })
         message_doc.insert(ignore_permissions=True)
 
@@ -584,7 +584,7 @@ def _add_message_to_conversation(conversation_id: str, message_content: str, dir
 
 
 def _deliver_facebook_response(sender_id: str, response_content: str, conversation_id: str) -> Dict[str, Any]:
-    """Deliver Anna's response back to Facebook user"""
+    """Deliver WorkCom's response back to Facebook user"""
     try:
         # For testing, we'll simulate the delivery since we don't have actual Facebook credentials
         if "test" in sender_id:
@@ -666,7 +666,7 @@ def _process_message_event(platform: str, data: Dict[str, Any]) -> Dict[str, Any
     AI handling for Make.com message flows has been retired in favour of direct
     social media → Unified Inbox → AI processing. This function now only logs
     receipt and returns a neutral acknowledgement so that existing Make.com
-    scenarios do not break, but no longer triggers Anna/Antoine or the
+    scenarios do not break, but no longer triggers WorkCom/WorkCom or the
     OmnichannelRouter.
     """
     try:
@@ -842,3 +842,5 @@ def get_make_com_status() -> Dict[str, Any]:
     except Exception as e:
         frappe.log_error(f"Status check error: {str(e)}", "Make.com Webhook")
         return {"success": False, "error": "Failed to get status"}
+
+

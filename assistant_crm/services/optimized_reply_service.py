@@ -130,10 +130,10 @@ def get_concise_response_template(intent: str, user_role: str, context: Dict = N
     # Fallback templates (20-35 words each)
     fallback_templates = {
         'greeting': {
-            'employer': f"{greeting_prefix}I'm Anna from WCFCB. I can help with premium payments, employee registrations, claims, and compliance. What do you need assistance with today?",
-            'beneficiary': f"{greeting_prefix}I'm Anna from WCFCB. I can help with your claims, payments, certificates, and benefits. How can I assist you today?",
-            'employee': f"{greeting_prefix}I'm Anna from WCFCB. I can help with workplace injuries, claims, and your coverage. What can I help you with?",
-            'default': f"{greeting_prefix}I'm Anna from WCFCB. I'm here to help with claims, registrations, payments, and compliance. How can I assist you?"
+            'employer': f"{greeting_prefix}I'm WorkCom from WCFCB. I can help with premium payments, employee registrations, claims, and compliance. What do you need assistance with today?",
+            'beneficiary': f"{greeting_prefix}I'm WorkCom from WCFCB. I can help with your claims, payments, certificates, and benefits. How can I assist you today?",
+            'employee': f"{greeting_prefix}I'm WorkCom from WCFCB. I can help with workplace injuries, claims, and your coverage. What can I help you with?",
+            'default': f"{greeting_prefix}I'm WorkCom from WCFCB. I'm here to help with claims, registrations, payments, and compliance. How can I assist you?"
         },
         'claim_submission': {
             'employer': "I'll help you submit this workplace injury claim. Please provide the incident date, employee details, and injury description to get started.",
@@ -238,7 +238,7 @@ def get_concise_reply(message: str, user_context: Dict = None, session_id: str =
     Generate concise bot reply (20-35 words) for user message.
 
     Phase 2: Updated to use new intent-based response system
-    Maintains Anna's personality while providing actionable responses in 20-35 words.
+    Maintains WorkCom's personality while providing actionable responses in 20-35 words.
 
     Args:
         message (str): User's input message
@@ -272,7 +272,7 @@ def get_concise_reply(message: str, user_context: Dict = None, session_id: str =
     except Exception as e:
         # Fallback response if Phase 2 system fails
         frappe.log_error(f"Phase 2 optimized reply error: {str(e)}", "Phase 2 Reply Error")
-        return "Hi! I'm Anna from WCFCB. I'm here to help you. Could you please tell me what you need assistance with?"
+        return "Hi! I'm WorkCom from WCFCB. I'm here to help you. Could you please tell me what you need assistance with?"
 
 
 def test_concise_responses():
@@ -453,3 +453,4 @@ def enhance_reply_with_realtime_data(base_reply: str, realtime_data: Dict) -> st
     except Exception as e:
         frappe.log_error(f"Reply enhancement error: {str(e)}", "Reply Enhancement")
         return base_reply
+

@@ -340,9 +340,9 @@ class VoiceInterfaceEngine:
             conversation_flows = {
                 "general": {
                     "greeting": {
-                        "en": "Hello! I'm Anna, your WCFCB assistant. How can I help you today?",
-                        "es": "¡Hola! Soy Anna, tu asistente de WCFCB. ¿Cómo puedo ayudarte hoy?",
-                        "fr": "Bonjour! Je suis Anna, votre assistante WCFCB. Comment puis-je vous aider aujourd'hui?"
+                        "en": "Hello! I'm WorkCom, your WCFCB assistant. How can I help you today?",
+                        "es": "¡Hola! Soy WorkCom, tu asistente de WCFCB. ¿Cómo puedo ayudarte hoy?",
+                        "fr": "Bonjour! Je suis WorkCom, votre assistante WCFCB. Comment puis-je vous aider aujourd'hui?"
                     },
                     "prompts": {
                         "en": [
@@ -524,7 +524,7 @@ class VoiceInterfaceEngine:
         """Load available voice profiles"""
         return {
             "en": {
-                "default": {"name": "Anna", "gender": "female", "accent": "neutral"},
+                "default": {"name": "WorkCom", "gender": "female", "accent": "neutral"},
                 "male": {"name": "David", "gender": "male", "accent": "neutral"},
                 "accessibility": {"name": "Clear", "gender": "female", "accent": "clear", "speed": "slow"}
             },
@@ -794,3 +794,4 @@ def get_voice_analytics(timeframe_days=30):
             "message": "Failed to get voice analytics",
             "details": str(e)
         }
+

@@ -43,7 +43,7 @@ class RealTimeDataResponseSystem:
     - Live contribution data for employees and employers
     - Real-time employment information
     - Personalized responses using actual user data
-    - Anna's personality preserved throughout
+    - WorkCom's personality preserved throughout
     """
     
     def __init__(self):
@@ -55,11 +55,11 @@ class RealTimeDataResponseSystem:
             safe_log_error("Comprehensive database service not available")
             self.db_service = None
         
-        # Response templates with Anna's personality
-        self.anna_greetings = [
-            "Hi! I'm Anna from WCFCB.",
-            "Hello! This is Anna from WCFCB.",
-            "Hi there! Anna here from WCFCB."
+        # Response templates with WorkCom's personality
+        self.WorkCom_greetings = [
+            "Hi! I'm WorkCom from WCFCB.",
+            "Hello! This is WorkCom from WCFCB.",
+            "Hi there! WorkCom here from WCFCB."
         ]
         
         self.response_templates = {
@@ -111,8 +111,8 @@ class RealTimeDataResponseSystem:
             response_result = response_generator(user_profile, message, session_context)
             
             if response_result['success']:
-                # Add Anna's personality and WCFCB branding
-                response_result['reply'] = self._add_anna_personality(response_result['reply'], user_profile)
+                # Add WorkCom's personality and WCFCB branding
+                response_result['reply'] = self._add_WorkCom_personality(response_result['reply'], user_profile)
                 response_result['live_data_used'] = True
                 response_result['data_sources'] = response_result.get('data_sources', ['live_database'])
             
@@ -441,10 +441,11 @@ class RealTimeDataResponseSystem:
             'data_sources': ['live_database']
         }
 
-    def _add_anna_personality(self, response: str, user_profile: Dict[str, Any]) -> str:
-        """Add Anna's personality to responses while preserving WCFCB branding."""
+    def _add_WorkCom_personality(self, response: str, user_profile: Dict[str, Any]) -> str:
+        """Add WorkCom's personality to responses while preserving WCFCB branding."""
         
-        # Anna's personality is already included in the response templates
+        # WorkCom's personality is already included in the response templates
         # This method can add additional personality touches if needed
         
         return response
+

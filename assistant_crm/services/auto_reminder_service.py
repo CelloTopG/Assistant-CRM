@@ -409,7 +409,7 @@ class AutoReminderService:
 
             message += '\n'
             message += 'Best regards,\n'
-            message += 'Anna - WCFCB Virtual Assistant\n'
+            message += 'WorkCom - WCFCB Virtual Assistant\n'
             message += 'Workers\' Compensation Fund Control Board\n'
             message += '\n'
             message += 'For assistance, contact us:\n'
@@ -598,3 +598,4 @@ class AutoReminderService:
 
         except Exception as e:
             frappe.log_error(f"Error logging reminder activity: {str(e)}", "Auto Reminder Service")
+

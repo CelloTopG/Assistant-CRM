@@ -83,7 +83,7 @@ class SimplifiedChatAPI:
             if GeminiService:
                 self.gemini_service = GeminiService()
 
-            # Initialize Antoine/OpenAI service for conversational replies
+            # Initialize WorkCom/OpenAI service for conversational replies
             if EnhancedAIService:
                 try:
                     self.ai_service = EnhancedAIService()
@@ -326,7 +326,7 @@ class SimplifiedChatAPI:
                             'timestamp': now()
                         }
 
-                    # Not yet complete - keep auth state updated but let Antoine phrase the next step.
+                    # Not yet complete - keep auth state updated but let WorkCom phrase the next step.
                     # We deliberately do NOT return the static auth_res.message here; instead we fall
                     # through so _generate_ai_response can use auth_context to ask for NRC / Full Name
                     # or other credentials in a natural way.
@@ -338,7 +338,7 @@ class SimplifiedChatAPI:
                     except Exception:
                         pass
                 else:
-                    # Start authentication flow silently; Antoine will handle the wording.
+                    # Start authentication flow silently; WorkCom will handle the wording.
                     try:
                         prompt = self.auth_service.get_authentication_prompt(
                             intent, message, user_context, sid
@@ -517,7 +517,7 @@ class SimplifiedChatAPI:
 
     def _format_live_data_response(self, intent: str, data: Dict[str, Any]) -> str:
         """Deterministic, context-aware reply builder for live data results.
-        Keeps tone consistent with Anna while avoiding re-prompts for NRC.
+        Keeps tone consistent with WorkCom while avoiding re-prompts for NRC.
         """
         try:
             if intent == 'claim_status' and data.get('type') == 'claim_data':
@@ -649,35 +649,35 @@ class SimplifiedChatAPI:
             except Exception:
                 pass
 
-            # Generate AI response (Antoine/OpenAI first, Gemini as legacy fallback)
+            # Generate AI response (WorkCom/OpenAI first, Gemini as legacy fallback)
             ai_response = ""
 
-            # Preferred path: Antoine via EnhancedAIService using Unified Inbox context
+            # Preferred path: WorkCom via EnhancedAIService using Unified Inbox context
             if self.ai_service:
                 try:
                     ai_response = self.ai_service.generate_unified_inbox_reply(
                         message=message,
                         context=context,
                     )
-                    # Log engine usage when Antoine returns a non-empty response
+                    # Log engine usage when WorkCom returns a non-empty response
                     if isinstance(ai_response, str) and ai_response.strip():
                         try:
                             cfg = getattr(self.ai_service, "config", {}) or {}
                             model_used = (cfg.get("chat_model") or "").strip() or cfg.get("openai_model")
                             self._debug_log(
-                                f"AI: engine=Antoine model={model_used} intent={context.get('intent')} "
+                                f"AI: engine=WorkCom model={model_used} intent={context.get('intent')} "
                                 f"has_live_data={context.get('has_live_data')} len={len(ai_response or '')}"
                             )
                         except Exception:
                             pass
                 except Exception as e:
                     try:
-                        self._debug_log(f"AI (Antoine) exception sid={sid} err={str(e)[:200]}")
+                        self._debug_log(f"AI (WorkCom) exception sid={sid} err={str(e)[:200]}")
                     except Exception:
                         pass
                     ai_response = ""
 
-            # Backward-compatible Gemini fallback if Antoine is unavailable or misconfigured
+            # Backward-compatible Gemini fallback if WorkCom is unavailable or misconfigured
             if (not ai_response or not isinstance(ai_response, str) or not ai_response.strip()) and self.gemini_service:
                 try:
                     if hasattr(self.gemini_service, "generate_response_with_context"):
@@ -728,7 +728,7 @@ class SimplifiedChatAPI:
     def _get_fallback_response(self, intent: str) -> str:
         """Get fallback response based on intent"""
         fallback_responses = {
-            'greeting': "Hi! I'm Anna from WCFCB. How can I help you today? 😊",
+            'greeting': "Hi! I'm WorkCom from WCFCB. How can I help you today? 😊",
             'goodbye': "Thank you for contacting WCFCB. Have a great day!",
             'claim_status': "I can help you check your claim status. Please provide your claim number or NRC.",
             'payment_status': "I can help you check your payment information. Please provide your NRC or reference number.",
@@ -737,7 +737,7 @@ class SimplifiedChatAPI:
             'agent_request': "I'll connect you with one of our agents. Please hold on.",
             'technical_help': "I'm here to help with technical issues. What specific problem are you experiencing?",
             'error': "I'm sorry, I'm having trouble processing your request. Please try again or contact our support team.",
-            'unknown': "I'm Anna from WCFCB. I can help you with claims, payments, pensions, and more. What would you like to know?"
+            'unknown': "I'm WorkCom from WCFCB. I can help you with claims, payments, pensions, and more. What would you like to know?"
         }
 
         return fallback_responses.get(intent, fallback_responses['unknown'])
@@ -871,3 +871,5 @@ else:
             },
             'timestamp': now()
         }
+
+

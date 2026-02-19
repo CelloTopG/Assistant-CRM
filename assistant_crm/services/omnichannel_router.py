@@ -30,7 +30,7 @@ class OmnichannelRouter:
 
 		Historically this initialised WCFCBAIService / Gemini for omnichannel
 		AI responses. That path has been fully decommissioned in favour of the
-		Unified Inbox  SimplifiedChat  EnhancedAIService (Antoine / OpenAI)
+		Unified Inbox  SimplifiedChat  EnhancedAIService (WorkCom / OpenAI)
 		stack. We keep this method only so older code paths that call it do not
 		crash; it always returns ``None`` so no AI is executed here.
 		"""
@@ -158,7 +158,7 @@ class OmnichannelRouter:
 			if channel_config.auto_response_enabled:
 				# Legacy AI path retired: do not call WCFCBAIService / Gemini here.
 				# All new AI responses are produced via Unified Inbox 
-				# SimplifiedChat  EnhancedAIService (Antoine / OpenAI).
+				# SimplifiedChat  EnhancedAIService (WorkCom / OpenAI).
 				return {
 					"success": True,
 					"response": None,
@@ -553,7 +553,7 @@ class OmnichannelRouter:
 						"content": response_content,
 						"status": "delivered",
 						"timestamp": now(),
-						"agent_id": "Anna",
+						"agent_id": "WorkCom",
 						"response_time": response_time
 					},
 					room="omnichannel_dashboard"
@@ -972,3 +972,5 @@ def get_routing_analytics(period='today'):
 	except Exception as e:
 		frappe.log_error(f"Error getting routing analytics: {str(e)}", "Omnichannel Router")
 		return {"success": False, "error": str(e)}
+
+

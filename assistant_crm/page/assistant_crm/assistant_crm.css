@@ -29,13 +29,13 @@
     pointer-events: none;
 }
 
-.anna-avatar {
+.WorkCom-avatar {
     margin-bottom: 20px;
     position: relative;
     z-index: 1;
 }
 
-.anna-image {
+.WorkCom-image {
     font-size: 64px;
     margin-bottom: 10px;
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
@@ -49,7 +49,7 @@
     z-index: 1;
 }
 
-.anna-greeting {
+.WorkCom-greeting {
     font-size: 20px;
     font-weight: 500;
     margin-bottom: 10px;
@@ -58,8 +58,8 @@
     z-index: 1;
 }
 
-/* Anna's Services Section */
-.anna-services-section {
+/* WorkCom's Services Section */
+.WorkCom-services-section {
     margin-bottom: 40px;
     padding: 30px;
     background: var(--fg-color);
@@ -68,7 +68,7 @@
     border: 1px solid var(--border-color);
 }
 
-.anna-services-section h3 {
+.WorkCom-services-section h3 {
     text-align: center;
     font-size: 24px;
     font-weight: 600;
@@ -294,11 +294,11 @@
         font-size: 28px;
     }
 
-    .anna-greeting {
+    .WorkCom-greeting {
         font-size: 18px;
     }
 
-    .anna-image {
+    .WorkCom-image {
         font-size: 48px;
     }
 
@@ -311,11 +311,11 @@
         padding: 20px;
     }
 
-    .anna-services-section {
+    .WorkCom-services-section {
         padding: 20px;
     }
 
-    .anna-services-section h3 {
+    .WorkCom-services-section h3 {
         font-size: 20px;
     }
 
@@ -323,3 +323,4 @@
         padding: 20px;
     }
 }
+

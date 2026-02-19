@@ -48,7 +48,7 @@ This is a friendly reminder that your Workers' Compensation premium payment is d
 **Important:** Early payment helps avoid penalties and ensures continuous coverage for your employees.
 
 Best regards,
-Anna - WCFCB Virtual Assistant
+WorkCom - WCFCB Virtual Assistant
 Workers' Compensation Fund Control Board
 
 For assistance, contact us:
@@ -90,7 +90,7 @@ Please arrange payment immediately to avoid:
 Time is running out - act now to maintain your coverage!
 
 Best regards,
-Anna - WCFCB Virtual Assistant
+WorkCom - WCFCB Virtual Assistant
 Workers' Compensation Fund Control Board""",
             "is_active": 1
         },
@@ -132,7 +132,7 @@ Your Workers' Compensation premium payment is now {days_overdue} days overdue.
 This is a serious matter requiring immediate attention.
 
 Best regards,
-Anna - WCFCB Virtual Assistant
+WorkCom - WCFCB Virtual Assistant
 Workers' Compensation Fund Control Board""",
             "is_active": 1
         },
@@ -172,7 +172,7 @@ This is a reminder that your quarterly/annual returns submission is due in {days
 Need assistance? Our returns team is ready to help you complete your submission accurately.
 
 Best regards,
-Anna - WCFCB Virtual Assistant
+WorkCom - WCFCB Virtual Assistant
 Workers' Compensation Fund Control Board
 
 For assistance, contact us:
@@ -394,3 +394,4 @@ def system_status_report():
 if __name__ == "__main__":
     complete_setup()
     system_status_report()
+

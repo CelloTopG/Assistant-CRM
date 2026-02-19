@@ -2,7 +2,7 @@
 """
 WCFCB Assistant CRM - Authentication Service
 Multi-factor authentication system for secure chatbot user verification
-Maintains Anna's warm personality throughout authentication flows
+Maintains WorkCom's warm personality throughout authentication flows
 """
 
 import frappe
@@ -16,7 +16,7 @@ from typing import Dict, List, Optional, Tuple
 class AuthenticationService:
     """
     Comprehensive authentication service for Assistant CRM users
-    Supports multiple verification methods while preserving Anna's personality
+    Supports multiple verification methods while preserving WorkCom's personality
     """
     
     def __init__(self):
@@ -27,7 +27,7 @@ class AuthenticationService:
     def initiate_authentication(self, user_input: str, conversation_context: Dict) -> Dict:
         """
         Initiate authentication process based on user input
-        Maintains Anna's warm, professional tone throughout
+        Maintains WorkCom's warm, professional tone throughout
         """
         try:
             # Analyze user input for authentication triggers
@@ -43,7 +43,7 @@ class AuthenticationService:
             # Determine authentication method needed
             auth_method = self.determine_auth_method(auth_triggers, conversation_context)
             
-            # Generate Anna's warm authentication request
+            # Generate WorkCom's warm authentication request
             auth_response = self.generate_auth_request(auth_method, conversation_context)
             
             return {
@@ -96,7 +96,7 @@ class AuthenticationService:
     
     def generate_auth_request(self, auth_method: str, context: Dict) -> str:
         """
-        Generate Anna's warm, professional authentication request
+        Generate WorkCom's warm, professional authentication request
         """
         if auth_method == "basic_verification":
             return """Hi there! I'd be happy to help you with your personal information. 😊
@@ -493,7 +493,7 @@ You have {self.max_auth_attempts - attempts} more attempt(s).""",
     
     def generate_general_response(self, user_input: str) -> str:
         """Generate general response for non-authenticated queries"""
-        return """Hi there! I'm Anna, your WCFCB assistant. 😊
+        return """Hi there! I'm WorkCom, your WCFCB assistant. 😊
 
 I'm here to help you with information about workers' compensation, claims processes, and general WCFCB services.
 
@@ -502,7 +502,7 @@ For personal information about your specific claim or account, I'll need to veri
 How can I help you today?"""
     
     def generate_error_response(self) -> str:
-        """Generate friendly error response maintaining Anna's personality"""
+        """Generate friendly error response maintaining WorkCom's personality"""
         return """I'm sorry, but I'm having a small technical difficulty right now. 😔
 
 Please try again in a moment, or if you need immediate assistance, you can contact our support team:
@@ -585,3 +585,4 @@ def verify_user_credentials():
             "success": False,
             "error": str(e)
         }
+

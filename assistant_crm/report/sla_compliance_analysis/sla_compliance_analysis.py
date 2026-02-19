@@ -6,7 +6,7 @@ SLA Compliance Analysis - Native ERPNext Script Report
 
 This report provides comprehensive SLA compliance analytics using
 Unified Inbox Conversation and Escalation Workflow data.
-Includes Antoine AI integration for insights.
+Includes WorkCom AI integration for insights.
 """
 
 import json
@@ -719,15 +719,15 @@ def get_trend_chart(filters: str, months: int = 6) -> Dict:
 
 
 # =====================
-# Antoine AI Integration
+# WorkCom AI Integration
 # =====================
 
 @frappe.whitelist()
 def get_ai_insights(filters: str, query: str) -> Dict:
-    """Return Antoine-style AI insights for SLA Compliance Analysis.
+    """Return WorkCom-style AI insights for SLA Compliance Analysis.
 
     Builds a JSON context with SLA compliance %, FRT/RT metrics, escalation
-    behaviour and passes it to Antoine via EnhancedAIService.
+    behaviour and passes it to WorkCom via EnhancedAIService.
     """
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters)
 
@@ -796,6 +796,6 @@ def get_ai_insights(filters: str, query: str) -> Dict:
         return {
             "insights": (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
         }

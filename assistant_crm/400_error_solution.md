@@ -75,7 +75,7 @@ The demo mode is already working and provides:
 ### Test the Chat Interface
 1. **Open**: `http://localhost:8000/chat_test.html`
 2. **Send messages** like:
-   - "Hello Anna"
+   - "Hello WorkCom"
    - "Hi there"
    - "Help me"
    - "Test message"
@@ -146,3 +146,4 @@ curl -X POST "http://localhost:8000/api/method/assistant_crm.api.chat.send_messa
 - ✅ Error handling works gracefully
 
 The 400 error has been resolved with demo mode, and the system is ready for a new API key to enable full AI functionality.
+

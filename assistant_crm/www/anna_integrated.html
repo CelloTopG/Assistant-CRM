@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anna - WCFCB Assistant</title>
+    <title>WorkCom - WCFCB Assistant</title>
     <style>
         * {
             margin: 0;
@@ -84,7 +84,7 @@
             justify-content: flex-end;
         }
 
-        .message.anna {
+        .message.WorkCom {
             justify-content: flex-start;
         }
 
@@ -101,7 +101,7 @@
             border-bottom-right-radius: 4px;
         }
 
-        .message.anna .message-content {
+        .message.WorkCom .message-content {
             background: white;
             color: #333;
             border: 1px solid #e0e0e0;
@@ -125,7 +125,7 @@
             background: #007bff;
         }
 
-        .avatar.anna {
+        .avatar.WorkCom {
             background: #4CAF50;
         }
 
@@ -280,7 +280,7 @@
     <div class="chat-container">
         <div class="chat-header">
             <div class="status-indicator"></div>
-            <h1>👋 Hi! This is Anna</h1>
+            <h1>👋 Hi! This is WorkCom</h1>
             <p>Your WCFCB Assistant - Here to help with claims, payments, and documents</p>
         </div>
 
@@ -289,7 +289,7 @@
         </div>
 
         <div class="typing-indicator" id="typingIndicator">
-            Anna is typing...
+            WorkCom is typing...
         </div>
 
         <div class="quick-replies" id="quickReplies">
@@ -333,10 +333,10 @@
 
         function initializeChat() {
             // Generate session ID for Optimized Chat API (with live data integration)
-            sessionId = 'anna_live_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            sessionId = 'WorkCom_live_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
             // Show initial greeting with live data capabilities
-            addMessage('anna', 'Hi! I\'m Anna, your WCFCB assistant with access to live data. How can I help you today?');
+            addMessage('WorkCom', 'Hi! I\'m WorkCom, your WCFCB assistant with access to live data. How can I help you today?');
 
             // Show quick replies for common actions
             showQuickReplies([
@@ -400,7 +400,7 @@
                 // Handle Optimized Chat API response format
                 if (data.message && data.message.success !== false) {
                     const response = data.message.response || data.message;
-                    addMessage('anna', response);
+                    addMessage('WorkCom', response);
 
                     // Show live data indicators (for debugging)
                     if (data.message.metadata && data.message.metadata.live_data_used) {
@@ -415,7 +415,7 @@
 
                     // Handle authentication prompts
                     if (data.message.authentication_required) {
-                        addMessage('anna', data.message.authentication_prompt || 'Please provide your authentication details.');
+                        addMessage('WorkCom', data.message.authentication_prompt || 'Please provide your authentication details.');
                     }
 
                     // Handle special actions
@@ -424,14 +424,14 @@
                     }
                 } else {
                     const errorMsg = data.message?.error || 'I apologize, but I encountered an error. Please try again.';
-                    addMessage('anna', errorMsg);
+                    addMessage('WorkCom', errorMsg);
                 }
             })
             .catch(error => {
                 console.error('Error sending message:', error);
                 showTyping(false);
                 isProcessing = false;
-                addMessage('anna', 'I\'m having trouble connecting right now. Please try again.');
+                addMessage('WorkCom', 'I\'m having trouble connecting right now. Please try again.');
             });
         }
 
@@ -448,7 +448,7 @@
             messageContent.className = 'message-content';
             messageContent.innerHTML = formatMessage(content);
             
-            if (sender === 'anna') {
+            if (sender === 'WorkCom') {
                 messageDiv.appendChild(avatar);
                 messageDiv.appendChild(messageContent);
             } else {
@@ -526,7 +526,7 @@
             // Simulate file upload (in real implementation, this would upload to server)
             setTimeout(() => {
                 showTyping(false);
-                addMessage('anna', `✅ Document "${file.name}" uploaded successfully! I'll validate it now and let you know the results.`);
+                addMessage('WorkCom', `✅ Document "${file.name}" uploaded successfully! I'll validate it now and let you know the results.`);
                 showQuickReplies(['📋 Check Status', '📄 Upload Another', '🏠 Main Menu']);
                 showFileUpload(false);
             }, 2000);
@@ -541,3 +541,4 @@
     </script>
 </body>
 </html>
+

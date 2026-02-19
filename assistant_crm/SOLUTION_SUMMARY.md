@@ -80,7 +80,7 @@ curl -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5
 
 ### ✅ Successful Test Results
 
-**Test Message**: "hello anna hardcoded test"
+**Test Message**: "hello WorkCom hardcoded test"
 **Response**: "Hello there! How can I help you today?"
 **Status**: ✅ SUCCESS
 **Mode**: Hardcoded (Working)
@@ -114,7 +114,7 @@ curl -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5
 
 ### ✅ For Users
 1. **Visit**: `http://localhost:8000/chat_test.html`
-2. **Send Messages**: Type any message (e.g., "hi anna", "help me")
+2. **Send Messages**: Type any message (e.g., "hi WorkCom", "help me")
 3. **Receive Responses**: Get AI-generated responses from Google Gemini
 4. **Check Status**: See "Working Mode" indicator for successful API calls
 
@@ -150,9 +150,10 @@ curl -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5
 - ✅ **Production Ready**: Hardcoded API ready for immediate deployment
 
 ### ✅ User Experience
-- **Send Message**: "hello anna"
+- **Send Message**: "hello WorkCom"
 - **Receive Response**: "Hello there! How can I help you today?"
 - **Status**: "Message sent successfully! (Working Mode - API Key: ***qMe8)"
 - **Result**: ✅ **COMPLETE SUCCESS**
 
 **The chatbot now provides proper AI responses and clear user feedback in all scenarios.**
+

@@ -120,11 +120,11 @@ class ProductionPerformanceOptimizer:
                     optimization_strategy="memory_optimization"
                 ),
                 PerformanceTarget(
-                    metric_name="anna_response_time",
-                    target_value=1.8,  # Anna-specific response time
+                    metric_name="WorkCom_response_time",
+                    target_value=1.8,  # WorkCom-specific response time
                     threshold_warning=2.0,
                     threshold_critical=2.5,
-                    optimization_strategy="anna_optimization"
+                    optimization_strategy="WorkCom_optimization"
                 )
             ]
             
@@ -190,17 +190,17 @@ class ProductionPerformanceOptimizer:
                     enabled=True
                 ),
                 OptimizationRule(
-                    rule_id="anna_performance_optimization",
-                    rule_name="Anna Response Time Optimization",
+                    rule_id="WorkCom_performance_optimization",
+                    rule_name="WorkCom Response Time Optimization",
                     trigger_conditions={
-                        "anna_response_time": {"operator": ">", "value": 2.0},
+                        "WorkCom_response_time": {"operator": ">", "value": 2.0},
                         "duration_minutes": 2
                     },
                     optimization_actions=[
                         "optimize_intent_classification",
                         "cache_frequent_responses",
                         "optimize_live_data_assembly",
-                        "prioritize_anna_requests"
+                        "prioritize_WorkCom_requests"
                     ],
                     priority=1,
                     enabled=True
@@ -271,7 +271,7 @@ class ProductionPerformanceOptimizer:
                     "intelligent_invalidation": True,
                     "compression": True
                 },
-                "anna_personality_cache": {
+                "WorkCom_personality_cache": {
                     "type": "specialized",
                     "max_size": 2000,
                     "ttl": 7200,  # 2 hours
@@ -393,7 +393,7 @@ class ProductionPerformanceOptimizer:
                 "system_metrics": self.collect_system_metrics(),
                 "application_metrics": self.collect_application_metrics(),
                 "cache_metrics": self.collect_cache_metrics(),
-                "anna_metrics": self.collect_anna_metrics()
+                "WorkCom_metrics": self.collect_WorkCom_metrics()
             }
             
             return metrics
@@ -460,23 +460,23 @@ class ProductionPerformanceOptimizer:
             logging.error(f"Cache metrics collection error: {str(e)}")
             return {}
     
-    def collect_anna_metrics(self) -> Dict:
-        """Collect Anna-specific performance metrics"""
+    def collect_WorkCom_metrics(self) -> Dict:
+        """Collect WorkCom-specific performance metrics"""
         try:
-            # Simulate Anna-specific metrics
+            # Simulate WorkCom-specific metrics
             base_time = 1.5 + (psutil.cpu_percent() / 150)
             
             return {
-                "anna_response_time": base_time,
+                "WorkCom_response_time": base_time,
                 "intent_classification_time": base_time * 0.3,
                 "live_data_assembly_time": base_time * 0.4,
                 "response_generation_time": base_time * 0.3,
-                "anna_satisfaction_score": max(3.5, 4.5 - (base_time / 10)),
-                "anna_conversation_success_rate": max(0.85, 0.98 - (base_time / 20))
+                "WorkCom_satisfaction_score": max(3.5, 4.5 - (base_time / 10)),
+                "WorkCom_conversation_success_rate": max(0.85, 0.98 - (base_time / 20))
             }
             
         except Exception as e:
-            logging.error(f"Anna metrics collection error: {str(e)}")
+            logging.error(f"WorkCom metrics collection error: {str(e)}")
             return {}
     
     def analyze_performance_trends(self) -> None:
@@ -517,8 +517,8 @@ class ProductionPerformanceOptimizer:
                 return metric.get("application_metrics", {}).get(metric_name)
             elif metric_name == "cache_hit_rate":
                 return metric.get("cache_metrics", {}).get(metric_name)
-            elif metric_name == "anna_response_time":
-                return metric.get("anna_metrics", {}).get(metric_name)
+            elif metric_name == "WorkCom_response_time":
+                return metric.get("WorkCom_metrics", {}).get(metric_name)
             else:
                 return None
                 
@@ -740,8 +740,8 @@ class ProductionPerformanceOptimizer:
                 return self.cache_frequent_responses()
             elif action == "optimize_live_data_assembly":
                 return self.optimize_live_data_assembly()
-            elif action == "prioritize_anna_requests":
-                return self.prioritize_anna_requests()
+            elif action == "prioritize_WorkCom_requests":
+                return self.prioritize_WorkCom_requests()
             else:
                 return {"success": False, "error": f"Unknown action: {action}"}
                 
@@ -809,10 +809,10 @@ class ProductionPerformanceOptimizer:
             return {"success": False, "error": str(e)}
     
     def optimize_intent_classification(self) -> Dict:
-        """Optimize Anna's intent classification performance"""
+        """Optimize WorkCom's intent classification performance"""
         try:
-            # Simulate Anna-specific optimizations
-            logging.info("Optimizing Anna's intent classification performance")
+            # Simulate WorkCom-specific optimizations
+            logging.info("Optimizing WorkCom's intent classification performance")
             
             optimizations = [
                 "Cached frequent intent patterns",
@@ -823,7 +823,7 @@ class ProductionPerformanceOptimizer:
             
             return {
                 "success": True,
-                "action": "anna_intent_optimized",
+                "action": "WorkCom_intent_optimized",
                 "optimizations": optimizations
             }
             
@@ -852,16 +852,16 @@ class ProductionPerformanceOptimizer:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
-    def prioritize_anna_requests(self) -> Dict:
-        """Prioritize Anna's requests for optimal response times"""
+    def prioritize_WorkCom_requests(self) -> Dict:
+        """Prioritize WorkCom's requests for optimal response times"""
         try:
             # Simulate request prioritization
-            logging.info("Implementing Anna request prioritization")
+            logging.info("Implementing WorkCom request prioritization")
             
             return {
                 "success": True,
-                "action": "anna_requests_prioritized",
-                "details": "Anna requests now have highest priority in processing queue"
+                "action": "WorkCom_requests_prioritized",
+                "details": "WorkCom requests now have highest priority in processing queue"
             }
             
         except Exception as e:
@@ -1156,3 +1156,4 @@ def get_current_performance_metrics():
             "success": False,
             "error": str(e)
         }
+

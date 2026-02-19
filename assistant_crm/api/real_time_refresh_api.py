@@ -213,7 +213,7 @@ class RealTimeDataManager:
                     "last_message_time": (now - timedelta(minutes=2)).strftime("%H:%M"),
                     "response_time": "45s",
                     "channel": "Web Chat",
-                    "agent": "Anna (AI)",
+                    "agent": "WorkCom (AI)",
                     "unread_count": 1
                 },
                 {
@@ -225,7 +225,7 @@ class RealTimeDataManager:
                     "last_message_time": (now - timedelta(minutes=8)).strftime("%H:%M"),
                     "response_time": "2m 15s",
                     "channel": "WhatsApp",
-                    "agent": "Anna (AI)",
+                    "agent": "WorkCom (AI)",
                     "unread_count": 2
                 },
                 {
@@ -237,7 +237,7 @@ class RealTimeDataManager:
                     "last_message_time": (now - timedelta(minutes=1)).strftime("%H:%M"),
                     "response_time": "30s",
                     "channel": "Phone",
-                    "agent": "Anna (AI)",
+                    "agent": "WorkCom (AI)",
                     "unread_count": 3
                 },
                 {
@@ -249,7 +249,7 @@ class RealTimeDataManager:
                     "last_message_time": (now - timedelta(minutes=15)).strftime("%H:%M"),
                     "response_time": "1m 20s",
                     "channel": "Email",
-                    "agent": "Anna (AI)",
+                    "agent": "WorkCom (AI)",
                     "unread_count": 0
                 },
                 {
@@ -261,7 +261,7 @@ class RealTimeDataManager:
                     "last_message_time": (now - timedelta(minutes=5)).strftime("%H:%M"),
                     "response_time": "1m 45s",
                     "channel": "Web Chat",
-                    "agent": "Anna (AI)",
+                    "agent": "WorkCom (AI)",
                     "unread_count": 1
                 }
             ]
@@ -524,3 +524,4 @@ def get_agent_dashboard_data():
             "error": str(e),
             "timestamp": datetime.now().isoformat()
         }
+

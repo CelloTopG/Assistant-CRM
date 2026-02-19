@@ -134,28 +134,28 @@ class EnhancedAuthenticationService:
         # Intent-specific prompts with enhanced guidance
         enhanced_prompts = {
             'claim_status': {
-                'greeting': "Hi! I'm Anna from WCFCB.",
+                'greeting': "Hi! I'm WorkCom from WCFCB.",
                 'purpose': "To check your claim status securely",
                 'requirements': "I need BOTH your National ID (NRC) and your Full Name (First Last). NRC must be 9 digits in total; slashes are allowed.",
                 'format': "Examples: 123456/78/9 Jane Doe — or — 123456789 Jane Doe",
                 'security': "I'll search ERPNext using these details. If the name returns multiple matches, I'll ask a quick follow-up to pick the right one."
             },
             'payment_status': {
-                'greeting': "Hi! I'm Anna from WCFCB.",
+                'greeting': "Hi! I'm WorkCom from WCFCB.",
                 'purpose': "To access your payment information",
                 'requirements': "I'll need your National ID number and Account number",
                 'format': "Please provide them like this: 123456789 ACC12345678",
                 'security': "This ensures I can securely access your payment details."
             },
             'pension_inquiry': {
-                'greeting': "Hi! I'm Anna from WCFCB.",
+                'greeting': "Hi! I'm WorkCom from WCFCB.",
                 'purpose': "To check your pension details",
                 'requirements': "I'll need your National ID number and Beneficiary number",
                 'format': "Please provide them like this: 123456789 BN-123456",
                 'security': "This helps me access your pension information safely."
             },
             'account_info': {
-                'greeting': "Hi! I'm Anna from WCFCB.",
+                'greeting': "Hi! I'm WorkCom from WCFCB.",
                 'purpose': "To access your account information",
                 'requirements': "I'll need your National ID number and Account number",
                 'format': "Please provide them like this: 123456789 ACC12345678",
@@ -164,7 +164,7 @@ class EnhancedAuthenticationService:
         }
 
         prompt_data = enhanced_prompts.get(intent, {
-            'greeting': "Hi! I'm Anna from WCFCB.",
+            'greeting': "Hi! I'm WorkCom from WCFCB.",
             'purpose': "To access your personal information",
             'requirements': "I'll need to verify your identity first",
             'format': "Please provide your National ID number and relevant reference number",
@@ -1037,6 +1037,7 @@ class EnhancedAuthenticationService:
 
     def _get_fallback_prompt(self, intent: str) -> str:
         """Generate fallback authentication prompt."""
-        return ("Hi! I'm Anna from WCFCB. To access your personal information, "
+        return ("Hi! I'm WorkCom from WCFCB. To access your personal information, "
                 "I'll need to verify your identity. Please provide your National ID number "
                 "and relevant reference number for secure access.")
+

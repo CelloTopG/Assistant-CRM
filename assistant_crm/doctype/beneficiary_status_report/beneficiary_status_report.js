@@ -31,12 +31,12 @@ frappe.ui.form.on('Beneficiary Status Report', {
       }
     });
 
-    // Antoine AI sidebar (match SLA/Complaints positioning)
+    // WorkCom AI sidebar (match SLA/Complaints positioning)
     if (!frm.custom_ai_sidebar_rendered && frm.sidebar && frm.sidebar.add_user_action) {
       const wrapper = $(
         '<div class="frappe-control"><div class="control-input-wrapper">' +
         '<div class="control-input flex"><input class="form-control" type="text" ' +
-        'placeholder="This is Antoine, how can I help with beneficiary status?" />' +
+        'placeholder="This is WorkCom, how can I help with beneficiary status?" />' +
         '<button class="btn btn-default" style="margin-left:6px">Ask</button></div>' +
         '<div class="help-box small text-muted" style="margin-top:6px">Uses current and historical beneficiary reports for trend and risk analysis.</div>' +
         '<div class="ai-output" style="white-space:pre-wrap; margin-top:8px"></div>' +
@@ -68,4 +68,5 @@ frappe.ui.form.on('Beneficiary Status Report', {
     }
   }
 });
+
 

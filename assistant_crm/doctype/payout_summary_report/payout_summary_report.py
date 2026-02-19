@@ -598,13 +598,13 @@ def build_dependant_summary(rows: List[Dict[str, Any]], payroll_month_label: str
 
 @frappe.whitelist()
 def get_ai_insights(name: str, query: str) -> Dict[str, Any]:
-    """Return Antoine-style insights for a Payout Summary Report.
+    """Return WorkCom-style insights for a Payout Summary Report.
 
-    Mirrors the Claims Status Report Antoine integration pattern:
+    Mirrors the Claims Status Report WorkCom integration pattern:
     - builds a compact JSON context with the current window
     - includes high-level payout KPIs and a sample of beneficiary rows
     - adds a short history of previous payout reports
-    - passes everything to Antoine via EnhancedAIService
+    - passes everything to WorkCom via EnhancedAIService
     """
 
     doc = frappe.get_doc("Payout Summary Report", name)
@@ -627,7 +627,7 @@ def get_ai_insights(name: str, query: str) -> Dict[str, Any]:
         limit=12,
     )
 
-    # Re-aggregate using the latest payout logic so Antoine sees up-to-date
+    # Re-aggregate using the latest payout logic so WorkCom sees up-to-date
     # totals and a fresh sample of payout rows.
     try:
         totals, rows = aggregate_payouts(doc.date_from, doc.date_to, doc.period_type)
@@ -673,7 +673,7 @@ def get_ai_insights(name: str, query: str) -> Dict[str, Any]:
         return {
             "insights": (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
         }
 
@@ -921,3 +921,4 @@ def has_permission(doc: Document, user: str = None) -> bool:
                 return True
         return False
     return True
+

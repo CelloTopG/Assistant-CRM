@@ -598,12 +598,12 @@ def email_report(name: str, recipients: Optional[List[str]] = None) -> Dict[str,
 # ----- AI Insights -----
 @frappe.whitelist()
 def get_ai_insights(name: str, query: str) -> Dict[str, Any]:
-    """Return Antoine-style insights for an Employer Status Report.
+    """Return WorkCom-style insights for an Employer Status Report.
 
     Builds a compact JSON context with the current window, employer KPIs,
     contribution metrics, service case volumes, a short history of previous
     reports, and the top employers by claims. The context is then passed to
-    the Antoine (OpenAI) engine via EnhancedAIService.
+    the WorkCom (OpenAI) engine via EnhancedAIService.
     """
 
     doc = frappe.get_doc("Employer Status Report", name)
@@ -665,7 +665,7 @@ def get_ai_insights(name: str, query: str) -> Dict[str, Any]:
         return {
             "insights": (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
         }
 
@@ -761,4 +761,5 @@ def _previous_quarter_range(d: date) -> Tuple[date, date]:
     prev_q_month = ((prev_q_end.month - 1) // 3) * 3 + 1
     prev_q_start = date(prev_q_end.year, prev_q_month, 1)
     return prev_q_start, prev_q_end
+
 

@@ -156,10 +156,10 @@ def _initial_menu_text() -> str:
                     lines.append(f"{num}. {text}")
             lines.append("0. Exit")
             built = "\n".join([ln for ln in lines if ln])
-            return built or "Welcome to WCFCB\n1. Chat with Anna\n0. Exit"
+            return built or "Welcome to WCFCB\n1. Chat with WorkCom\n0. Exit"
     except Exception:
         pass
-    return "Welcome to WCFCB\n1. Chat with Anna\n0. Exit"
+    return "Welcome to WCFCB\n1. Chat with WorkCom\n0. Exit"
 
 
 def _render_menu(menu_name: str | None = None) -> str:
@@ -338,7 +338,7 @@ def ussd_webhook():
                 pass
             return f"END {farewell}"
         else:  # Chat AI or Back -> Chat AI by default
-            onboarding = "You're now chatting with Anna. Ask me anything about WCFCB services."
+            onboarding = "You're now chatting with WorkCom. Ask me anything about WCFCB services."
             try:
                 integration.create_unified_inbox_message(conversation_name, {
                     "message_id": f"{session_id}:menu_out:{now()}",
@@ -477,3 +477,4 @@ def cleanup_expired_ussd_sessions() -> int:
     except Exception as e:
         frappe.log_error(f"USSD session cleanup error: {str(e)}", "USSD Session Cleanup")
         return 0
+

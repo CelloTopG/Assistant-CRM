@@ -6,7 +6,7 @@ Comprehensive inbox performance analysis using native ERPNext doctypes:
 - Unified Inbox Conversation: For omnichannel conversations
 - Unified Inbox Message: For message-level metrics
 
-Includes Antoine AI integration for intelligent insights.
+Includes WorkCom AI integration for intelligent insights.
 """
 
 import json
@@ -352,7 +352,7 @@ def get_report_summary(totals: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 @frappe.whitelist()
 def get_ai_insights(filters: str, query: str) -> Dict[str, Any]:
-    """Return Antoine-style insights for Inbox Status Analysis report."""
+    """Return WorkCom-style insights for Inbox Status Analysis report."""
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters or {})
 
     # Ensure dates
@@ -396,7 +396,7 @@ def get_ai_insights(filters: str, query: str) -> Dict[str, Any]:
         return {
             "insights": (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
         }
 
@@ -561,4 +561,5 @@ def get_response_time_chart(filters: str) -> Dict[str, Any]:
         "type": "bar",
         "colors": ["#17a2b8", "#ffc107"],
     }
+
 

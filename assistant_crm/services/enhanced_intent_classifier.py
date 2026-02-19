@@ -140,7 +140,7 @@ class EnhancedIntentClassifierLogger:
 class EnhancedIntentClassifier:
     """
     Enhanced intent classification that integrates live data detection
-    with existing conversation logic while preserving Anna's personality
+    with existing conversation logic while preserving WorkCom's personality
     """
 
     def __init__(self):
@@ -733,7 +733,7 @@ def test_intent_classification():
     try:
         test_messages = [
             {
-                "message": "Hi Anna, can you check my claim status?",
+                "message": "Hi WorkCom, can you check my claim status?",
                 "expected_intent": "live_data",
                 "user_persona": "beneficiary"
             },
@@ -748,7 +748,7 @@ def test_intent_classification():
                 "user_persona": "beneficiary"
             },
             {
-                "message": "Hello Anna, how are you today?",
+                "message": "Hello WorkCom, how are you today?",
                 "expected_intent": "general",
                 "user_persona": "beneficiary"
             }
@@ -790,3 +790,4 @@ def test_intent_classification():
             "success": False,
             "error": str(e)
         }
+

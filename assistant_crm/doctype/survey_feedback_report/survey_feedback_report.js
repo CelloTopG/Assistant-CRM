@@ -95,7 +95,7 @@ function render_ai_sidebar(frm) {
       <div class="small text-muted">AI Insights</div>
       <div class="frappe-control"><div class="control-input-wrapper">
         <div class="control-input flex">
-          <input class="form-control" type="text" placeholder="This is Antoine, how can I help?" />
+          <input class="form-control" type="text" placeholder="This is WorkCom, how can I help?" />
           <button class="btn btn-default" style="margin-left:6px">Ask</button>
         </div>
         <div class="help-box small text-muted" style="margin-top:6px">
@@ -146,4 +146,5 @@ function bind_drilldowns(frm) {
     frappe.set_route('List', dt);
   });
 }
+
 

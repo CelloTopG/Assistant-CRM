@@ -52,7 +52,7 @@
             border-radius: 5px;
         }
         .user-message { background: #007bff; color: white; text-align: right; }
-        .anna-message { background: #e9ecef; color: #333; }
+        .WorkCom-message { background: #e9ecef; color: #333; }
     </style>
 </head>
 <body>
@@ -108,7 +108,7 @@
                     },
                     body: JSON.stringify({
                         user_id: 'test_user',
-                        persona: 'Anna'
+                        persona: 'WorkCom'
                     })
                 });
                 
@@ -148,7 +148,7 @@
                     },
                     body: JSON.stringify({
                         session_id: sessionId,
-                        message: 'Hello Anna, this is a test message'
+                        message: 'Hello WorkCom, this is a test message'
                     })
                 });
                 
@@ -156,7 +156,7 @@
                 
                 if (data.message && data.message.success !== false) {
                     log(`✅ Message sent successfully`, 'success');
-                    log(`📝 Anna's response: ${data.message.response || data.message}`, 'info');
+                    log(`📝 WorkCom's response: ${data.message.response || data.message}`, 'info');
                     updateStatus('Message sending successful');
                 } else {
                     log(`❌ Message sending failed: ${JSON.stringify(data)}`, 'error');
@@ -247,7 +247,7 @@
                 const data = await response.json();
                 
                 if (data.message && data.message.success !== false) {
-                    log(`🤖 Anna: ${data.message.response || data.message}`, 'success');
+                    log(`🤖 WorkCom: ${data.message.response || data.message}`, 'success');
                 } else {
                     log(`❌ Error: ${data.message?.error || 'Unknown error'}`, 'error');
                 }
@@ -270,7 +270,7 @@
                     },
                     body: JSON.stringify({
                         user_id: 'bridge_test_user',
-                        persona: 'Anna'
+                        persona: 'WorkCom'
                     })
                 });
 
@@ -369,3 +369,4 @@
     </script>
 </body>
 </html>
+

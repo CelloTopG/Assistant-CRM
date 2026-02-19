@@ -1,7 +1,7 @@
 /**
  * SLA Compliance Analysis - Native ERPNext Script Report Frontend
  *
- * Comprehensive SLA compliance analysis with filters, charts, and Antoine AI integration.
+ * Comprehensive SLA compliance analysis with filters, charts, and WorkCom AI integration.
  * Uses Unified Inbox Conversation as the primary data source.
  */
 
@@ -59,9 +59,9 @@ frappe.query_reports["SLA Compliance Analysis"] = {
     ],
 
     onload: function (report) {
-        // Add Antoine AI button
-        report.page.add_inner_button(__("Ask Antoine"), function () {
-            show_antoine_dialog(report);
+        // Add WorkCom AI button
+        report.page.add_inner_button(__("Ask WorkCom"), function () {
+            show_WorkCom_dialog(report);
         }, __("AI Insights"));
 
         // Add chart buttons
@@ -130,19 +130,19 @@ frappe.query_reports["SLA Compliance Analysis"] = {
 
 
 // =====================
-// Antoine AI Dialog
+// WorkCom AI Dialog
 // =====================
 
-function show_antoine_dialog(report) {
+function show_WorkCom_dialog(report) {
     let d = new frappe.ui.Dialog({
-        title: __("Ask Antoine - SLA Compliance Insights"),
+        title: __("Ask WorkCom - SLA Compliance Insights"),
         size: "large",
         fields: [
             {
                 fieldname: "query",
                 label: __("Your Question"),
                 fieldtype: "Small Text",
-                placeholder: __("Ask Antoine about SLA compliance, trends, or recommendations..."),
+                placeholder: __("Ask WorkCom about SLA compliance, trends, or recommendations..."),
                 reqd: 1
             },
             {
@@ -161,7 +161,7 @@ function show_antoine_dialog(report) {
             d.get_field("response_html").$wrapper.html(`
                 <div class="text-center text-muted" style="padding: 40px;">
                     <i class="fa fa-spinner fa-spin fa-2x"></i>
-                    <p style="margin-top: 10px;">${__("Antoine is thinking...")}</p>
+                    <p style="margin-top: 10px;">${__("WorkCom is thinking...")}</p>
                 </div>
             `);
 
@@ -174,9 +174,9 @@ function show_antoine_dialog(report) {
                 callback: function (r) {
                     if (r.message && r.message.insights) {
                         d.get_field("response_html").$wrapper.html(`
-                            <div class="antoine-response" style="padding: 15px; background: var(--bg-light-gray); border-radius: 8px; max-height: 400px; overflow-y: auto;">
+                            <div class="WorkCom-response" style="padding: 15px; background: var(--bg-light-gray); border-radius: 8px; max-height: 400px; overflow-y: auto;">
                                 <div style="margin-bottom: 10px;">
-                                    <strong><i class="fa fa-robot"></i> ${__("Antoine's Analysis:")}</strong>
+                                    <strong><i class="fa fa-robot"></i> ${__("WorkCom's Analysis:")}</strong>
                                 </div>
                                 <div style="white-space: pre-wrap;">${r.message.insights}</div>
                             </div>
@@ -293,3 +293,4 @@ function show_chart_dialog(title, chart_data) {
         barOptions: chart_data.barOptions || {}
     });
 }
+

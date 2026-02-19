@@ -41,7 +41,7 @@
             const messagesDiv = document.getElementById('chatMessages');
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message ' + (isUser ? 'user-message' : 'ai-message');
-            messageDiv.innerHTML = `<strong>${isUser ? 'You' : 'Anna'}:</strong> ${message}`;
+            messageDiv.innerHTML = `<strong>${isUser ? 'You' : 'WorkCom'}:</strong> ${message}`;
             messagesDiv.appendChild(messageDiv);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
@@ -166,3 +166,4 @@ Note: The API key should start with "AIzaSy" and be about 39 characters long.`);
     </script>
 </body>
 </html>
+

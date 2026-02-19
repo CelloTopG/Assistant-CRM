@@ -112,9 +112,9 @@ seo_metadata = {
     },
 
     "chat_support": {
-        "title_template": "Chat Support - Get Instant Help | WCFCB Anna Assistant",
-        "description_template": "Get instant support through WCFCB's AI-powered chat assistant Anna. 24/7 help for claims, benefits, compliance, and general inquiries.",
-        "keywords": ["chat support", "customer service", "AI assistant", "instant help", "WCFCB Anna"]
+        "title_template": "Chat Support - Get Instant Help | WCFCB WorkCom Assistant",
+        "description_template": "Get instant support through WCFCB's AI-powered chat assistant WorkCom. 24/7 help for claims, benefits, compliance, and general inquiries.",
+        "keywords": ["chat support", "customer service", "AI assistant", "instant help", "WCFCB WorkCom"]
     },
     
     "medical_provider": {
@@ -323,3 +323,4 @@ def generate_sitemap_xml():
             frappe.log_error(f"Sitemap generation error for {doctype}: {str(e)}")
     
     return sitemap_urls
+

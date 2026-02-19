@@ -85,7 +85,7 @@ def process_whatsapp_message_realtime(message_data):
 
             # Real-time broadcast of incoming message to agents/UI only.
             # AI responses are produced exclusively via Unified Inbox 
-            # SimplifiedChat  EnhancedAIService (Antoine / OpenAI).
+            # SimplifiedChat  EnhancedAIService (WorkCom / OpenAI).
             realtime_service.broadcast_message(
                 "WhatsApp",
                 from_number,
@@ -219,7 +219,7 @@ def process_facebook_message_realtime(messaging_event):
     This helper is now **display-only**: it updates real-time dashboards for
     agents but does not perform any AI routing. All AI responses for Facebook
     are handled via the Unified Inbox  SimplifiedChat 
-    EnhancedAIService (Antoine / OpenAI) pipeline in ``facebook_webhook``.
+    EnhancedAIService (WorkCom / OpenAI) pipeline in ``facebook_webhook``.
     """
     try:
         if "message" not in messaging_event:
@@ -1107,3 +1107,4 @@ def handle_facebook_verification():
         return challenge
     else:
         frappe.throw(_("Invalid verify token"), frappe.AuthenticationError)
+

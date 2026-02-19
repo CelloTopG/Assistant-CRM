@@ -29,7 +29,7 @@
 ### **1. ✅ Consolidated Chat API (`consolidated_chat_api.py`)**
 
 **New Service Class:** `ConsolidatedChatService`
-- **Enhanced Anna Chat integration** - Works with consolidated doctype
+- **Enhanced WorkCom Chat integration** - Works with consolidated doctype
 - **Omnichannel support** - Multi-channel chat handling
 - **Advanced analytics** - Response time, interaction count, sentiment tracking
 - **Conversation history** - HTML-formatted conversation storage
@@ -120,7 +120,7 @@
 **New Service Class:** `ConsolidatedContextService`
 - **Enhanced user context** - Comprehensive user information
 - **Consolidated data integration** - Uses all enhanced doctypes
-- **Chat context** - Session-based context from Anna Chat
+- **Chat context** - Session-based context from WorkCom Chat
 - **Metrics context** - Performance data integration
 - **Template context** - Available templates and personalization
 
@@ -225,3 +225,4 @@ The assistant_crm app now has a complete set of consolidated APIs that work seam
 
 **API & Service Updates completed on January 19, 2025**  
 **Surgical precision approach ensures zero downtime and seamless transition**
+

@@ -1180,7 +1180,7 @@ def process_message_with_ai(message_id: str):
                     pass
                 return
 
-        # Call AI service using a direct Antoine path (no SimplifiedChat layer)
+        # Call AI service using a direct WorkCom path (no SimplifiedChat layer)
         start_time = time.time()
 
         # Get customer context from CoreBusiness if available
@@ -1218,7 +1218,7 @@ def process_message_with_ai(message_id: str):
         except Exception:
             routing_result = {}
 
-        # Build Antoine context, mirroring SimplifiedChatAPI._generate_ai_response
+        # Build WorkCom context, mirroring SimplifiedChatAPI._generate_ai_response
         ai_context = enhanced_context.copy()
         try:
             ai_context.update({
@@ -1231,7 +1231,7 @@ def process_message_with_ai(message_id: str):
             # Live data from router if available
             if routing_result.get("source") == "live_data" and routing_result.get("data"):
                 live_data = routing_result.get("data")
-                # Unwrap nested 'data' if present so Antoine sees the raw structure
+                # Unwrap nested 'data' if present so WorkCom sees the raw structure
                 if isinstance(live_data, dict) and "type" not in live_data and isinstance(live_data.get("data"), dict):
                     live_data = live_data.get("data")
                 ai_context["live_data"] = live_data
@@ -1279,7 +1279,7 @@ def process_message_with_ai(message_id: str):
         except Exception:
             pass
 
-        # Direct Antoine call, mirroring report doctypes and SimplifiedChatAPI's preferred path
+        # Direct WorkCom call, mirroring report doctypes and SimplifiedChatAPI's preferred path
         ai_response = ""
         try:
             from assistant_crm.services.enhanced_ai_service import EnhancedAIService
@@ -1322,7 +1322,7 @@ def process_message_with_ai(message_id: str):
         message_doc.set_ai_response(
             response=ai_response,
             confidence=confidence,
-            model_used="Anna AI Assistant",
+            model_used="WorkCom",
             processing_time=processing_time
         )
 
@@ -1340,7 +1340,7 @@ def process_message_with_ai(message_id: str):
                 "direction": "Outbound",
                 "message_type": "text",
                 "message_content": ai_response,
-                "sender_name": "Anna AI Assistant",
+                "sender_name": "WorkCom",
                 "sender_id": "ai_assistant",
                 "timestamp": now(),
                 "processed_by_ai": 1,
@@ -5448,3 +5448,4 @@ def test_real_telegram_webhook_timestamp():
             "status": "error",
             "message": error_msg
         }
+

@@ -111,7 +111,7 @@ def test_new_api_key():
     try:
         from assistant_crm.api.chat import send_message
         result = send_message(
-            message="hi anna",
+            message="hi WorkCom",
             session_id="new_api_complete_test_456"
         )
         print("   ✅ Complete chat flow executed")
@@ -153,3 +153,4 @@ def test_new_api_key():
 # Run test if called directly
 if __name__ == "__main__":
     test_new_api_key()
+

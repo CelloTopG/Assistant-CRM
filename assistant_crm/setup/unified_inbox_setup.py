@@ -76,7 +76,7 @@ def create_default_settings():
         settings.auto_escalate_low_confidence = 1
         settings.ai_response_delay_seconds = 2
         settings.enable_ai_learning = 1
-        settings.ai_model_preference = "Anna AI Assistant"
+        settings.ai_model_preference = "WorkCom"
         
         # Tawk.to Settings (using provided credentials)
         settings.tawk_to_api_key = "47585bce62f84437dace4a6ed63ee14b1ce2a6dd"

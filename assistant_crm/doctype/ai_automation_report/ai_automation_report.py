@@ -440,7 +440,7 @@ def smoke_create_and_generate_ai_automation_report(period_type: str = "Monthly")
 
 @frappe.whitelist()
 def get_ai_insights(name: str, query: str) -> Dict[str, Any]:
-    """Return Antoine-style insights for an AI Automation Report."""
+    """Return WorkCom-style insights for an AI Automation Report."""
     doc = frappe.get_doc("AI Automation Report", name)
     history = frappe.get_all(
         "AI Automation Report",
@@ -494,7 +494,7 @@ def get_ai_insights(name: str, query: str) -> Dict[str, Any]:
         return {
             "insights": (
                 "AI insights are temporarily unavailable. Please ask your system "
-                "administrator to configure Antoine/OpenAI settings in Enhanced AI Settings."
+                "administrator to configure WorkCom/OpenAI settings in Enhanced AI Settings."
             )
         }
 
@@ -529,4 +529,5 @@ def _build_ai_email_summary(doc) -> str:
     except Exception:
         frappe.log_error(frappe.get_traceback(), "AI Automation Report email summary error")
         return ""
+
 
