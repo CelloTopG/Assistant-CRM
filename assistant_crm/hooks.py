@@ -175,7 +175,8 @@ doc_events = {
     "Issue": {
         "validate": [
             "assistant_crm.issue_hooks.prevent_platform_source_edit",
-            "assistant_crm.issue_hooks.sync_escalated_agent_name"
+            "assistant_crm.issue_hooks.sync_escalated_agent_name",
+            "assistant_crm.issue_hooks.validate_issue_closure"
         ],
         "after_insert": "assistant_crm.issue_hooks.enqueue_branch_assignment"
     }

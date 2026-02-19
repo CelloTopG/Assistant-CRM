@@ -834,6 +834,15 @@ def escalate_conversation(conversation_name: str, reason: str, priority: str = N
 def close_conversation(conversation_name: str, resolution_notes: str = None):
 	"""Close a conversation."""
 	try:
+		# Role check: only supervisors are allowed to close tickets
+		supervisor_roles = ["System Manager", "Assistant CRM Manager"]
+		user_roles = frappe.get_roles()
+		if not any(role in supervisor_roles for role in user_roles):
+			return {
+				"status": "error",
+				"message": "Only Supervisors (Assistant CRM Manager or System Manager) are authorized to close conversations."
+			}
+
 		conversation_doc = frappe.get_doc("Unified Inbox Conversation", conversation_name)
 
 		# Remember which agent owned this conversation so we can refresh
@@ -2127,6 +2136,16 @@ def sync_conversation_issue_status(conversation_name, conversation_status, assig
     conversation's status. Robust to legacy records where only one side of the link exists.
     """
     try:
+        # Role check for closing status
+        if conversation_status in ["Closed", "Resolved"]:
+            supervisor_roles = ["System Manager", "Assistant CRM Manager"]
+            user_roles = frappe.get_roles()
+            if not any(role in supervisor_roles for role in user_roles):
+                return {
+                    "status": "error",
+                    "message": "Only Supervisors (Assistant CRM Manager or System Manager) are authorized to close conversations."
+                }
+
         # 1) Resolve the Issue linked to this conversation
         issue_name = frappe.db.get_value(
             "Issue",

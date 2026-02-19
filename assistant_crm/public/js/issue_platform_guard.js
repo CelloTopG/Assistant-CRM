@@ -7,6 +7,24 @@ frappe.ui.form.on('Issue', {
     enforce_platform_source_read_only(frm);
     update_agent_display_names(frm);
     show_escalation_indicator(frm);
+    validate_status_change(frm);
+  },
+  validate(frm) {
+    if (frm.doc.status === 'Closed' || frm.doc.status === 'Resolved') {
+      const supervisorRoles = ["System Manager", "Assistant CRM Manager"];
+      const isSupervisor = frappe.user_roles.some(role => supervisorRoles.includes(role));
+
+      if (!isSupervisor) {
+        // Double check if it was already closed (allow saving other fields)
+        if (frm.doc.__onsave && frm.doc.__onsave.status !== 'Closed' && frm.doc.__onsave.status !== 'Resolved') {
+          // This is slightly tricky in client script; we rely on the server side mostly
+          // but we can warn the user.
+        }
+      }
+    }
+  },
+  status: function (frm) {
+    validate_status_change(frm);
   },
   custom_assigned_agent: function (frm) {
     update_agent_display_names(frm);
@@ -81,6 +99,24 @@ function show_escalation_indicator(frm) {
     frm.sidebar.add_user_action(__('Escalated to: {0}', [display]), () => {
       frappe.set_route('Form', 'User', user_id);
     }, 'fa fa-user');
+  }
+}
+
+function validate_status_change(frm) {
+  if (frm.doc.status === 'Closed' || frm.doc.status === 'Resolved') {
+    const supervisorRoles = ["System Manager", "Assistant CRM Manager"];
+    const isSupervisor = frappe.user_roles.some(role => supervisorRoles.includes(role));
+
+    if (!isSupervisor) {
+      // If it was already closed, don't revert
+      frappe.db.get_value('Issue', frm.doc.name, 'status', (r) => {
+        if (r && r.status !== 'Closed' && r.status !== 'Resolved') {
+          frappe.msgprint(__('Only Supervisors are authorized to close or resolve tickets.'));
+          // Attempt to revert to previous status if possible, or just let server-side block it
+          // Reverting in client script is messy; the message is enough as server-side will block save.
+        }
+      });
+    }
   }
 }
 

@@ -520,6 +520,15 @@ class InboxManager {
         } else {
             $('#issue-btn').hide();
         }
+
+        // Only supervisors are allowed to close conversations
+        const supervisorRoles = ["System Manager", "Assistant CRM Manager"];
+        const isSupervisor = frappe.user_roles.some(role => supervisorRoles.includes(role));
+        if (isSupervisor) {
+            $('#close-btn').show();
+        } else {
+            $('#close-btn').hide();
+        }
     }
 
     checkCustomerData(conversationName) {
