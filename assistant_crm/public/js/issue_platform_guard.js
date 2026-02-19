@@ -72,19 +72,15 @@ function update_agent_display_names(frm) {
 
 function show_escalation_indicator(frm) {
   if (frm.doc.custom_escalated_agent) {
-    // Add a prominent sidebar indicator
-    let user_id = frm.doc.custom_escalated_agent;
-    frappe.db.get_value('User', user_id, 'full_name', (r) => {
-      let name = r ? r.full_name : user_id;
-      let display = `${name} (${user_id})`;
+    // Add a sidebar indicator using native ERPNext styling
+    const user_id = frm.doc.custom_escalated_agent;
+    const display = frm.doc.custom_escalated_agent_name || user_id;
 
-      frm.sidebar.add_user_action(__('Escalated to: {0}', [display]), () => {
-        frappe.set_route('Form', 'User', user_id);
-      }, 'fa fa-arrow-circle-up text-danger');
-
-      // Also show a dashboard alert if escalated
-      frm.dashboard.add_comment(__('This issue has been escalated to {0}.', [`<b>${display}</b>`]), 'red', true);
-    });
+    // Use native fonts and colors by avoiding color-specific classes
+    // and using a standard agent icon
+    frm.sidebar.add_user_action(__('Escalated to: {0}', [display]), () => {
+      frappe.set_route('Form', 'User', user_id);
+    }, 'fa fa-user');
   }
 }
 
