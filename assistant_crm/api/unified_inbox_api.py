@@ -695,9 +695,21 @@ def send_message():
         }
 
     except Exception as e:
-        # Ensure meaningful error surfaces to the UI while capturing logs
-        frappe.log_error(f"Error sending message: {str(e)}", "Unified Inbox API Error")
-        return {"status": "error", "message": f"Failed to send message: {str(e)}"}
+        # Standardized log capture for System Administrators
+        log_title = "Unified Inbox: Reply Failed"
+        log_message = (
+            f"User: {frappe.session.user}\n"
+            f"Conversation: {conversation_name if 'conversation_name' in locals() else 'Unknown'}\n"
+            f"Error: {str(e)}\n\n"
+            f"Traceback:\n{frappe.get_traceback()}"
+        )
+        frappe.log_error(log_message, log_title)
+        
+        # User-friendly message for the agent
+        return {
+            "status": "error", 
+            "message": "We couldn't send your message right now. Our technical team has been logged of this issue. Please try again in a moment."
+        }
 
 
 @frappe.whitelist()
@@ -2256,10 +2268,17 @@ def sync_conversation_issue_status(conversation_name, conversation_status, assig
         }
 
     except Exception as e:
-        frappe.log_error(f"Error syncing status for conversation {conversation_name}: {str(e)}", "Status Sync Error")
+        log_title = "Unified Inbox: Status Sync Failed"
+        log_message = (
+            f"Conversation: {conversation_name}\n"
+            f"Target Status: {conversation_status}\n"
+            f"Error: {str(e)}\n\n"
+            f"Traceback:\n{frappe.get_traceback()}"
+        )
+        frappe.log_error(log_message, log_title)
         return {
             "status": "error",
-            "message": f"Failed to sync status: {str(e)}"
+            "message": "We were unable to synchronize the status change with the ERPNext ticket. The system administrator has been logged."
         }
 
 

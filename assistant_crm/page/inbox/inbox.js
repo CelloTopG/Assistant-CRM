@@ -1037,11 +1037,9 @@ class InboxManager {
                         if (ps && ps.error_details) {
                             const code = ps.error_details.status_code ? `status ${ps.error_details.status_code}` : '';
                             const reason = ps.error_details.response_text || ps.message || '';
-                            const payload = ps.error_details.request_payload ? JSON.stringify(ps.error_details.request_payload) : '';
                             const parts = [];
                             if (code) parts.push(code);
                             if (reason) parts.push(reason);
-                            if (payload) parts.push(`payload ${payload}`);
                             extra = parts.length ? ' (' + parts.join(' | ') + ')' : '';
                             console.warn('Platform send failed:', ps);
                         }
@@ -1049,15 +1047,22 @@ class InboxManager {
                         console.warn('Error parsing platform_send details', e);
                     }
 
-                    frappe.show_alert({
-                        message: 'Failed to send message: ' + (response.message?.message || 'Unknown error') + extra,
-                        indicator: 'red'
+                    // Use msgprint for errors to ensure the user sees them
+                    const display_msg = response.message?.message || 'Unknown error';
+                    frappe.msgprint({
+                        title: __('Message Sending Failed'),
+                        indicator: 'red',
+                        message: `<strong>${display_msg}</strong>${extra ? `<br><small class='text-muted'>${extra}</small>` : ''}`
                     });
                 }
             },
             error: (error) => {
                 console.error('Error sending message:', error);
-                frappe.show_alert({ message: 'Error sending message. Please try again.', indicator: 'red' });
+                frappe.msgprint({
+                    title: __('Network Error'),
+                    indicator: 'red',
+                    message: __('We encountered a technical issue while connecting to the server. Your message was not sent. Please check your connection and try again.')
+                });
             },
             always: () => {
                 // Restore button and input state

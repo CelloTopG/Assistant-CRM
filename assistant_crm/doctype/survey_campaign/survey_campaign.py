@@ -85,7 +85,10 @@ class SurveyCampaign(Document):
 			)
 			frappe.msgprint(msg)
 		else:
-			frappe.throw(f"Failed to distribute survey: {result.get('error', 'Unknown error')}")
+			# Distinguish between known errors and unknown errors
+			error_msg = result.get('error', 'Unknown error')
+			frappe.log_error(f"Survey Distribution Error for {self.name}: {error_msg}", "Survey Campaign Distribution Failure")
+			frappe.throw(f"Wait, we couldn't send this survey. Reason: {error_msg}. Our administrators have been notified.")
 
 @frappe.whitelist(allow_guest=False)
 def get_target_audience_count(campaign_name):
@@ -176,8 +179,18 @@ def launch_campaign(campaign_name):
 				return {'success': False, 'error': f'Distribution failed: {dist_error}'}
 
 	except Exception as e:
-		frappe.log_error(f"Launch campaign error: {str(e)}")
-		return {'success': False, 'error': str(e)}
+		log_title = "Survey Campaign: Launch Failed"
+		log_message = (
+			f"User: {frappe.session.user}\n"
+			f"Campaign: {campaign_name}\n"
+			f"Error: {str(e)}\n\n"
+			f"Traceback:\n{frappe.get_traceback()}"
+		)
+		frappe.log_error(log_message, log_title)
+		return {
+			'success': False, 
+			'error': "Something went wrong while launching the campaign. The system administrator has been logged. Please check the campaign settings and try again."
+		}
 
 @frappe.whitelist(allow_guest=False)
 def preview_recipients_from_doc(doc: dict | str, limit: int = 20):

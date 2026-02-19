@@ -483,10 +483,16 @@ class SurveyService:
             }
 
         except Exception as e:
-            frappe.log_error(f"Survey distribution failed: {str(e)}")
+            log_title = "Survey Service: Distribution Fatal Error"
+            log_message = (
+                f"Campaign: {campaign.name if campaign else 'Unknown'}\n"
+                f"Error: {str(e)}\n"
+                f"Traceback:\n{frappe.get_traceback()}"
+            )
+            frappe.log_error(log_message, log_title)
             return {
                 'success': False,
-                'error': str(e)
+                'error': "A fatal error occurred during survey distribution. System logs have been captured."
             }
 
     def get_survey_recipients(self, campaign):
