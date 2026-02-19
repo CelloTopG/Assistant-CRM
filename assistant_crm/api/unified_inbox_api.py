@@ -834,14 +834,30 @@ def escalate_conversation(conversation_name: str, reason: str, priority: str = N
 def close_conversation(conversation_name: str, resolution_notes: str = None):
 	"""Close a conversation."""
 	try:
-		# Role check: only supervisors are allowed to close tickets
-		supervisor_roles = ["System Manager", "Assistant CRM Manager"]
+		# Role check: restrict WCF Customer Service Assistant & Officer
+		# authorized supervisor roles
+		supervisor_roles = ["System Manager", "Assistant CRM Manager", "Customer Service Manager"]
 		user_roles = frappe.get_roles()
-		if not any(role in supervisor_roles for role in user_roles):
+		
+		# If user has an agent role but NOT a supervisor role, block them
+		agent_roles = ["WCF Customer Service Assistant", "WCF Customer Service Officer"]
+		is_agent = any(role in agent_roles for role in user_roles)
+		is_supervisor = any(role in supervisor_roles for role in user_roles)
+
+		if is_agent and not is_supervisor:
 			return {
 				"status": "error",
-				"message": "Only Supervisors (Assistant CRM Manager or System Manager) are authorized to close conversations."
+				"message": "WCF Customer Service Assistants and Officers are not authorized to close conversations. Please contact a Supervisor."
 			}
+		
+		# Fallback general check
+		if not is_supervisor and not is_agent:
+			# If they have neither, still block for safety unless they are System Manager (covered above)
+			if "System Manager" not in user_roles:
+				return {
+					"status": "error",
+					"message": "Only Supervisors (Managers) are authorized to close conversations."
+				}
 
 		conversation_doc = frappe.get_doc("Unified Inbox Conversation", conversation_name)
 
@@ -1949,7 +1965,7 @@ def get_supervisors():
 
         supervisors = []
         # Define supervisor roles
-        supervisor_roles = ["System Manager", "Assistant CRM Manager"]
+        supervisor_roles = ["System Manager", "Assistant CRM Manager", "Customer Service Manager"]
 
         for user in users:
             try:
@@ -2138,12 +2154,23 @@ def sync_conversation_issue_status(conversation_name, conversation_status, assig
     try:
         # Role check for closing status
         if conversation_status in ["Closed", "Resolved"]:
-            supervisor_roles = ["System Manager", "Assistant CRM Manager"]
+            supervisor_roles = ["System Manager", "Assistant CRM Manager", "Customer Service Manager"]
+            agent_roles = ["WCF Customer Service Assistant", "WCF Customer Service Officer"]
             user_roles = frappe.get_roles()
-            if not any(role in supervisor_roles for role in user_roles):
+            
+            is_supervisor = any(role in supervisor_roles for role in user_roles)
+            is_agent = any(role in agent_roles for role in user_roles)
+
+            if is_agent and not is_supervisor:
                 return {
                     "status": "error",
-                    "message": "Only Supervisors (Assistant CRM Manager or System Manager) are authorized to close conversations."
+                    "message": "WCF Customer Service Assistants and Officers are not authorized to close conversations."
+                }
+            
+            if not is_supervisor:
+                return {
+                    "status": "error",
+                    "message": "Only Supervisors are authorized to close conversations."
                 }
 
         # 1) Resolve the Issue linked to this conversation

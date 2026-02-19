@@ -104,16 +104,22 @@ function show_escalation_indicator(frm) {
 
 function validate_status_change(frm) {
   if (frm.doc.status === 'Closed' || frm.doc.status === 'Resolved') {
-    const supervisorRoles = ["System Manager", "Assistant CRM Manager"];
-    const isSupervisor = frappe.user_roles.some(role => supervisorRoles.includes(role));
+    const supervisorRoles = ["System Manager", "Assistant CRM Manager", "Customer Service Manager"];
+    const agentRoles = ["WCF Customer Service Assistant", "WCF Customer Service Officer"];
 
-    if (!isSupervisor) {
-      // If it was already closed, don't revert
+    const isSupervisor = frappe.user_roles.some(role => supervisorRoles.includes(role));
+    const isAgent = frappe.user_roles.some(role => agentRoles.includes(role));
+
+    if (isAgent && !isSupervisor) {
       frappe.db.get_value('Issue', frm.doc.name, 'status', (r) => {
         if (r && r.status !== 'Closed' && r.status !== 'Resolved') {
-          frappe.msgprint(__('Only Supervisors are authorized to close or resolve tickets.'));
-          // Attempt to revert to previous status if possible, or just let server-side block it
-          // Reverting in client script is messy; the message is enough as server-side will block save.
+          frappe.msgprint(__('Customer Service Assistants and Officers are not authorized to close or resolve tickets.'));
+        }
+      });
+    } else if (!isSupervisor) {
+      frappe.db.get_value('Issue', frm.doc.name, 'status', (r) => {
+        if (r && r.status !== 'Closed' && r.status !== 'Resolved') {
+          frappe.msgprint(__('Only Supervisors and Managers are authorized to close or resolve tickets.'));
         }
       });
     }

@@ -522,9 +522,14 @@ class InboxManager {
         }
 
         // Only supervisors are allowed to close conversations
-        const supervisorRoles = ["System Manager", "Assistant CRM Manager"];
+        // Restricted roles: WCF Customer Service Assistant, WCF Customer Service Officer
+        const supervisorRoles = ["System Manager", "Assistant CRM Manager", "Customer Service Manager"];
+        const agentRoles = ["WCF Customer Service Assistant", "WCF Customer Service Officer"];
+
         const isSupervisor = frappe.user_roles.some(role => supervisorRoles.includes(role));
-        if (isSupervisor) {
+        const isAgent = frappe.user_roles.some(role => agentRoles.includes(role));
+
+        if (isSupervisor || (!isAgent && !isSupervisor && frappe.user_roles.includes('System Manager'))) {
             $('#close-btn').show();
         } else {
             $('#close-btn').hide();

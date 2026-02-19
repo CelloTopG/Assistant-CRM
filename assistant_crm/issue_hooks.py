@@ -104,6 +104,7 @@ def sync_escalated_agent_name(doc, method):
 def validate_issue_closure(doc, method):
     """
     Only allow users with Supervisor roles to close or resolve an Issue.
+    Specifically restricts WCF Customer Service Assistant & Officer.
     """
     try:
         if doc.status not in ["Closed", "Resolved"]:
@@ -111,23 +112,27 @@ def validate_issue_closure(doc, method):
 
         # Check if this is a transition to closed/resolved
         if not doc.name:
-            # New document being created as Closed/Resolved? Unusual but possible.
             pass
         else:
             old_status = frappe.db.get_value("Issue", doc.name, "status")
-            # If it was already closed/resolved, we allow the save (e.g. for other field updates)
             if old_status in ["Closed", "Resolved"]:
                 return
 
-        # Define supervisor roles
-        supervisor_roles = ["System Manager", "Assistant CRM Manager"]
+        # Define roles
+        supervisor_roles = ["System Manager", "Assistant CRM Manager", "Customer Service Manager"]
+        agent_roles = ["WCF Customer Service Assistant", "WCF Customer Service Officer"]
         user_roles = frappe.get_roles()
 
-        if not any(role in supervisor_roles for role in user_roles):
-            frappe.throw(_("Only Supervisors (Assistant CRM Manager or System Manager) are authorized to close or resolve tickets."))
+        is_supervisor = any(role in supervisor_roles for role in user_roles)
+        is_agent = any(role in agent_roles for role in user_roles)
+
+        if is_agent and not is_supervisor:
+            frappe.throw(_("WCF Customer Service Assistants and Officers are not authorized to close or resolve tickets. Please refer this to a Supervisor."))
+            
+        if not is_supervisor:
+            frappe.throw(_("Only Supervisors and Managers are authorized to close or resolve tickets."))
             
     except frappe.ValidationError:
         raise
     except Exception as e:
-        # Fail safe for errors during role check
         frappe.log_error(f"Error in validate_issue_closure: {str(e)}", "Issue Closure Validation Error")
