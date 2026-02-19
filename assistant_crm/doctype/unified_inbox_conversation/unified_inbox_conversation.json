@@ -132,7 +132,7 @@
             "fieldname": "status",
             "fieldtype": "Select",
             "label": "Status",
-            "options": "New\nAI Processing\nAgent Assigned\nIn Progress\nPending Customer\nResolved\nClosed",
+            "options": "New\nAI Processing\nAgent Assigned\nIn Progress\nPending Customer\nEscalated\nResolved\nClosed",
             "default": "New",
             "in_list_view": 1
         },
