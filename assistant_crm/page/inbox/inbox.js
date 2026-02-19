@@ -912,6 +912,7 @@ class InboxManager {
         const html = sorted.map(msg => {
             // Uniform outbound color - no distinction between AI/agent/manual
             const messageClass = msg.direction === 'Inbound' ? 'inbound' : 'outbound';
+            const isAI = msg.sender_name === 'Anna AI Assistant';
 
             return `
                 ${ticketNumber ? `
