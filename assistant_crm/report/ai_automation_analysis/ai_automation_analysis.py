@@ -23,10 +23,8 @@ from frappe import _
 from frappe.utils import getdate, get_first_day, get_last_day, now_datetime, get_datetime, cint, flt
 from assistant_crm.report.report_utils import get_period_dates
 
-# Business hours definition (configurable via CRM Settings)
-BUSINESS_START = time(8, 0)
-BUSINESS_END = time(17, 0)
-BUSINESS_DAYS = {0, 1, 2, 3, 4}  # Monday to Friday
+# Import business hours utilities
+from assistant_crm.business_utils import is_business_hours, get_business_hours
 
 
 def execute(filters: Optional[Dict[str, Any]] = None) -> Tuple:
@@ -61,11 +59,8 @@ def get_columns() -> List[Dict[str, Any]]:
 
 
 def _is_business_hours(ts) -> bool:
-    """Check if timestamp is within business hours."""
-    if not ts:
-        return False
-    dt_val = get_datetime(ts)
-    return dt_val.weekday() in BUSINESS_DAYS and BUSINESS_START <= dt_val.time() <= BUSINESS_END
+    """Check if timestamp is within business hours using centralized utility."""
+    return is_business_hours(ts)
 
 
 def get_data(filters: frappe._dict) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:

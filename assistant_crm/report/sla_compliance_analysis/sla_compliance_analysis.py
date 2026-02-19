@@ -19,10 +19,8 @@ from frappe.utils import getdate, get_datetime
 from assistant_crm.report.report_utils import get_period_dates
 
 
-# Business Hours Configuration
-BUSINESS_START = time(8, 0)
-BUSINESS_END = time(17, 0)
-BUSINESS_DAYS = {0, 1, 2, 3, 4}  # Mon-Fri
+# Import business hours utilities
+from assistant_crm.business_utils import is_business_hours, get_business_minutes_between, get_business_hours
 
 # Categories
 CATEGORY_CLAIMS = "Claims"
@@ -268,7 +266,7 @@ def _process_conversation(
 
     if first_in and first_out:
         if sla and sla.get("business_hours_only"):
-            frt_minutes = _business_minutes_between(first_in, first_out)
+            frt_minutes = get_business_minutes_between(first_in, first_out)
         else:
             frt_minutes = _minutes_between(first_in, first_out)
 
@@ -290,7 +288,7 @@ def _process_conversation(
         end_ts = _get_resolution_time(conv)
         if end_ts and first_in:
             if sla and sla.get("business_hours_only"):
-                minutes = _business_minutes_between(first_in, end_ts)
+                minutes = get_business_minutes_between(first_in, end_ts)
             else:
                 minutes = _minutes_between(first_in, end_ts)
             rt_hours = minutes / 60.0
@@ -310,7 +308,7 @@ def _process_conversation(
         if first_in:
             esc_dt = get_datetime(e.get("escalation_date"))
             if sla and sla.get("business_hours_only"):
-                esc_minutes = _business_minutes_between(first_in, esc_dt)
+                esc_minutes = get_business_minutes_between(first_in, esc_dt)
             else:
                 esc_minutes = _minutes_between(first_in, esc_dt)
             if sla and sla.get("escalation_time"):
@@ -512,23 +510,8 @@ def _minutes_between(start: datetime, end: datetime) -> float:
 
 
 def _business_minutes_between(start: datetime, end: datetime) -> float:
-    """Calculate business minutes between two timestamps (Mon-Fri 08:00-17:00)."""
-    if end <= start:
-        return 0.0
-
-    total = 0.0
-    cur = start
-    while cur.date() <= end.date():
-        if cur.weekday() in BUSINESS_DAYS:
-            day_start = datetime.combine(cur.date(), BUSINESS_START)
-            day_end = datetime.combine(cur.date(), BUSINESS_END)
-            s = max(cur, day_start)
-            e = min(end, day_end)
-            if e > s:
-                total += (e - s).total_seconds() / 60.0
-        cur = datetime.combine(cur.date() + timedelta(days=1), time(0, 0))
-
-    return total
+    """DEPRECATED: Use get_business_minutes_between from business_utils instead."""
+    return get_business_minutes_between(start, end)
 
 
 

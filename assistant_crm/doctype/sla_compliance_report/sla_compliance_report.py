@@ -12,9 +12,8 @@ CATEGORY_CLAIMS = "Claims"
 CATEGORY_COMPLIANCE = "Compliance"
 CATEGORY_GENERAL = "General"
 
-BUSINESS_START = time(8, 0)
-BUSINESS_END = time(17, 0)
-BUSINESS_DAYS = {0, 1, 2, 3, 4}  # Mon-Fri
+# Import business hours utilities
+from assistant_crm.business_utils import is_business_hours, get_business_minutes_between, get_business_hours
 
 
 class SLAComplianceReport(Document):
@@ -357,7 +356,7 @@ def aggregate_sla_compliance(date_from, date_to, filters: Dict):
         frt_minutes = None
         frt_ok = None
         if first_inbound and first_outbound:
-            frt_minutes = _business_minutes_between(first_inbound, first_outbound) if (sla and sla.business_hours_only) else _minutes_between(first_inbound, first_outbound)
+            frt_minutes = get_business_minutes_between(first_inbound, first_outbound) if (sla and sla.business_hours_only) else _minutes_between(first_inbound, first_outbound)
             frt_vals.append(frt_minutes)
             frt_total += 1
             if sla and sla.first_response_time:
@@ -374,7 +373,7 @@ def aggregate_sla_compliance(date_from, date_to, filters: Dict):
             # end time best-effort
             end_ts = _get_resolution_time(c)
             if end_ts and first_inbound:
-                minutes = _business_minutes_between(first_inbound, end_ts) if (sla and sla.business_hours_only) else _minutes_between(first_inbound, end_ts)
+                minutes = get_business_minutes_between(first_inbound, end_ts) if (sla and sla.business_hours_only) else _minutes_between(first_inbound, end_ts)
                 rt_hours = minutes / 60.0
                 rt_vals.append(rt_hours)
                 rt_total += 1
@@ -390,7 +389,7 @@ def aggregate_sla_compliance(date_from, date_to, filters: Dict):
             escalations_total += 1
             e = sorted(escs, key=lambda x: x.escalation_date)[0]
             if first_inbound:
-                esc_minutes = _business_minutes_between(first_inbound, get_datetime(e.escalation_date)) if (sla and sla.business_hours_only) else _minutes_between(first_inbound, get_datetime(e.escalation_date))
+                esc_minutes = get_business_minutes_between(first_inbound, get_datetime(e.escalation_date)) if (sla and sla.business_hours_only) else _minutes_between(first_inbound, get_datetime(e.escalation_date))
                 if sla and sla.escalation_time:
                     esc_ok = esc_minutes <= float(sla.escalation_time)
                     if esc_ok:
@@ -566,7 +565,7 @@ def build_report_html(doc: SLAComplianceReport, counts: Dict) -> str:
           <div style='font-size:11px;color:#888;'>AI Response label applied where applicable</div>
         </div>
       </div>
-      <div style='margin-top:10px;font-size:11px;color:#666'>Business Hours assumed: Mon–Fri 08:00–17:00</div>
+      <div style='margin-top:10px;font-size:11px;color:#666'>Business Hours applied as per settings.</div>
     </div>
     """
 
@@ -616,21 +615,8 @@ def _minutes_between(start: datetime, end: datetime) -> float:
 
 
 def _business_minutes_between(start: datetime, end: datetime) -> float:
-    # Clip to business hours Mon-Fri 08:00-17:00
-    if end <= start:
-        return 0.0
-    total = 0.0
-    cur = start
-    while cur.date() <= end.date():
-        if cur.weekday() in BUSINESS_DAYS:
-            day_start = datetime.combine(cur.date(), BUSINESS_START)
-            day_end = datetime.combine(cur.date(), BUSINESS_END)
-            s = max(cur, day_start)
-            e = min(end, day_end)
-            if e > s:
-                total += (e - s).total_seconds() / 60.0
-        cur = datetime.combine(cur.date() + timedelta(days=1), time(0, 0))
-    return total
+    """DEPRECATED: Use get_business_minutes_between from business_utils instead."""
+    return get_business_minutes_between(start, end)
 
 
 def _get_manager_emails() -> List[str]:

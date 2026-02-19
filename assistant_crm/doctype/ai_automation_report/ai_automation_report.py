@@ -7,9 +7,8 @@ from typing import Dict, Any, List
 from assistant_crm.assistant_crm.production.monitoring_analytics_system import get_monitoring_system
 from assistant_crm.assistant_crm.api.integration_monitoring import get_data_quality_metrics
 
-BUSINESS_START = time(8, 0)
-BUSINESS_END = time(17, 0)
-BUSINESS_DAYS = {0, 1, 2, 3, 4}
+# Import business hours utilities
+from assistant_crm.business_utils import is_business_hours
 
 
 class AIAutomationReport(Document):
@@ -172,10 +171,8 @@ def _aggregate_automation_events(df: date, dt: date) -> Dict[str, Any]:
 
 
 def _is_business_hours(ts) -> bool:
-    if not ts:
-        return False
-    dt_val = get_datetime(ts)
-    return dt_val.weekday() in BUSINESS_DAYS and BUSINESS_START <= dt_val.time() <= BUSINESS_END
+    """Check if timestamp is within business hours using centralized utility."""
+    return is_business_hours(ts)
 
 
 def _aggregate_after_hours(df: date, dt: date) -> Dict[str, Any]:

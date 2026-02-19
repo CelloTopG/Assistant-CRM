@@ -1319,16 +1319,27 @@ def process_message_with_ai(message_id: str):
             pass
 
         # Update message with AI response
+        final_ai_response = ai_response
+        try:
+            from assistant_crm.business_utils import is_business_hours, get_out_of_hours_message
+            if not is_business_hours():
+                ooh_prefix = get_out_of_hours_message()
+                final_ai_response = f"{ooh_prefix}\n\n{ai_response}"
+        except Exception as ooh_err:
+            frappe.log_error(f"Error checking business hours: {str(ooh_err)}", "Business Hours Check Error")
+
         message_doc.set_ai_response(
-            response=ai_response,
+            response=final_ai_response,
             confidence=confidence,
             model_used="WorkCom",
             processing_time=processing_time
         )
+        # Store original response in ai_response field for internal tracking
+        message_doc.ai_response = final_ai_response
 
         # Update conversation
         conversation_doc.db_set("ai_confidence_score", confidence)
-        conversation_doc.db_set("ai_last_response", ai_response)
+        conversation_doc.db_set("ai_last_response", final_ai_response)
 
         # Send AI response if confidence is high enough
         if confidence >= 0.0 and ai_response:  # TEMPORARY: lowered threshold to 0.0 for visibility
@@ -1339,12 +1350,12 @@ def process_message_with_ai(message_id: str):
                 "platform": message_doc.platform,
                 "direction": "Outbound",
                 "message_type": "text",
-                "message_content": ai_response,
+                "message_content": final_ai_response,
                 "sender_name": "WorkCom",
                 "sender_id": "ai_assistant",
                 "timestamp": now(),
                 "processed_by_ai": 1,
-                "ai_response": ai_response,
+                "ai_response": final_ai_response,
                 "ai_confidence": confidence
             })
 

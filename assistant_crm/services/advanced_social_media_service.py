@@ -577,18 +577,12 @@ class AdvancedSocialMediaService:
             frappe.log_error(f"Error sending Telegram auto-response: {str(e)}")
 
     def is_business_hours(self) -> bool:
-        """Check if current time is within business hours"""
+        """Check if current time is within business hours using centralized utility."""
         try:
-            from datetime import time
-
-            now = datetime.now().time()
-            business_start = time(8, 0)  # 8:00 AM
-            business_end = time(17, 0)   # 5:00 PM
-
-            # Check if it's a weekday (Monday = 0, Sunday = 6)
-            is_weekday = datetime.now().weekday() < 5
-
-            return is_weekday and business_start <= now <= business_end
+            from assistant_crm.business_utils import is_business_hours
+            return is_business_hours()
+        except Exception:
+            return True  # Default to allowing responses
 
         except Exception:
             return True  # Default to allowing responses
