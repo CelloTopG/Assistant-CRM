@@ -433,7 +433,7 @@ class InboxManager {
                             </div>
                             <div class="mb-2">
                                 <span class="platform-badge badge ${conv.platform} me-1">${conv.platform}</span>
-                                <span class="status-badge badge ${conv.status.replace(' ', '.')}">${conv.status}</span>
+                                <span class="status-badge badge ${(conv.status || '').replace(' ', '.')}">${conv.status || ''}</span>
                                 ${(tagHasSurvey || subjHasSurvey || statusHasSurvey) ? '<span class="badge bg-success ms-1"><i class="fa fa-bar-chart me-1"></i>Survey</span>' : ''}
                                 ${conv.priority === 'Urgent' ? '<span class="badge bg-danger ms-1">🚨 URGENT</span>' : ''}
                                 ${conv.priority === 'High' ? '<span class="badge bg-warning ms-1">⚠️ HIGH</span>' : ''}
@@ -490,7 +490,7 @@ class InboxManager {
 
         $('#customer-name').text(conversation.customer_name);
         $('#platform-badge').text(conversation.platform).attr('class', `platform-badge badge ${conversation.platform}`);
-        $('#status-badge').text(conversation.status).attr('class', `status-badge badge ${conversation.status.replace(' ', '.')}`);
+        $('#status-badge').text(conversation.status || '').attr('class', `status-badge badge ${(conversation.status || '').replace(' ', '.')}`);
         const mode = conversation.ai_mode || 'Auto';
         $('#ai-control-btn').html(`<i class=\"fa fa-cog\"></i> AI: ${mode}`);
 
