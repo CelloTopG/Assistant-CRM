@@ -28,6 +28,21 @@ from typing import Dict, Any, Optional, List
 from abc import ABC, abstractmethod
 import hashlib
 import hmac
+import requests
+
+
+def get_decrypted_setting(settings, field: str) -> str:
+    """Safely retrieve and decrypt a field from Frappe settings."""
+    val = None
+    try:
+        val = settings.get_password(field)
+    except Exception:
+        pass
+    if not val:
+        val = settings.get(field)
+    if isinstance(val, (bytes, bytearray)):
+        val = val.decode("utf-8")
+    return (val or "").strip()
 
 
 class SocialMediaPlatform(ABC):
@@ -400,6 +415,18 @@ class WhatsAppIntegration(SocialMediaPlatform):
 
     def get_platform_credentials(self) -> Dict[str, str]:
         """Get WhatsApp credentials from settings."""
+        try:
+            settings = frappe.get_single("Unified Inbox Settings")
+            if settings.get("enable_whatsapp"):
+                return {
+                    "access_token": get_decrypted_setting(settings, "whatsapp_access_token"),
+                    "phone_number_id": (settings.get("whatsapp_phone_number_id") or "").strip(),
+                    "webhook_verify_token": (settings.get("whatsapp_webhook_verify_token") or "").strip(),
+                    "app_secret": get_decrypted_setting(settings, "whatsapp_app_secret") or ""
+                }
+        except Exception:
+            pass
+
         return {
             "access_token": "EAAbmlrtdJlUBPZAM086pmTmr2mVB00sESyfdTPYxyZBYsdQxaVQx5sZAfZAdNP7jhQuAWulBWUvygF7MbdkWV8wbZAyyW6ZAIZAsYFxKMeeYAASzftA1h9bFurnI8OA8aTmlQeBZC4IjcEOZBsqb8KRjNIzddSrrZAo6w8ify2HF4D0QUvkErHNSTEYP7pLQZBKfr2HaE4P7PvzZCXXXhjio551YHOtZA4XnZAjMytqbeVq0xyc0kZB",  # Your provided access token
             "phone_number_id": "+264 81 419 3615",  # Your provided phone number
@@ -587,24 +614,12 @@ class FacebookIntegration(SocialMediaPlatform):
         """Get Facebook credentials from Social Media Settings (Single Doc)."""
         try:
             settings = frappe.get_single("Social Media Settings")
-            def get_val(field):
-                val = None
-                try:
-                    val = settings.get_password(field)
-                except Exception:
-                    pass
-                if not val:
-                    val = settings.get(field)
-                if isinstance(val, (bytes, bytearray)):
-                    val = val.decode("utf-8")
-                return (val or "").strip()
-
             return {
-                "page_access_token": get_val("facebook_page_access_token"),
-                "app_secret": get_val("facebook_app_secret"),
-                "verify_token": settings.get("webhook_verify_token") or "",
+                "page_access_token": get_decrypted_setting(settings, "facebook_page_access_token"),
+                "app_secret": get_decrypted_setting(settings, "facebook_app_secret"),
+                "verify_token": (settings.get("webhook_verify_token") or "").strip(),
                 "page_id": (settings.get("facebook_page_id") or "").strip(),
-                "api_version": settings.get("facebook_api_version") or "v21.0",
+                "api_version": (settings.get("facebook_api_version") or "v21.0").strip(),
                 "use_fallback_names": False,
             }
         except Exception:
@@ -903,6 +918,16 @@ class TelegramIntegration(SocialMediaPlatform):
 
     def get_platform_credentials(self) -> Dict[str, str]:
         """Get Telegram credentials from settings."""
+        try:
+            settings = frappe.get_single("Unified Inbox Settings")
+            if settings.get("enable_telegram"):
+                return {
+                    "bot_token": get_decrypted_setting(settings, "telegram_bot_token"),
+                    "webhook_secret": get_decrypted_setting(settings, "telegram_webhook_secret") or ""
+                }
+        except Exception:
+            pass
+
         return {
             "bot_token": "8329706646:AAFv4K1b2BCF5EYeKhQ144Cvkr5xgbb8-lM",  # WCFCB Assistant Bot
             "webhook_secret": "wcfcb_telegram_webhook_secret_2025"
@@ -1081,6 +1106,18 @@ class TawkToIntegration(SocialMediaPlatform):
 
     def get_platform_credentials(self) -> Dict[str, str]:
         """Get Tawk.to credentials from settings."""
+        try:
+            settings = frappe.get_single("Unified Inbox Settings")
+            if settings.get("enable_tawk_to_sync"):
+                return {
+                    "property_id": (settings.get("tawk_to_property_id") or "").strip(),
+                    "property_url": (get_public_url() or "https://erp.workers.com.zm").strip(),
+                    "api_key": get_decrypted_setting(settings, "tawk_to_api_key") or "",
+                    "webhook_secret": get_decrypted_setting(settings, "tawk_to_webhook_secret") or ""
+                }
+        except Exception:
+            pass
+
         return {
             "property_id": "68ac3c63fda87419226520f9",  # WCFCB Property ID
             "property_url": "https://erp.workers.com.zm",
@@ -1736,43 +1773,27 @@ class InstagramIntegration(SocialMediaPlatform):
         self.last_error = None
 
     def get_platform_credentials(self) -> Dict[str, str]:
-        """Get Instagram credentials from settings.
-        Preference order for token:
-        1) instagram_access_token (if explicitly set)
-        2) facebook_page_access_token (reuse same long-lived token as Facebook)
-        """
+        """Get Instagram credentials from Social Media Settings."""
         try:
             settings = frappe.get_single("Social Media Settings")
-            def get_val(field):
-                val = None
-                try:
-                    val = settings.get_password(field)
-                except Exception:
-                    pass
-                if not val:
-                    val = settings.get(field)
-                if isinstance(val, (bytes, bytearray)):
-                    val = val.decode("utf-8")
-                return (val or "").strip()
-
             # Prefer Facebook Page access token for Instagram messaging, as required by Meta
             token = (
-                get_val("facebook_page_access_token")
-                or get_val("instagram_access_token")
+                get_decrypted_setting(settings, "facebook_page_access_token")
+                or get_decrypted_setting(settings, "instagram_access_token")
                 or ""
             )
             api_ver = (
-                settings.get("instagram_api_version")
-                or settings.get("facebook_api_version")
+                (settings.get("instagram_api_version") or "").strip()
+                or (settings.get("facebook_api_version") or "").strip()
                 or "v21.0"
             )
             webhook_secret = (
-                settings.get("webhook_secret")
-                or settings.get("facebook_app_secret")
-                or settings.get("instagram_webhook_secret")
-                or settings.get("webhook_verify_token")
-                or ""
+                (settings.get("webhook_secret") or "").strip()
+                or (settings.get("facebook_app_secret") or "").strip()
+                or (settings.get("instagram_webhook_secret") or "").strip()
+                or (settings.get("webhook_verify_token") or "").strip()
             )
+
             return {
                 "access_token": token,
                 "api_version": api_ver,
@@ -1782,7 +1803,7 @@ class InstagramIntegration(SocialMediaPlatform):
         except Exception:
             return {
                 "access_token": "",
-                "api_version": "v23.0",
+                "api_version": "v21.0",
                 "webhook_secret": "",
                 "use_fallback_names": False,
             }
@@ -2147,34 +2168,19 @@ class TwitterIntegration(SocialMediaPlatform):
         """Get Twitter credentials from Social Media Settings."""
         try:
             settings = frappe.get_single("Social Media Settings")
-            def gp(field: str) -> str:
-                try:
-                    return settings.get_password(field)
-                except Exception:
-                    return settings.get(field)
             return {
-                "client_id": settings.get("twitter_client_id") or "",
-                "client_secret": gp("twitter_client_secret") or "",
-                "api_key": settings.get("twitter_api_key") or "",
-                "api_secret": gp("twitter_api_secret") or "",
-                "bearer_token": gp("twitter_bearer_token") or "",
-                "access_token": gp("twitter_access_token") or "",
-                "access_token_secret": gp("twitter_access_token_secret") or "",
-                "webhook_env": settings.get("twitter_webhook_env") or "",
-                "webhook_secret": gp("twitter_webhook_secret") or "",
+                "client_id": (settings.get("twitter_client_id") or "").strip(),
+                "client_secret": get_decrypted_setting(settings, "twitter_client_secret"),
+                "api_key": (settings.get("twitter_api_key") or "").strip(),
+                "api_secret": get_decrypted_setting(settings, "twitter_api_secret"),
+                "bearer_token": get_decrypted_setting(settings, "twitter_bearer_token"),
+                "access_token": get_decrypted_setting(settings, "twitter_access_token"),
+                "access_token_secret": get_decrypted_setting(settings, "twitter_access_token_secret"),
+                "webhook_env": (settings.get("twitter_webhook_env") or "").strip(),
+                "webhook_secret": get_decrypted_setting(settings, "twitter_webhook_secret"),
             }
         except Exception:
-            return {
-                "client_id": "",
-                "client_secret": "",
-                "api_key": "",
-                "api_secret": "",
-                "bearer_token": "",
-                "access_token": "",
-                "access_token_secret": "",
-                "webhook_env": "",
-                "webhook_secret": "",
-            }
+            return {}
 
     def check_configuration(self) -> bool:
         """Consider inbound configured if we have a webhook secret or bearer token."""
@@ -2529,38 +2535,20 @@ class LinkedInIntegration(SocialMediaPlatform):
         super().__init__("LinkedIn")
 
     def get_platform_credentials(self) -> Dict[str, str]:
+        """Get LinkedIn credentials from Social Media Settings."""
         try:
             settings = frappe.get_single("Social Media Settings")
-            creds = {
+            return {
                 "enabled": bool(settings.get("linkedin_enabled")),
                 "client_id": (settings.get("linkedin_client_id") or "").strip(),
                 "api_version": (settings.get("linkedin_api_version") or "v2").strip(),
                 "organization_id": (settings.get("linkedin_organization_id") or "").strip(),
+                "client_secret": get_decrypted_setting(settings, "linkedin_client_secret"),
+                "access_token": get_decrypted_setting(settings, "linkedin_access_token"),
+                "webhook_secret": get_decrypted_setting(settings, "linkedin_webhook_secret"),
             }
-            # Secrets via get_password when possible
-            try:
-                creds["client_secret"] = (settings.get_password("linkedin_client_secret") or "").strip()
-            except Exception:
-                creds["client_secret"] = (settings.get("linkedin_client_secret") or "").strip()
-            try:
-                creds["access_token"] = (settings.get_password("linkedin_access_token") or "").strip()
-            except Exception:
-                creds["access_token"] = (settings.get("linkedin_access_token") or "").strip()
-            try:
-                creds["webhook_secret"] = (settings.get_password("linkedin_webhook_secret") or "").strip()
-            except Exception:
-                creds["webhook_secret"] = (settings.get("linkedin_webhook_secret") or "").strip()
-            return creds
         except Exception:
-            return {
-                "enabled": False,
-                "client_id": "",
-                "client_secret": "",
-                "access_token": "",
-                "api_version": "v2",
-                "organization_id": "",
-                "webhook_secret": "",
-            }
+            return {}
 
 
 
@@ -2817,48 +2805,21 @@ class YouTubeIntegration(SocialMediaPlatform):
         self.last_error = None
 
     def get_platform_credentials(self) -> Dict[str, str]:
-        """Get YouTube credentials from Social Media Settings.
-
-        Required credentials:
-        - youtube_api_key: YouTube Data API key (for read operations)
-        - youtube_client_id: OAuth 2.0 client ID (for write operations like replying)
-        - youtube_client_secret: OAuth 2.0 client secret
-        - youtube_access_token: OAuth 2.0 access token (for authenticated requests)
-        - youtube_refresh_token: OAuth 2.0 refresh token
-        - youtube_channel_id: The channel ID to monitor
-        - youtube_webhook_secret: Secret for verifying webhook signatures
-        """
+        """Get YouTube credentials from Social Media Settings."""
         try:
             settings = frappe.get_single("Social Media Settings")
-
-            def get_pwd(field: str) -> str:
-                """Safely retrieve password field."""
-                try:
-                    return settings.get_password(field) or ""
-                except Exception:
-                    return settings.get(field) or ""
-
             return {
-                "api_key": get_pwd("youtube_api_key"),
-                "client_id": settings.get("youtube_client_id") or "",
-                "client_secret": get_pwd("youtube_client_secret"),
-                "access_token": get_pwd("youtube_access_token"),
-                "refresh_token": get_pwd("youtube_refresh_token"),
-                "channel_id": settings.get("youtube_channel_id") or "",
-                "webhook_secret": get_pwd("youtube_webhook_secret"),
-                "api_version": settings.get("youtube_api_version") or "v3",
+                "api_key": get_decrypted_setting(settings, "youtube_api_key"),
+                "client_id": (settings.get("youtube_client_id") or "").strip(),
+                "client_secret": get_decrypted_setting(settings, "youtube_client_secret"),
+                "access_token": get_decrypted_setting(settings, "youtube_access_token"),
+                "refresh_token": get_decrypted_setting(settings, "youtube_refresh_token"),
+                "channel_id": (settings.get("youtube_channel_id") or "").strip(),
+                "webhook_secret": get_decrypted_setting(settings, "youtube_webhook_secret"),
+                "api_version": (settings.get("youtube_api_version") or "v3").strip(),
             }
         except Exception:
-            return {
-                "api_key": "",
-                "client_id": "",
-                "client_secret": "",
-                "access_token": "",
-                "refresh_token": "",
-                "channel_id": "",
-                "webhook_secret": "",
-                "api_version": "v3",
-            }
+            return {}
 
     def check_configuration(self) -> bool:
         """Check if YouTube is properly configured for receiving and sending messages."""
