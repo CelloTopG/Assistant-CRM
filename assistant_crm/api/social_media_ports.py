@@ -587,9 +587,14 @@ class FacebookIntegration(SocialMediaPlatform):
         """Get Facebook credentials from Social Media Settings (Single Doc)."""
         try:
             settings = frappe.get_single("Social Media Settings")
+            def gp(field):
+                try:
+                    return settings.get_password(field)
+                except Exception:
+                    return settings.get(field)
             return {
-                "page_access_token": settings.get("facebook_page_access_token") or "",
-                "app_secret": settings.get("facebook_app_secret") or "",
+                "page_access_token": gp("facebook_page_access_token") or "",
+                "app_secret": gp("facebook_app_secret") or "",
                 "verify_token": settings.get("webhook_verify_token") or "",
                 "page_id": settings.get("facebook_page_id") or "",
                 "api_version": settings.get("facebook_api_version") or "v23.0",
@@ -1723,10 +1728,15 @@ class InstagramIntegration(SocialMediaPlatform):
         """
         try:
             settings = frappe.get_single("Social Media Settings")
+            def gp(field):
+                try:
+                    return settings.get_password(field)
+                except Exception:
+                    return settings.get(field)
             # Prefer Facebook Page access token for Instagram messaging, as required by Meta
             token = (
-                settings.get("facebook_page_access_token")
-                or settings.get("instagram_access_token")
+                gp("facebook_page_access_token")
+                or gp("instagram_access_token")
                 or ""
             )
             api_ver = (
@@ -1735,9 +1745,9 @@ class InstagramIntegration(SocialMediaPlatform):
                 or "v23.0"
             )
             webhook_secret = (
-                settings.get("webhook_secret")
-                or settings.get("facebook_app_secret")
-                or settings.get("instagram_webhook_secret")
+                gp("webhook_secret")
+                or gp("facebook_app_secret")
+                or gp("instagram_webhook_secret")
                 or settings.get("webhook_verify_token")
                 or ""
             )

@@ -762,13 +762,42 @@ class SurveyService:
             recipients = frappe.db.sql(query_all, values, as_dict=True)
         return recipients
 
+    def _format_invitation_message(self, campaign, recipient, response_id):
+        """Format the survey invitation message with placeholders and link."""
+        first_name = recipient.get('first_name') or recipient.get('customer_name') or 'Valued Customer'
+        campaign_name = campaign.campaign_name
+        survey_link = self.generate_survey_link(response_id)
+
+        # Get custom message or use default
+        custom_message = getattr(campaign, 'invitation_message', None)
+        
+        if custom_message:
+            # Replace placeholders
+            msg = custom_message.replace('{first_name}', first_name).replace('{campaign_name}', campaign_name)
+            # Append link at the bottom
+            return f"{msg}\n\n{survey_link}"
+        
+        # Default message format (matches previous hardcoded behavior)
+        return (
+            f"WCFCB Survey: {campaign_name}\n"
+            "We appreciate your time. A few brief questions. Reply STOP at any time to end.\n\n"
+            "Please complete this short form:\n"
+            f"{survey_link}\n\n"
+            "If the link doesn't open, reply 'HELP'."
+        )
+
     def send_survey_invitation(self, recipient, campaign, channel, response_id):
         """Send survey invitation via specified channel"""
         try:
-            survey_link = self.generate_survey_link(response_id)
+            message = self._format_invitation_message(campaign, recipient, response_id)
 
-            message = f"""
-Dear {recipient.get('first_name', 'Valued Customer')},
+            if channel == 'Email' and recipient.get('email_id'):
+                # For email, we might want a slightly different format if it's the default
+                if not getattr(campaign, 'invitation_message', None):
+                    first_name = recipient.get('first_name', 'Valued Customer')
+                    survey_link = self.generate_survey_link(response_id)
+                    message = f"""
+Dear {first_name},
 
 We would appreciate your feedback on our services. Please take a few minutes to complete our survey:
 
@@ -778,9 +807,8 @@ Thank you for your time.
 
 Best regards,
 WCFCB Team
-            """.strip()
+                    """.strip()
 
-            if channel == 'Email' and recipient.get('email_id'):
                 frappe.sendmail(
                     recipients=[recipient.get('email_id')],
                     subject=f"Survey: {campaign.campaign_name}",
@@ -799,12 +827,12 @@ WCFCB Team
             elif channel == 'SMS' and recipient.get('mobile_no'):
                 # Implement SMS sending
                 # This would integrate with your SMS provider
-                return True
+                return False
 
             return False
 
         except Exception as e:
-            frappe.log_error(f"Failed to send survey invitation: {str(e)}")
+            frappe.log_error(f"Failed to send survey invitation: {str(e)}", "Survey Service Error")
             return False
 
     def start_conversational_survey_session(self, recipient, campaign, response_id: str, platform: str):
@@ -912,10 +940,8 @@ WCFCB Team
             except Exception:
                 pass
 
-            # Prepare link-based intro instead of inline Q1
-            intro = f"WCFCB Survey: {campaign.campaign_name}\nWe appreciate your time. A few brief questions. Reply STOP at any time to end."
-            form_link = self.generate_survey_link(response_id)
-            message_text = f"{intro}\n\nPlease complete this short form:\n{form_link}\n\nIf the link doesn't open, reply 'HELP'."
+            # Use helper to format the invitation message
+            message_text = self._format_invitation_message(campaign, recipient, response_id)
 
             # Record outbound message in inbox
             try:

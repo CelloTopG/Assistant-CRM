@@ -1,184 +1,190 @@
 {
- "actions": [],
- "allow_rename": 1,
- "autoname": "field:template_name",
- "creation": "2026-02-08 12:00:00.000000",
- "doctype": "DocType",
- "engine": "InnoDB",
- "field_order": [
-  "template_info_section",
-  "template_name",
-  "template_category",
-  "is_active",
-  "column_break_info",
-  "default_survey_type",
-  "usage_count",
-  "description_section",
-  "description",
-  "recommended_for",
-  "suggested_campaign_name",
-  "questions_section",
-  "template_questions",
-  "audience_section",
-  "template_audience",
-  "channels_section",
-  "template_channels"
- ],
- "fields": [
-  {
-   "fieldname": "template_info_section",
-   "fieldtype": "Section Break",
-   "label": "Template Information"
-  },
-  {
-   "fieldname": "template_name",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Template Name",
-   "length": 140,
-   "reqd": 1,
-   "unique": 1
-  },
-  {
-   "fieldname": "template_category",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Category",
-   "options": "\nCustomer Satisfaction\nService Feedback\nProduct Feedback\nEmployee Engagement\nNPS Survey\nGeneral Survey"
-  },
-  {
-   "default": "1",
-   "fieldname": "is_active",
-   "fieldtype": "Check",
-   "in_list_view": 1,
-   "label": "Is Active"
-  },
-  {
-   "fieldname": "column_break_info",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "default_survey_type",
-   "fieldtype": "Select",
-   "label": "Default Survey Type",
-   "options": "Customer Satisfaction\nService Feedback\nProduct Feedback\nGeneral Survey"
-  },
-  {
-   "default": "0",
-   "fieldname": "usage_count",
-   "fieldtype": "Int",
-   "label": "Times Used",
-   "read_only": 1
-  },
-  {
-   "fieldname": "description_section",
-   "fieldtype": "Section Break",
-   "label": "Description & Recommendations"
-  },
-  {
-   "fieldname": "description",
-   "fieldtype": "Small Text",
-   "label": "Description"
-  },
-  {
-   "description": "Describe who this template is best suited for (e.g., 'Best for post-service feedback from beneficiaries')",
-   "fieldname": "recommended_for",
-   "fieldtype": "Small Text",
-   "label": "Recommended For"
-  },
-  {
-   "description": "Suggested name pattern for campaigns using this template",
-   "fieldname": "suggested_campaign_name",
-   "fieldtype": "Data",
-   "label": "Suggested Campaign Name"
-  },
-  {
-   "fieldname": "questions_section",
-   "fieldtype": "Section Break",
-   "label": "Template Questions"
-  },
-  {
-   "fieldname": "template_questions",
-   "fieldtype": "Table",
-   "label": "Questions",
-   "options": "Survey Template Question",
-   "reqd": 1
-  },
-  {
-   "collapsible": 1,
-   "fieldname": "audience_section",
-   "fieldtype": "Section Break",
-   "label": "Suggested Target Audience"
-  },
-  {
-   "description": "Pre-defined audience filters that will be copied to the campaign",
-   "fieldname": "template_audience",
-   "fieldtype": "Table",
-   "label": "Target Audience Filters",
-   "options": "Survey Template Audience"
-  },
-  {
-   "collapsible": 1,
-   "fieldname": "channels_section",
-   "fieldtype": "Section Break",
-   "label": "Suggested Distribution Channels"
-  },
-  {
-   "description": "Pre-defined distribution channels that will be copied to the campaign",
-   "fieldname": "template_channels",
-   "fieldtype": "Table",
-   "label": "Distribution Channels",
-   "options": "Survey Template Channel"
-  }
- ],
- "index_web_pages_for_search": 1,
- "links": [],
- "modified": "2026-02-08 12:00:00.000000",
- "modified_by": "Administrator",
- "module": "Assistant CRM",
- "name": "Survey Campaign Template",
- "naming_rule": "By fieldname",
- "owner": "Administrator",
- "permissions": [
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "System Manager",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "CRM Manager",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "CRM Agent",
-   "share": 1
-  }
- ],
- "sort_field": "modified",
- "sort_order": "DESC",
- "states": [],
- "track_changes": 1
+    "actions": [],
+    "allow_rename": 1,
+    "autoname": "field:template_name",
+    "creation": "2026-02-08 12:00:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "template_info_section",
+        "template_name",
+        "template_category",
+        "is_active",
+        "column_break_info",
+        "default_survey_type",
+        "usage_count",
+        "description_section",
+        "description",
+        "recommended_for",
+        "suggested_campaign_name",
+        "invitation_message",
+        "questions_section",
+        "template_questions",
+        "audience_section",
+        "template_audience",
+        "channels_section",
+        "template_channels"
+    ],
+    "fields": [
+        {
+            "fieldname": "template_info_section",
+            "fieldtype": "Section Break",
+            "label": "Template Information"
+        },
+        {
+            "fieldname": "template_name",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "in_standard_filter": 1,
+            "label": "Template Name",
+            "length": 140,
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "fieldname": "template_category",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "in_standard_filter": 1,
+            "label": "Category",
+            "options": "\nCustomer Satisfaction\nService Feedback\nProduct Feedback\nEmployee Engagement\nNPS Survey\nGeneral Survey"
+        },
+        {
+            "default": "1",
+            "fieldname": "is_active",
+            "fieldtype": "Check",
+            "in_list_view": 1,
+            "label": "Is Active"
+        },
+        {
+            "fieldname": "column_break_info",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "default_survey_type",
+            "fieldtype": "Select",
+            "label": "Default Survey Type",
+            "options": "Customer Satisfaction\nService Feedback\nProduct Feedback\nGeneral Survey"
+        },
+        {
+            "default": "0",
+            "fieldname": "usage_count",
+            "fieldtype": "Int",
+            "label": "Times Used",
+            "read_only": 1
+        },
+        {
+            "fieldname": "description_section",
+            "fieldtype": "Section Break",
+            "label": "Description & Recommendations"
+        },
+        {
+            "fieldname": "description",
+            "fieldtype": "Small Text",
+            "label": "Description"
+        },
+        {
+            "description": "Describe who this template is best suited for (e.g., 'Best for post-service feedback from beneficiaries')",
+            "fieldname": "recommended_for",
+            "fieldtype": "Small Text",
+            "label": "Recommended For"
+        },
+        {
+            "description": "Suggested name pattern for campaigns using this template",
+            "fieldname": "suggested_campaign_name",
+            "fieldtype": "Data",
+            "label": "Suggested Campaign Name"
+        },
+        {
+            "description": "The message that will be sent to invite users to the survey. Leave empty to use system default. You can use {first_name} and {campaign_name} as placeholders.",
+            "fieldname": "invitation_message",
+            "fieldtype": "Small Text",
+            "label": "Invitation Message"
+        },
+        {
+            "fieldname": "questions_section",
+            "fieldtype": "Section Break",
+            "label": "Template Questions"
+        },
+        {
+            "fieldname": "template_questions",
+            "fieldtype": "Table",
+            "label": "Questions",
+            "options": "Survey Template Question",
+            "reqd": 1
+        },
+        {
+            "collapsible": 1,
+            "fieldname": "audience_section",
+            "fieldtype": "Section Break",
+            "label": "Suggested Target Audience"
+        },
+        {
+            "description": "Pre-defined audience filters that will be copied to the campaign",
+            "fieldname": "template_audience",
+            "fieldtype": "Table",
+            "label": "Target Audience Filters",
+            "options": "Survey Template Audience"
+        },
+        {
+            "collapsible": 1,
+            "fieldname": "channels_section",
+            "fieldtype": "Section Break",
+            "label": "Suggested Distribution Channels"
+        },
+        {
+            "description": "Pre-defined distribution channels that will be copied to the campaign",
+            "fieldname": "template_channels",
+            "fieldtype": "Table",
+            "label": "Distribution Channels",
+            "options": "Survey Template Channel"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-02-08 12:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Assistant CRM",
+    "name": "Survey Campaign Template",
+    "naming_rule": "By fieldname",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "CRM Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "CRM Agent",
+            "share": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
 }
-

@@ -112,16 +112,16 @@ frappe.ui.form.on('Survey Target Audience', {
   target_audience_add(frm, cdt, cdn) {
     set_filter_type_options_for_grid(frm);
   },
-  
+
   filter_type(frm, cdt, cdn) {
     const row = frappe.get_doc(cdt, cdn);
     const filter_type = (row.filter_type || '').trim();
-    
+
     // Clear field/operator/value when type changes
     frappe.model.set_value(cdt, cdn, 'filter_field', '');
     frappe.model.set_value(cdt, cdn, 'filter_operator', '');
     frappe.model.set_value(cdt, cdn, 'filter_value', '');
-    
+
     // Show helpful alerts
     if (filter_type === 'Channel') {
       frappe.show_alert({
@@ -146,10 +146,10 @@ frappe.ui.form.on('Survey Target Audience', {
       }, 5);
     }
   },
-  
+
   filter_value(frm, cdt, cdn) {
     const row = frappe.get_doc(cdt, cdn);
-    
+
     // Validate Channel value in real-time
     if (row.filter_type === 'Channel') {
       const value = (row.filter_value || '').trim();
@@ -274,10 +274,10 @@ function display_preview_results(dialog, response) {
 
 async function validate_all_filters(frm) {
   SHOW_ALERTS = true;
-  
+
   try {
     const rows = frm.doc.target_audience || [];
-    
+
     if (!rows.length) {
       frappe.msgprint({
         title: __('No Filters'),
@@ -286,18 +286,18 @@ async function validate_all_filters(frm) {
       });
       return;
     }
-    
+
     let error_count = 0;
-    
+
     for (const row of rows) {
       const has_error = await validate_row(frm, row);
       if (has_error) error_count++;
     }
-    
+
     if (error_count === 0) {
-      frappe.show_alert({ 
-        message: __('All filters validated successfully'), 
-        indicator: 'green' 
+      frappe.show_alert({
+        message: __('All filters validated successfully'),
+        indicator: 'green'
       }, 5);
     } else {
       frappe.msgprint({
@@ -306,7 +306,7 @@ async function validate_all_filters(frm) {
         indicator: 'orange'
       });
     }
-    
+
   } finally {
     SHOW_ALERTS = false;
   }
@@ -404,7 +404,7 @@ async function validate_row(frm, row) {
         frappe.msgprint({
           title: __('Invalid Beneficiary Field'),
           message: __('Row {0}: Field "{1}" is not valid. Use one of: {2}',
-                     [row.idx, ffield, valid_fields.join(', ')]),
+            [row.idx, ffield, valid_fields.join(', ')]),
           indicator: 'orange'
         });
       }
@@ -427,7 +427,7 @@ async function validate_row(frm, row) {
         frappe.msgprint({
           title: __('Invalid Employer Field'),
           message: __('Row {0}: Field "{1}" is not valid. Use one of: {2}',
-                     [row.idx, ffield, valid_fields.join(', ')]),
+            [row.idx, ffield, valid_fields.join(', ')]),
           indicator: 'orange'
         });
       }
@@ -487,6 +487,11 @@ function apply_template(frm) {
       // Set survey type from template
       if (data.default_survey_type) {
         frm.set_value('survey_type', data.default_survey_type);
+      }
+
+      // Set invitation message from template
+      if (data.invitation_message) {
+        frm.set_value('invitation_message', data.invitation_message);
       }
 
       // Clear and populate survey questions

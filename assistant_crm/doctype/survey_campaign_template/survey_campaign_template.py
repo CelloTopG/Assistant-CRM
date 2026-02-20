@@ -92,6 +92,7 @@ def get_template_data(template_name):
         'description': template.description,
         'recommended_for': template.recommended_for,
         'suggested_campaign_name': template.suggested_campaign_name,
+        'invitation_message': template.invitation_message,
         'default_survey_type': template.default_survey_type,
         'questions': [],
         'target_audience': [],

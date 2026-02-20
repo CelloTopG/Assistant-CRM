@@ -1,408 +1,415 @@
 {
- "actions": [],
- "allow_rename": 1,
- "autoname": "field:campaign_name",
- "creation": "2025-01-28 10:30:00",
- "doctype": "DocType",
- "engine": "InnoDB",
- "field_order": [
-  "campaign_template",
-  "campaign_name",
-  "survey_type",
-  "is_campaign",
-  "description",
-  "column_break_basic",
-  "status",
-  "workflow_state",
-  "priority",
-  "created_by_migration",
-  "target_audience_section",
-  "target_audience",
-  "target_audience_criteria",
-  "estimated_reach",
-  "survey_questions_section",
-  "survey_questions",
-  "questions_json",
-  "distribution_section",
-  "distribution_channels",
-  "channel_config",
-  "schedule_settings_section",
-  "start_date",
-  "end_date",
-  "column_break_schedule",
-  "reminder_frequency",
-  "max_reminders",
-  "auto_close",
-  "follow_up_section",
-  "low_score_threshold",
-  "negative_sentiment_threshold",
-  "follow_up_assignee",
-  "analytics_section",
-  "total_sent",
-  "total_responses",
-  "response_rate",
-  "column_break_analytics",
-  "average_rating",
-  "completion_rate",
-  "satisfaction_score",
-  "section_break_advanced",
-  "campaign_analytics",
-  "sentiment_analysis",
-  "section_break_notes",
-  "notes",
-  "amended_field",
-  "amended_form",
-  "amended_from"
- ],
- "fields": [
-  {
-   "description": "Select a template to auto-populate questions, target audience, and distribution channels",
-   "fieldname": "campaign_template",
-   "fieldtype": "Link",
-   "label": "Use Template",
-   "options": "Survey Campaign Template"
-  },
-  {
-   "fieldname": "campaign_name",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Campaign Name",
-   "length": 140,
-   "reqd": 1,
-   "unique": 1
-  },
-  {
-   "default": "Customer Satisfaction",
-   "fieldname": "survey_type",
-   "fieldtype": "Select",
-   "label": "Survey Type",
-   "options": "Customer Satisfaction\nService Feedback\nProduct Feedback\nGeneral Survey"
-  },
-  {
-   "default": "0",
-   "description": "When enabled, conversations remain open to receive responses from users (bidirectional). When disabled (default), conversations are automatically closed after sending (one-way survey).",
-   "fieldname": "is_campaign",
-   "fieldtype": "Check",
-   "label": "Is Campaign"
-  },
-  {
-   "fieldname": "description",
-   "fieldtype": "Text",
-   "hidden": 1,
-   "label": "Description"
-  },
-  {
-   "fieldname": "column_break_basic",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "Draft",
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "hidden": 1,
-   "label": "Status",
-   "options": "Draft\nActive\nPaused\nCompleted\nCancelled"
-  },
-  {
-   "fieldname": "workflow_state",
-   "fieldtype": "Data",
-   "label": "Workflow State",
-   "read_only": 1
-  },
-  {
-   "default": "Medium",
-   "fieldname": "priority",
-   "fieldtype": "Select",
-   "label": "Priority",
-   "options": "Low\nMedium\nHigh\nCritical"
-  },
-  {
-   "default": "0",
-   "fieldname": "created_by_migration",
-   "fieldtype": "Check",
-   "hidden": 1,
-   "label": "Created by Migration",
-   "read_only": 1
-  },
-  {
-   "fieldname": "target_audience_section",
-   "fieldtype": "Section Break",
-   "label": "Target Audience"
-  },
-  {
-   "fieldname": "target_audience",
-   "fieldtype": "Table",
-   "label": "Target Audience",
-   "options": "Survey Target Audience"
-  },
-  {
-   "description": "Consolidated audience targeting criteria from migration",
-   "fieldname": "target_audience_criteria",
-   "fieldtype": "JSON",
-   "hidden": 1,
-   "label": "Target Audience Criteria"
-  },
-  {
-   "default": "0",
-   "fieldname": "estimated_reach",
-   "fieldtype": "Int",
-   "hidden": 1,
-   "label": "Estimated Reach"
-  },
-  {
-   "fieldname": "survey_questions_section",
-   "fieldtype": "Section Break",
-   "label": "Survey Questions"
-  },
-  {
-   "fieldname": "survey_questions",
-   "fieldtype": "Table",
-   "label": "Survey Questions",
-   "options": "Survey Question"
-  },
-  {
-   "description": "JSON representation of survey questions for migration compatibility",
-   "fieldname": "questions_json",
-   "fieldtype": "JSON",
-   "hidden": 1,
-   "label": "Questions JSON"
-  },
-  {
-   "fieldname": "distribution_section",
-   "fieldtype": "Section Break",
-   "label": "Distribution"
-  },
-  {
-   "fieldname": "distribution_channels",
-   "fieldtype": "Table",
-   "label": "Distribution Channels",
-   "options": "Survey Distribution Channel"
-  },
-  {
-   "description": "Consolidated channel configuration from migration",
-   "fieldname": "channel_config",
-   "fieldtype": "JSON",
-   "hidden": 1,
-   "label": "Channel Configuration"
-  },
-  {
-   "fieldname": "schedule_settings_section",
-   "fieldtype": "Section Break",
-   "label": "Schedule Settings"
-  },
-  {
-   "fieldname": "start_date",
-   "fieldtype": "Datetime",
-   "label": "Start Date"
-  },
-  {
-   "fieldname": "end_date",
-   "fieldtype": "Datetime",
-   "label": "End Date"
-  },
-  {
-   "default": "None",
-   "fieldname": "reminder_frequency",
-   "fieldtype": "Select",
-   "hidden": 1,
-   "label": "Reminder Frequency",
-   "options": "None\nDaily\nWeekly"
-  },
-  {
-   "default": "3",
-   "fieldname": "max_reminders",
-   "fieldtype": "Int",
-   "hidden": 1,
-   "label": "Max Reminders"
-  },
-  {
-   "fieldname": "column_break_schedule",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "1",
-   "fieldname": "auto_close",
-   "fieldtype": "Check",
-   "label": "Auto Close"
-  },
-  {
-   "fieldname": "follow_up_section",
-   "fieldtype": "Section Break",
-   "hidden": 1,
-   "label": "Follow-up Settings"
-  },
-  {
-   "default": "2",
-   "description": "Create follow-up when any rating is at or below this value",
-   "fieldname": "low_score_threshold",
-   "fieldtype": "Int",
-   "label": "Low Score Threshold"
-  },
-  {
-   "default": "-0.30",
-   "description": "Create follow-up when sentiment is below this value",
-   "fieldname": "negative_sentiment_threshold",
-   "fieldtype": "Float",
-   "label": "Negative Sentiment Threshold",
-   "precision": "2"
-  },
-  {
-   "description": "User to assign follow-up tasks to (optional)",
-   "fieldname": "follow_up_assignee",
-   "fieldtype": "Link",
-   "label": "Default Follow-up Assignee",
-   "options": "User"
-  },
-  {
-   "fieldname": "analytics_section",
-   "fieldtype": "Section Break",
-   "label": "Analytics"
-  },
-  {
-   "fieldname": "total_sent",
-   "fieldtype": "Int",
-   "label": "Total Sent",
-   "read_only": 1
-  },
-  {
-   "fieldname": "total_responses",
-   "fieldtype": "Int",
-   "label": "Total Responses",
-   "read_only": 1
-  },
-  {
-   "fieldname": "response_rate",
-   "fieldtype": "Percent",
-   "label": "Response Rate",
-   "read_only": 1
-  },
-  {
-   "fieldname": "average_rating",
-   "fieldtype": "Float",
-   "label": "Average Rating",
-   "precision": "2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_break_analytics",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "completion_rate",
-   "fieldtype": "Percent",
-   "label": "Completion Rate",
-   "read_only": 1
-  },
-  {
-   "fieldname": "satisfaction_score",
-   "fieldtype": "Float",
-   "label": "Satisfaction Score",
-   "precision": "2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "section_break_advanced",
-   "fieldtype": "Section Break",
-   "hidden": 1,
-   "label": "Advanced Analytics"
-  },
-  {
-   "description": "Detailed analytics data from migration",
-   "fieldname": "campaign_analytics",
-   "fieldtype": "JSON",
-   "hidden": 1,
-   "label": "Campaign Analytics"
-  },
-  {
-   "description": "Sentiment analysis results",
-   "fieldname": "sentiment_analysis",
-   "fieldtype": "JSON",
-   "hidden": 1,
-   "label": "Sentiment Analysis"
-  },
-  {
-   "fieldname": "section_break_notes",
-   "fieldtype": "Section Break",
-   "label": "Notes"
-  },
-  {
-   "fieldname": "notes",
-   "fieldtype": "Text",
-   "label": "Notes"
-  },
-  {
-   "fieldname": "amended_field",
-   "fieldtype": "Time",
-   "label": "Amended"
-  },
-  {
-   "fieldname": "amended_from",
-   "fieldtype": "Link",
-   "label": "Amended From",
-   "no_copy": 1,
-   "options": "Survey Campaign",
-   "print_hide": 1,
-   "read_only": 1,
-   "search_index": 1
-  },
-  {
-   "fieldname": "amended_form",
-   "fieldtype": "Link",
-   "label": "Amended From",
-   "no_copy": 1,
-   "options": "Survey Campaign",
-   "print_hide": 1,
-   "read_only": 1,
-   "search_index": 1
-  }
- ],
- "index_web_pages_for_search": 1,
- "is_submittable": 1,
- "links": [],
- "modified": "2026-02-12 21:25:50.038107",
- "modified_by": "Administrator",
- "module": "Assistant CRM",
- "name": "Survey Campaign",
- "naming_rule": "By fieldname",
- "owner": "Administrator",
- "permissions": [
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "System Manager",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "CRM Manager",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "CRM Agent",
-   "share": 1
-  }
- ],
- "row_format": "Dynamic",
- "sort_field": "modified",
- "sort_order": "DESC",
- "states": [],
- "track_changes": 1
+    "actions": [],
+    "allow_rename": 1,
+    "autoname": "field:campaign_name",
+    "creation": "2025-01-28 10:30:00",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "campaign_template",
+        "campaign_name",
+        "survey_type",
+        "is_campaign",
+        "description",
+        "invitation_message",
+        "column_break_basic",
+        "status",
+        "workflow_state",
+        "priority",
+        "created_by_migration",
+        "target_audience_section",
+        "target_audience",
+        "target_audience_criteria",
+        "estimated_reach",
+        "survey_questions_section",
+        "survey_questions",
+        "questions_json",
+        "distribution_section",
+        "distribution_channels",
+        "channel_config",
+        "schedule_settings_section",
+        "start_date",
+        "end_date",
+        "column_break_schedule",
+        "reminder_frequency",
+        "max_reminders",
+        "auto_close",
+        "follow_up_section",
+        "low_score_threshold",
+        "negative_sentiment_threshold",
+        "follow_up_assignee",
+        "analytics_section",
+        "total_sent",
+        "total_responses",
+        "response_rate",
+        "column_break_analytics",
+        "average_rating",
+        "completion_rate",
+        "satisfaction_score",
+        "section_break_advanced",
+        "campaign_analytics",
+        "sentiment_analysis",
+        "section_break_notes",
+        "notes",
+        "amended_field",
+        "amended_form",
+        "amended_from"
+    ],
+    "fields": [
+        {
+            "description": "Select a template to auto-populate questions, target audience, and distribution channels",
+            "fieldname": "campaign_template",
+            "fieldtype": "Link",
+            "label": "Use Template",
+            "options": "Survey Campaign Template"
+        },
+        {
+            "fieldname": "campaign_name",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Campaign Name",
+            "length": 140,
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "default": "Customer Satisfaction",
+            "fieldname": "survey_type",
+            "fieldtype": "Select",
+            "label": "Survey Type",
+            "options": "Customer Satisfaction\nService Feedback\nProduct Feedback\nGeneral Survey"
+        },
+        {
+            "default": "0",
+            "description": "When enabled, conversations remain open to receive responses from users (bidirectional). When disabled (default), conversations are automatically closed after sending (one-way survey).",
+            "fieldname": "is_campaign",
+            "fieldtype": "Check",
+            "label": "Is Campaign"
+        },
+        {
+            "fieldname": "description",
+            "fieldtype": "Text",
+            "hidden": 1,
+            "label": "Description"
+        },
+        {
+            "description": "The message that will be sent to invite users to the survey. Leave empty to use system default. You can use {first_name} and {campaign_name} as placeholders.",
+            "fieldname": "invitation_message",
+            "fieldtype": "Small Text",
+            "label": "Invitation Message"
+        },
+        {
+            "fieldname": "column_break_basic",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "Draft",
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "hidden": 1,
+            "label": "Status",
+            "options": "Draft\nActive\nPaused\nCompleted\nCancelled"
+        },
+        {
+            "fieldname": "workflow_state",
+            "fieldtype": "Data",
+            "label": "Workflow State",
+            "read_only": 1
+        },
+        {
+            "default": "Medium",
+            "fieldname": "priority",
+            "fieldtype": "Select",
+            "label": "Priority",
+            "options": "Low\nMedium\nHigh\nCritical"
+        },
+        {
+            "default": "0",
+            "fieldname": "created_by_migration",
+            "fieldtype": "Check",
+            "hidden": 1,
+            "label": "Created by Migration",
+            "read_only": 1
+        },
+        {
+            "fieldname": "target_audience_section",
+            "fieldtype": "Section Break",
+            "label": "Target Audience"
+        },
+        {
+            "fieldname": "target_audience",
+            "fieldtype": "Table",
+            "label": "Target Audience",
+            "options": "Survey Target Audience"
+        },
+        {
+            "description": "Consolidated audience targeting criteria from migration",
+            "fieldname": "target_audience_criteria",
+            "fieldtype": "JSON",
+            "hidden": 1,
+            "label": "Target Audience Criteria"
+        },
+        {
+            "default": "0",
+            "fieldname": "estimated_reach",
+            "fieldtype": "Int",
+            "hidden": 1,
+            "label": "Estimated Reach"
+        },
+        {
+            "fieldname": "survey_questions_section",
+            "fieldtype": "Section Break",
+            "label": "Survey Questions"
+        },
+        {
+            "fieldname": "survey_questions",
+            "fieldtype": "Table",
+            "label": "Survey Questions",
+            "options": "Survey Question"
+        },
+        {
+            "description": "JSON representation of survey questions for migration compatibility",
+            "fieldname": "questions_json",
+            "fieldtype": "JSON",
+            "hidden": 1,
+            "label": "Questions JSON"
+        },
+        {
+            "fieldname": "distribution_section",
+            "fieldtype": "Section Break",
+            "label": "Distribution"
+        },
+        {
+            "fieldname": "distribution_channels",
+            "fieldtype": "Table",
+            "label": "Distribution Channels",
+            "options": "Survey Distribution Channel"
+        },
+        {
+            "description": "Consolidated channel configuration from migration",
+            "fieldname": "channel_config",
+            "fieldtype": "JSON",
+            "hidden": 1,
+            "label": "Channel Configuration"
+        },
+        {
+            "fieldname": "schedule_settings_section",
+            "fieldtype": "Section Break",
+            "label": "Schedule Settings"
+        },
+        {
+            "fieldname": "start_date",
+            "fieldtype": "Datetime",
+            "label": "Start Date"
+        },
+        {
+            "fieldname": "end_date",
+            "fieldtype": "Datetime",
+            "label": "End Date"
+        },
+        {
+            "default": "None",
+            "fieldname": "reminder_frequency",
+            "fieldtype": "Select",
+            "hidden": 1,
+            "label": "Reminder Frequency",
+            "options": "None\nDaily\nWeekly"
+        },
+        {
+            "default": "3",
+            "fieldname": "max_reminders",
+            "fieldtype": "Int",
+            "hidden": 1,
+            "label": "Max Reminders"
+        },
+        {
+            "fieldname": "column_break_schedule",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "1",
+            "fieldname": "auto_close",
+            "fieldtype": "Check",
+            "label": "Auto Close"
+        },
+        {
+            "fieldname": "follow_up_section",
+            "fieldtype": "Section Break",
+            "hidden": 1,
+            "label": "Follow-up Settings"
+        },
+        {
+            "default": "2",
+            "description": "Create follow-up when any rating is at or below this value",
+            "fieldname": "low_score_threshold",
+            "fieldtype": "Int",
+            "label": "Low Score Threshold"
+        },
+        {
+            "default": "-0.30",
+            "description": "Create follow-up when sentiment is below this value",
+            "fieldname": "negative_sentiment_threshold",
+            "fieldtype": "Float",
+            "label": "Negative Sentiment Threshold",
+            "precision": "2"
+        },
+        {
+            "description": "User to assign follow-up tasks to (optional)",
+            "fieldname": "follow_up_assignee",
+            "fieldtype": "Link",
+            "label": "Default Follow-up Assignee",
+            "options": "User"
+        },
+        {
+            "fieldname": "analytics_section",
+            "fieldtype": "Section Break",
+            "label": "Analytics"
+        },
+        {
+            "fieldname": "total_sent",
+            "fieldtype": "Int",
+            "label": "Total Sent",
+            "read_only": 1
+        },
+        {
+            "fieldname": "total_responses",
+            "fieldtype": "Int",
+            "label": "Total Responses",
+            "read_only": 1
+        },
+        {
+            "fieldname": "response_rate",
+            "fieldtype": "Percent",
+            "label": "Response Rate",
+            "read_only": 1
+        },
+        {
+            "fieldname": "average_rating",
+            "fieldtype": "Float",
+            "label": "Average Rating",
+            "precision": "2",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_analytics",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "completion_rate",
+            "fieldtype": "Percent",
+            "label": "Completion Rate",
+            "read_only": 1
+        },
+        {
+            "fieldname": "satisfaction_score",
+            "fieldtype": "Float",
+            "label": "Satisfaction Score",
+            "precision": "2",
+            "read_only": 1
+        },
+        {
+            "fieldname": "section_break_advanced",
+            "fieldtype": "Section Break",
+            "hidden": 1,
+            "label": "Advanced Analytics"
+        },
+        {
+            "description": "Detailed analytics data from migration",
+            "fieldname": "campaign_analytics",
+            "fieldtype": "JSON",
+            "hidden": 1,
+            "label": "Campaign Analytics"
+        },
+        {
+            "description": "Sentiment analysis results",
+            "fieldname": "sentiment_analysis",
+            "fieldtype": "JSON",
+            "hidden": 1,
+            "label": "Sentiment Analysis"
+        },
+        {
+            "fieldname": "section_break_notes",
+            "fieldtype": "Section Break",
+            "label": "Notes"
+        },
+        {
+            "fieldname": "notes",
+            "fieldtype": "Text",
+            "label": "Notes"
+        },
+        {
+            "fieldname": "amended_field",
+            "fieldtype": "Time",
+            "label": "Amended"
+        },
+        {
+            "fieldname": "amended_from",
+            "fieldtype": "Link",
+            "label": "Amended From",
+            "no_copy": 1,
+            "options": "Survey Campaign",
+            "print_hide": 1,
+            "read_only": 1,
+            "search_index": 1
+        },
+        {
+            "fieldname": "amended_form",
+            "fieldtype": "Link",
+            "label": "Amended From",
+            "no_copy": 1,
+            "options": "Survey Campaign",
+            "print_hide": 1,
+            "read_only": 1,
+            "search_index": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "is_submittable": 1,
+    "links": [],
+    "modified": "2026-02-12 21:25:50.038107",
+    "modified_by": "Administrator",
+    "module": "Assistant CRM",
+    "name": "Survey Campaign",
+    "naming_rule": "By fieldname",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "CRM Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "CRM Agent",
+            "share": 1
+        }
+    ],
+    "row_format": "Dynamic",
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
 }
