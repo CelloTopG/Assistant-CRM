@@ -674,7 +674,8 @@ class FacebookIntegration(SocialMediaPlatform):
             def do_send(token: str) -> requests.Response:
                 headers = {"Content-Type": "application/json"}
                 payload = {
-                    "messaging_type": "RESPONSE",
+                    "messaging_type": "MESSAGE_TAG",
+                    "tag": "HUMAN_AGENT",
                     "recipient": {"id": recipient_id},
                     "message": {"text": message},
                 }
@@ -1776,10 +1777,10 @@ class InstagramIntegration(SocialMediaPlatform):
         """Get Instagram credentials from Social Media Settings."""
         try:
             settings = frappe.get_single("Social Media Settings")
-            # Prefer Facebook Page access token for Instagram messaging, as required by Meta
+            # Prefer Instagram-specific access token, fallback to Facebook Page access token
             token = (
-                get_decrypted_setting(settings, "facebook_page_access_token")
-                or get_decrypted_setting(settings, "instagram_access_token")
+                get_decrypted_setting(settings, "instagram_access_token")
+                or get_decrypted_setting(settings, "facebook_page_access_token")
                 or ""
             )
             api_ver = (
@@ -1849,11 +1850,13 @@ class InstagramIntegration(SocialMediaPlatform):
 
             def do_send(current_token: str) -> requests.Response:
                 params = {"access_token": current_token}
+                # Use HUMAN_AGENT tag to bypass the 24-hour window if applicable
                 payload = {
                     "messaging_product": "instagram",
                     "recipient": {"id": recipient_id},
                     "message": {"text": message},
-                    "messaging_type": "RESPONSE",
+                    "messaging_type": "MESSAGE_TAG",
+                    "tag": "HUMAN_AGENT"
                 }
                 # Track request/response diagnostics but mask the token
                 try:
@@ -3766,9 +3769,28 @@ def detect_platform_from_webhook(data: Dict[str, Any]) -> Optional[str]:
     if "entry" in data and any("messaging" in entry for entry in data.get("entry", [])):
         print(f"DEBUG: Detected Facebook/Instagram webhook structure")
 
-        # Check object type first (most reliable for Facebook)
+        # Analyze the messaging structure to differentiate Instagram from Facebook
+        # Meta often sends Instagram DMs under 'object: page' for linked accounts,
+        # so we must check the IDs first.
+        try:
+            entry = data["entry"][0]
+            messaging = entry.get("messaging", [])
+            if messaging:
+                message_event = messaging[0]
+                sender_id = str(message_event.get("sender", {}).get("id", ""))
+                recipient_id = str(message_event.get("recipient", {}).get("id", ""))
+                
+                # Instagram Business IDs are typically 17+ digits. 
+                # Facebook Page IDs/User IDs are usually 15-16.
+                if len(sender_id) >= 17 or len(recipient_id) >= 17:
+                    print(f"DEBUG: Long numeric IDs detected ({len(sender_id)}/{len(recipient_id)}) - mapping to Instagram")
+                    return "Instagram"
+        except Exception as e:
+            print(f"DEBUG: Error during deep platform inspection: {str(e)}")
+
+        # Check object type fallback
         if data.get("object") == "page":
-            print(f"DEBUG: Object type 'page' - this is Facebook")
+            print(f"DEBUG: Object type 'page' and ID check inconclusive - defaulting to Facebook")
             return "Facebook"
 
         # Analyze the messaging structure to differentiate Instagram from Facebook
@@ -3777,23 +3799,6 @@ def detect_platform_from_webhook(data: Dict[str, Any]) -> Optional[str]:
 
         if messaging:
             message_event = messaging[0]
-            print(f"DEBUG: Message event structure: {json.dumps(message_event, indent=2)}")
-
-            # Check for Instagram-specific indicators
-            # Instagram messages often have different recipient/sender ID patterns
-            # Instagram Business accounts typically have longer numeric IDs
-            sender_id = message_event.get("sender", {}).get("id", "")
-            recipient_id = message_event.get("recipient", {}).get("id", "")
-
-            print(f"DEBUG: Sender ID: {sender_id}, Recipient ID: {recipient_id}")
-
-            # More reliable Instagram detection:
-            # Instagram Business account IDs are typically 17+ digits
-            # Facebook page IDs are usually 15-16 digits
-            if len(str(sender_id)) >= 17 and len(str(recipient_id)) >= 17:
-                print(f"DEBUG: Very long IDs (17+ digits) detected - likely Instagram")
-                return "Instagram"
-
             # Check for Instagram-specific fields in the message structure
             message = message_event.get("message", {})
             if message:
