@@ -24,10 +24,17 @@ class AdvancedSocialMediaService:
         """Get Telegram Bot API configuration"""
         try:
             settings = frappe.get_single("Advanced Social Media Settings")
+            def gp(field):
+                try:
+                    return settings.get_password(field)
+                except Exception:
+                    return settings.get(field)
+            
+            bot_token = gp("telegram_bot_token")
             return {
-                "bot_token": settings.get("telegram_bot_token"),
+                "bot_token": bot_token,
                 "webhook_url": settings.get("telegram_webhook_url"),
-                "api_url": f"https://api.telegram.org/bot{settings.get('telegram_bot_token', '')}",
+                "api_url": f"https://api.telegram.org/bot{bot_token or ''}",
                 "enabled": settings.get("telegram_enabled", 0),
                 "auto_response": settings.get("telegram_auto_response", 1),
                 "business_hours_only": settings.get("telegram_business_hours_only", 1)
@@ -46,10 +53,15 @@ class AdvancedSocialMediaService:
         """Get LinkedIn API configuration"""
         try:
             settings = frappe.get_single("Advanced Social Media Settings")
+            def gp(field):
+                try:
+                    return settings.get_password(field)
+                except Exception:
+                    return settings.get(field)
             return {
                 "client_id": settings.get("linkedin_client_id"),
-                "client_secret": settings.get("linkedin_client_secret"),
-                "access_token": settings.get("linkedin_access_token"),
+                "client_secret": gp("linkedin_client_secret"),
+                "access_token": gp("linkedin_access_token"),
                 "company_id": settings.get("linkedin_company_id"),
                 "api_version": settings.get("linkedin_api_version", "v2"),
                 "enabled": settings.get("linkedin_enabled", 0),
@@ -70,12 +82,17 @@ class AdvancedSocialMediaService:
         """Get Twitter/X API configuration"""
         try:
             settings = frappe.get_single("Advanced Social Media Settings")
+            def gp(field):
+                try:
+                    return settings.get_password(field)
+                except Exception:
+                    return settings.get(field)
             return {
                 "api_key": settings.get("twitter_api_key"),
-                "api_secret": settings.get("twitter_api_secret"),
-                "access_token": settings.get("twitter_access_token"),
-                "access_token_secret": settings.get("twitter_access_token_secret"),
-                "bearer_token": settings.get("twitter_bearer_token"),
+                "api_secret": gp("twitter_api_secret"),
+                "access_token": gp("twitter_access_token"),
+                "access_token_secret": gp("twitter_access_token_secret"),
+                "bearer_token": gp("twitter_bearer_token"),
                 "api_version": settings.get("twitter_api_version", "2"),
                 "enabled": settings.get("twitter_enabled", 0),
                 "auto_response": settings.get("twitter_auto_response", 1)

@@ -587,22 +587,33 @@ class FacebookIntegration(SocialMediaPlatform):
         """Get Facebook credentials from Social Media Settings (Single Doc)."""
         try:
             settings = frappe.get_single("Social Media Settings")
+            def get_val(field):
+                val = None
+                try:
+                    val = settings.get_password(field)
+                except Exception:
+                    pass
+                if not val:
+                    val = settings.get(field)
+                if isinstance(val, (bytes, bytearray)):
+                    val = val.decode("utf-8")
+                return (val or "").strip()
+
             return {
-                "page_access_token": settings.get("facebook_page_access_token") or "",
-                "app_secret": settings.get("facebook_app_secret") or "",
+                "page_access_token": get_val("facebook_page_access_token"),
+                "app_secret": get_val("facebook_app_secret"),
                 "verify_token": settings.get("webhook_verify_token") or "",
-                "page_id": settings.get("facebook_page_id") or "",
-                "api_version": settings.get("facebook_api_version") or "v23.0",
+                "page_id": (settings.get("facebook_page_id") or "").strip(),
+                "api_version": settings.get("facebook_api_version") or "v21.0",
                 "use_fallback_names": False,
             }
         except Exception:
-            # Fallback to safe defaults
             return {
                 "page_access_token": "",
                 "app_secret": "",
                 "verify_token": "",
                 "page_id": "",
-                "api_version": "v23.0",
+                "api_version": "v21.0",
                 "use_fallback_names": False,
             }
 
@@ -669,13 +680,22 @@ class FacebookIntegration(SocialMediaPlatform):
                     pass
                 return resp
 
-            # Initial token from settings (trim and sanitize)
-            token = (self.credentials.get("page_access_token") or "")
-            token = token.strip().strip('"').strip("'")
-            token = token.replace(" ", "").replace("\n", "").replace("\r", "")
+            # Initial token from settings (sanitize thoroughly)
+            token = (self.credentials.get("page_access_token") or "").strip()
+            # Remove any leading/trailing quotes or hidden whitespace/newlines
+            token = token.strip('"').strip("'").strip()
+            token = "".join(token.split()) # Remove all whitespace characters
+            
             if not token:
                 frappe.log_error(title="Facebook Token Missing", message="Missing Facebook Page Access Token")
                 return False
+            
+            # Diagnostic log (first 6 characters)
+            try:
+                t_preview = f"{token[:6]}...{token[-4:]}" if len(token) > 10 else "too_short"
+                frappe.logger("assistant_crm.unified_send").info(f"[FB_SEND] token_len={len(token)} preview={t_preview}")
+            except Exception:
+                pass
 
             # First attempt
             resp = do_send(token)
@@ -703,14 +723,14 @@ class FacebookIntegration(SocialMediaPlatform):
                             ex_txt = ex.text
                         except Exception:
                             ex_txt = "<no response text>"
-                        # Track diagnostics for token exchange failure
-                        try:
-                            self.last_response_status = ex.status_code
-                            self.last_response_text = ex_txt
-                            self.last_error = "token_exchange_failed"
-                        except Exception:
-                            pass
-                        frappe.log_error(title="Facebook Token Exchange Failed", message=f"HTTP {ex.status_code} - {ex_txt}")
+                        # Enhanced diagnostics for exchange failure
+                        log_msg = (
+                            f"HTTP {ex.status_code} - {ex_txt}\n"
+                            f"URL: {exchange_url}\n"
+                            f"Page ID: {page_id}\n"
+                            f"Token Length: {len(token)}\n"
+                        )
+                        frappe.log_error(title="Facebook Token Exchange Failed", message=log_msg)
                     if ex.status_code == 200:
                         page_token = (ex.json() or {}).get("access_token")
                         if page_token:
@@ -1723,16 +1743,28 @@ class InstagramIntegration(SocialMediaPlatform):
         """
         try:
             settings = frappe.get_single("Social Media Settings")
+            def get_val(field):
+                val = None
+                try:
+                    val = settings.get_password(field)
+                except Exception:
+                    pass
+                if not val:
+                    val = settings.get(field)
+                if isinstance(val, (bytes, bytearray)):
+                    val = val.decode("utf-8")
+                return (val or "").strip()
+
             # Prefer Facebook Page access token for Instagram messaging, as required by Meta
             token = (
-                settings.get("facebook_page_access_token")
-                or settings.get("instagram_access_token")
+                get_val("facebook_page_access_token")
+                or get_val("instagram_access_token")
                 or ""
             )
             api_ver = (
                 settings.get("instagram_api_version")
                 or settings.get("facebook_api_version")
-                or "v23.0"
+                or "v21.0"
             )
             webhook_secret = (
                 settings.get("webhook_secret")
@@ -1777,13 +1809,22 @@ class InstagramIntegration(SocialMediaPlatform):
             url = f"https://graph.facebook.com/{api_ver}/me/messages"
 
             # Sanitize token similar to Facebook sender
-            raw_token = (self.credentials.get("access_token") or "")
-            token = raw_token.strip().strip('"').strip("'")
-            token = token.replace(" ", "").replace("\n", "").replace("\r", "")
+            # Sanitize token thoroughly
+            token = (self.credentials.get("access_token") or "").strip()
+            token = token.strip('"').strip("'").strip()
+            token = "".join(token.split()) # Remove all whitespace
+            
             if not token:
                 self.last_error = "Missing Instagram/Facebook Page Access Token"
                 frappe.log_error(title="Instagram Token Missing", message="Missing Instagram Access Token")
                 return False
+            
+            # Diagnostic log (first 6 characters)
+            try:
+                t_preview = f"{token[:6]}...{token[-4:]}" if len(token) > 10 else "too_short"
+                frappe.logger("assistant_crm.unified_send").info(f"[IG_SEND] token_len={len(token)} preview={t_preview}")
+            except Exception:
+                pass
 
             def do_send(current_token: str) -> requests.Response:
                 params = {"access_token": current_token}
@@ -1860,14 +1901,16 @@ class InstagramIntegration(SocialMediaPlatform):
                                 except Exception:
                                     pass
                     else:
-                        # Log token exchange diagnostics
-                        try:
-                            ex_txt = exchange_resp.text
-                        except Exception:
-                            ex_txt = "<no response text>"
+                        # Enhanced diagnostics
+                        log_msg = (
+                            f"HTTP {exchange_resp.status_code} - {ex_txt}\n"
+                            f"URL: {exchange_url}\n"
+                            f"Page ID: {page_id}\n"
+                            f"Token Length: {len(token)}\n"
+                        )
                         frappe.log_error(
                             title="Instagram Token Exchange Failed",
-                            message=f"HTTP {exchange_resp.status_code} - {ex_txt}"
+                            message=log_msg
                         )
                 except Exception as ex_err:
                     frappe.log_error(
@@ -2796,7 +2839,7 @@ class YouTubeIntegration(SocialMediaPlatform):
                     return settings.get(field) or ""
 
             return {
-                "api_key": settings.get("youtube_api_key") or "",
+                "api_key": get_pwd("youtube_api_key"),
                 "client_id": settings.get("youtube_client_id") or "",
                 "client_secret": get_pwd("youtube_client_secret"),
                 "access_token": get_pwd("youtube_access_token"),
