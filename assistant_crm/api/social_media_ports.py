@@ -589,7 +589,7 @@ class FacebookIntegration(SocialMediaPlatform):
             settings = frappe.get_single("Social Media Settings")
             def gp(field):
                 try:
-                    return settings.get_password(field, raise_exception=False) or settings.get(field)
+                    return settings.get_password(field)
                 except Exception:
                     return settings.get(field)
             return {
@@ -1730,7 +1730,7 @@ class InstagramIntegration(SocialMediaPlatform):
             settings = frappe.get_single("Social Media Settings")
             def gp(field):
                 try:
-                    return settings.get_password(field, raise_exception=False) or settings.get(field)
+                    return settings.get_password(field)
                 except Exception:
                     return settings.get(field)
             # Prefer Facebook Page access token for Instagram messaging, as required by Meta
@@ -2112,9 +2112,11 @@ class TwitterIntegration(SocialMediaPlatform):
 
     def get_platform_credentials(self) -> Dict[str, str]:
         """Get Twitter credentials from Social Media Settings."""
+        try:
+            settings = frappe.get_single("Social Media Settings")
             def gp(field: str) -> str:
                 try:
-                    return settings.get_password(field, raise_exception=False) or settings.get(field)
+                    return settings.get_password(field)
                 except Exception:
                     return settings.get(field)
             return {
@@ -2504,15 +2506,15 @@ class LinkedInIntegration(SocialMediaPlatform):
             }
             # Secrets via get_password when possible
             try:
-                creds["client_secret"] = (settings.get_password("linkedin_client_secret", raise_exception=False) or settings.get("linkedin_client_secret") or "").strip()
+                creds["client_secret"] = (settings.get_password("linkedin_client_secret") or "").strip()
             except Exception:
                 creds["client_secret"] = (settings.get("linkedin_client_secret") or "").strip()
             try:
-                creds["access_token"] = (settings.get_password("linkedin_access_token", raise_exception=False) or settings.get("linkedin_access_token") or "").strip()
+                creds["access_token"] = (settings.get_password("linkedin_access_token") or "").strip()
             except Exception:
                 creds["access_token"] = (settings.get("linkedin_access_token") or "").strip()
             try:
-                creds["webhook_secret"] = (settings.get_password("linkedin_webhook_secret", raise_exception=False) or settings.get("linkedin_webhook_secret") or "").strip()
+                creds["webhook_secret"] = (settings.get_password("linkedin_webhook_secret") or "").strip()
             except Exception:
                 creds["webhook_secret"] = (settings.get("linkedin_webhook_secret") or "").strip()
             return creds

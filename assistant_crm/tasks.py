@@ -160,3 +160,9 @@ def quarterly_survey():
     )
     schedule_quarterly_survey_feedback_reports()
 
+
+def sweep_sla_reminders():
+    """Sweep and send SLA reminders for approaching deadlines."""
+    from assistant_crm.api.unified_inbox_api import sweep_sla_reminders
+    sweep_sla_reminders()
+

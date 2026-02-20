@@ -209,7 +209,8 @@ scheduler_events = {
     "cron": {
         "*/10 * * * *": [
             "assistant_crm.tasks.poll_twitter",
-            "assistant_crm.tasks.sweep_reassignments"
+            "assistant_crm.tasks.sweep_reassignments",
+            "assistant_crm.tasks.sweep_sla_reminders"
         ],
         "0 * * * *": [
             "assistant_crm.tasks.sweep_escalations"

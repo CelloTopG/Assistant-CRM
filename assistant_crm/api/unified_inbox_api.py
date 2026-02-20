@@ -4086,6 +4086,101 @@ def sweep_escalate_inactive_conversations():
         return {"status": "error", "message": str(e)}
 
 
+def sweep_sla_reminders():
+    """
+    Scheduled job: Send reminders for conversations approaching SLA expiry.
+    Reminders sent 12 hours and 2 hours before expiry.
+    """
+    try:
+        from frappe.utils import add_hours, get_datetime
+        
+        now_dt = get_datetime(now())
+        
+        # 1. Check for 12h reminders
+        threshold_12h = add_hours(now_dt, 12)
+        convs_12h = frappe.get_all(
+            "Unified Inbox Conversation",
+            filters={
+                "status": ["not in", ["Resolved", "Closed"]],
+                "resolution_sla_expiry": ["<=", threshold_12h],
+                "reminder_12h_sent": 0,
+                "assigned_agent": ["is", "set"]
+            },
+            fields=["name", "assigned_agent", "resolution_sla_expiry", "customer_name", "platform"]
+        )
+        
+        for c in convs_12h:
+            send_sla_reminder_notification(c, "12 hours")
+            frappe.db.set_value("Unified Inbox Conversation", c.name, "reminder_12h_sent", 1, update_modified=False)
+
+        # 2. Check for 2h reminders
+        threshold_2h = add_hours(now_dt, 2)
+        convs_2h = frappe.get_all(
+            "Unified Inbox Conversation",
+            filters={
+                "status": ["not in", ["Resolved", "Closed"]],
+                "resolution_sla_expiry": ["<=", threshold_2h],
+                "reminder_2h_sent": 0,
+                "assigned_agent": ["is", "set"]
+            },
+            fields=["name", "assigned_agent", "resolution_sla_expiry", "customer_name", "platform"]
+        )
+        
+        for c in convs_2h:
+            send_sla_reminder_notification(c, "2 hours")
+            frappe.db.set_value("Unified Inbox Conversation", c.name, "reminder_2h_sent", 1, update_modified=False)
+
+        return {"status": "success", "reminders_12h": len(convs_12h), "reminders_2h": len(convs_2h)}
+
+    except Exception as e:
+        frappe.log_error(f"SLA reminder sweep failed: {str(e)}", "Unified Inbox SLA Sweep Error")
+        return {"status": "error", "message": str(e)}
+
+
+def send_sla_reminder_notification(conversation, time_left):
+    """Send system notification and email to the assigned agent."""
+    try:
+        agent = conversation.assigned_agent
+        if not agent:
+            return
+
+        subject = f"Urgent: SLA Reminder ({time_left}) for {conversation.customer_name or 'Customer'}"
+        content = f"""
+        <div style="font-family: sans-serif; line-height: 1.6;">
+            <h2 style="color: #d9534f;">SLA Expiry Reminder</h2>
+            <p>The conversation with <strong>{conversation.customer_name or 'the customer'}</strong> on <strong>{conversation.platform}</strong> is approaching its resolution SLA threshold.</p>
+            <ul>
+                <li><strong>Remaining Time:</strong> approx. {time_left}</li>
+                <li><strong>SLA Expiry:</strong> {conversation.resolution_sla_expiry}</li>
+                <li><strong>Conversation Link:</strong> <a href="{get_public_url()}/app/unified-inbox-conversation/{conversation.name}">{conversation.name}</a></li>
+            </ul>
+            <p>Please ensure this ticket is resolved promptly to maintain SLA compliance.</p>
+        </div>
+        """
+
+        # 1. Create Notification Log (Desk Notification)
+        notif = frappe.new_doc("Notification Log")
+        notif.for_user = agent
+        notif.subject = subject
+        notif.type = "Alert"
+        notif.document_type = "Unified Inbox Conversation"
+        notif.document_name = conversation.name
+        notif.email_content = content
+        notif.insert(ignore_permissions=True)
+
+        # 2. Send Email
+        frappe.sendmail(
+            recipients=[agent],
+            subject=subject,
+            message=content,
+            reference_doctype="Unified Inbox Conversation",
+            reference_name=conversation.name
+        )
+
+    except Exception as e:
+        frappe.log_error(f"Failed to send SLA reminder for {conversation.name}: {str(e)}", "SLA Reminder Notification Error")
+
+
 @frappe.whitelist()
 def lookup_customer_data():
     """Lookup customer data from CoreBusiness for unified inbox."""

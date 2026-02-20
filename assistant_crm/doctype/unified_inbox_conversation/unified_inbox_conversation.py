@@ -57,6 +57,39 @@ class UnifiedInboxConversation(Document):
         # Auto-escalate if needed
         if self.should_auto_escalate():
             self.escalate_to_human_agent()
+        
+        # Calculate/Update SLA Expiry
+        self.calculate_resolution_sla()
+        self.update_sla_status()
+
+    def calculate_resolution_sla(self):
+        """Calculate the resolution SLA expiry based on the platform.
+        Meta platforms (WhatsApp, Facebook, Instagram): 24 hours
+        All other platforms: 48 hours
+        """
+        if self.resolution_sla_expiry:
+            return
+
+        from frappe.utils import add_hours
+        
+        meta_platforms = ["WhatsApp", "Facebook", "Instagram"]
+        hours = 24 if self.platform in meta_platforms else 48
+        
+        start_time = self.creation_time or now()
+        self.resolution_sla_expiry = add_hours(start_time, hours)
+
+    def update_sla_status(self):
+        """Update the SLA status based on current time and document status."""
+        if self.status in ["Resolved", "Closed"]:
+            if self.resolution_sla_expiry and get_datetime(self.last_message_time or now()) <= get_datetime(self.resolution_sla_expiry):
+                self.sla_status = "Fulfilled"
+            else:
+                self.sla_status = "Exceeded"
+        else:
+            if self.resolution_sla_expiry and get_datetime(now()) > get_datetime(self.resolution_sla_expiry):
+                self.sla_status = "Exceeded"
+            else:
+                self.sla_status = "In Progress"
     
     def generate_conversation_id(self) -> str:
         """Generate a unique conversation ID."""
