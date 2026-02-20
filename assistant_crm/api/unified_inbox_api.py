@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 WCFCB Assistant CRM - Unified Inbox API
 =======================================
@@ -431,8 +431,7 @@ def get_messages(conversation_name: str, limit: int = 200, offset: int = 0):
         if result.get("status") == "success":
             return {
                 "status": "success",
-                "data": result.get("messages", []),
-                "conversation": result.get("conversation")
+                "data": result.get("messages", [])
             }
         else:
             return {
@@ -460,20 +459,8 @@ def get_conversation_messages(conversation_name: str, limit: int = 50, offset: i
             if alt:
                 resolved_name = alt
 
-        # Get conversation details
+        # Get conversation details (allow if user can see it; otherwise still try to fetch minimal info)
         conversation = frappe.get_doc("Unified Inbox Conversation", resolved_name)
-
-        # Auto-disable AI if viewed by the assigned agent to ensure human control
-        if (conversation.assigned_agent == frappe.session.user or 
-            conversation.assigned_to == frappe.session.user):
-            if conversation.ai_mode != "Off":
-                conversation.db_set("ai_mode", "Off", update_modified=True)
-                try:
-                    frappe.logger("assistant_crm.unified_inbox_ai").info(
-                        f"[AI] auto_disable_on_view conversation={resolved_name} user={frappe.session.user}"
-                    )
-                except Exception:
-                    pass
 
         # Get messages (ignore permissions so agents with UI access can see full thread)
         # Return the LAST `limit` messages by default (so newest messages appear), preserving asc order for display
@@ -644,7 +631,7 @@ def send_message():
                         reply_mode=twitter_reply_mode
                     )
             except Exception as platform_error:
-                frappe.log_error(title="Platform Send Failed", message=f"Platform send error: {str(platform_error)}")
+                frappe.log_error(f"Platform send error: {str(platform_error)}", "Platform Send Error")
                 platform_send_result = {"status": "warning", "message": "Message saved but platform send failed"}
 
         frappe.db.commit()
@@ -695,21 +682,9 @@ def send_message():
         }
 
     except Exception as e:
-        # Standardized log capture for System Administrators
-        log_title = "Unified Inbox: Reply Failed"
-        log_message = (
-            f"User: {frappe.session.user}\n"
-            f"Conversation: {conversation_name if 'conversation_name' in locals() else 'Unknown'}\n"
-            f"Error: {str(e)}\n\n"
-            f"Traceback:\n{frappe.get_traceback()}"
-        )
-        frappe.log_error(log_message, log_title)
-        
-        # User-friendly message for the agent
-        return {
-            "status": "error", 
-            "message": "We couldn't send your message right now. Our technical team has been logged of this issue. Please try again in a moment."
-        }
+        # Ensure meaningful error surfaces to the UI while capturing logs
+        frappe.log_error(f"Error sending message: {str(e)}", "Unified Inbox API Error")
+        return {"status": "error", "message": f"Failed to send message: {str(e)}"}
 
 
 @frappe.whitelist()
@@ -798,37 +773,24 @@ def escalate_conversation(conversation_name: str, reason: str, priority: str = N
 
 		# Prefer currently assigned agent (supervisor) if present,
 		# otherwise fall back to routing logic.
-		target_agent = conversation_doc.find_available_agent()
+		target_agent = conversation_doc.assigned_agent or conversation_doc.find_available_agent()
 
-		if target_agent:
-			conversation_doc.db_set("escalated_agent", target_agent)
+		if target_agent and target_agent != conversation_doc.assigned_agent:
+			conversation_doc.db_set("assigned_agent", target_agent)
 			conversation_doc.db_set("agent_assigned_at", now())
 			conversation_doc.notify_agent_assignment(target_agent)
 
-			# If there's a linked issue, sync the escalated agent there too
-			issue_id = getattr(conversation_doc, "custom_issue_id", None)
-			if issue_id:
-				try:
-					user_name = frappe.get_value("User", target_agent, "full_name") or target_agent
-					display_name = f"{user_name} ({target_agent})"
-					frappe.db.set_value("Issue", issue_id, {
-						"custom_escalated_agent": target_agent,
-						"custom_escalated_agent_name": display_name
-					})
-				except Exception as e:
-					frappe.log_error(f"Failed to sync escalation to Issue: {str(e)}", "Unified Inbox Escalation Sync")
-
-		# Create escalation record
+		# Create escalation record using whichever agent is currently
+		# assigned after the above logic.
 		conversation_doc.create_escalation_record(target_agent or conversation_doc.assigned_agent, reason)
 
-		# Refresh Agent Dashboard workload snapshot
+		# Refresh Agent Dashboard workload snapshot now that this
+		# conversation is escalated and pinned to a human.
 		try:
 			from assistant_crm.assistant_crm.assistant_crm_module.doctype.agent_dashboard.agent_dashboard import (  # type: ignore
 				AgentDashboard,
 			)
-			if target_agent:
-				AgentDashboard.sync_unified_inbox_load_for_agent(target_agent)
-			elif conversation_doc.assigned_agent:
+			if conversation_doc.assigned_agent:
 				AgentDashboard.sync_unified_inbox_load_for_agent(conversation_doc.assigned_agent)
 		except Exception as sync_err:
 			frappe.log_error(f"Failed to sync agent load after escalation: {sync_err}", "Unified Inbox Agent Load Sync")
@@ -846,21 +808,6 @@ def escalate_conversation(conversation_name: str, reason: str, priority: str = N
 def close_conversation(conversation_name: str, resolution_notes: str = None):
 	"""Close a conversation."""
 	try:
-		# Role check is now also handled at the DocType level in validate(),
-		# but we keep it here for better immediate feedback in the API.
-		supervisor_roles = ["System Manager", "Assistant CRM Manager", "Customer Service Manager"]
-		agent_roles = ["WCF Customer Service Assistant", "WCF Customer Service Officer"]
-		user_roles = frappe.get_roles()
-		
-		is_agent = any(role in agent_roles for role in user_roles)
-		is_supervisor = any(role in supervisor_roles for role in user_roles)
-
-		if is_agent and not is_supervisor:
-			frappe.throw(frappe._("WCF Customer Service Assistants and Officers are not authorized to close conversations."))
-		
-		if not is_supervisor:
-			frappe.throw(frappe._("Only Supervisors are authorized to close conversations."))
-
 		conversation_doc = frappe.get_doc("Unified Inbox Conversation", conversation_name)
 
 		# Remember which agent owned this conversation so we can refresh
@@ -987,26 +934,6 @@ def process_message_with_ai(message_id: str):
         message_doc = frappe.get_doc("Unified Inbox Message", message_id)
         conversation_doc = frappe.get_doc("Unified Inbox Conversation", message_doc.conversation)
 
-        # Respect user settings for AI responses
-        ai_mode = conversation_doc.ai_mode or "Auto"
-        if ai_mode == "Off":
-            try:
-                frappe.logger("assistant_crm.unified_inbox_ai").info(
-                    f"[AI] skip_mode_off message_id={message_id} conv={conversation_doc.name}"
-                )
-            except Exception:
-                pass
-            return
-
-        if ai_mode == "Auto" and (conversation_doc.assigned_agent or conversation_doc.assigned_to):
-            try:
-                frappe.logger("assistant_crm.unified_inbox_ai").info(
-                    f"[AI] skip_auto_assigned message_id={message_id} conv={conversation_doc.name} assigned={conversation_doc.assigned_agent or conversation_doc.assigned_to}"
-                )
-            except Exception:
-                pass
-            return
-
         # Diagnostic log for job start
         try:
             frappe.logger("assistant_crm.unified_inbox_ai").info(
@@ -1043,7 +970,7 @@ def process_message_with_ai(message_id: str):
                 except Exception:
                     pass
 
-                stop_msg = "Understood. We’ve stopped the survey for now. Thank you."
+                stop_msg = "Understood. WeÔÇÖve stopped the survey for now. Thank you."
                 # Record outbound message
                 try:
                     out_doc = frappe.get_doc({
@@ -1240,7 +1167,7 @@ def process_message_with_ai(message_id: str):
                     pass
                 return
 
-        # Call AI service using a direct WorkCom path (no SimplifiedChat layer)
+        # Call AI service using a direct Antoine path (no SimplifiedChat layer)
         start_time = time.time()
 
         # Get customer context from CoreBusiness if available
@@ -1278,7 +1205,7 @@ def process_message_with_ai(message_id: str):
         except Exception:
             routing_result = {}
 
-        # Build WorkCom context, mirroring SimplifiedChatAPI._generate_ai_response
+        # Build Antoine context, mirroring SimplifiedChatAPI._generate_ai_response
         ai_context = enhanced_context.copy()
         try:
             ai_context.update({
@@ -1291,7 +1218,7 @@ def process_message_with_ai(message_id: str):
             # Live data from router if available
             if routing_result.get("source") == "live_data" and routing_result.get("data"):
                 live_data = routing_result.get("data")
-                # Unwrap nested 'data' if present so WorkCom sees the raw structure
+                # Unwrap nested 'data' if present so Antoine sees the raw structure
                 if isinstance(live_data, dict) and "type" not in live_data and isinstance(live_data.get("data"), dict):
                     live_data = live_data.get("data")
                 ai_context["live_data"] = live_data
@@ -1331,15 +1258,8 @@ def process_message_with_ai(message_id: str):
             )
         except Exception:
             pass
-        try:
-            with open("/workspace/development/frappe-bench/logs/webhook_debug.log", "a") as f:
-                f.write(
-                    f"[AI-DIAG] pre_call message_id={message_id} conv={conversation_doc.name} sess={conversation_doc.conversation_id} platform={message_doc.platform} intent={ai_context.get('intent', 'unknown')} live_data={ai_context.get('has_live_data', False)} source={ai_context.get('data_source', 'unknown')}\n"
-                )
-        except Exception:
-            pass
 
-        # Direct WorkCom call, mirroring report doctypes and SimplifiedChatAPI's preferred path
+        # Direct Antoine call, mirroring report doctypes and SimplifiedChatAPI's preferred path
         ai_response = ""
         try:
             from assistant_crm.services.enhanced_ai_service import EnhancedAIService
@@ -1370,36 +1290,18 @@ def process_message_with_ai(message_id: str):
             )
         except Exception:
             pass
-        try:
-            with open("/workspace/development/frappe-bench/logs/webhook_debug.log", "a") as f:
-                f.write(
-                    f"[AI-DIAG] post_call message_id={message_id} conv={conversation_doc.name} sess={conversation_doc.conversation_id} platform={message_doc.platform} intent={ai_context.get('intent', 'unknown')} live_data={ai_context.get('has_live_data', False)} source={ai_context.get('data_source', 'unknown')} conf={confidence:.3f} ai_len={len(ai_response or '')} duration={processing_time:.3f}s\n"
-                )
-        except Exception:
-            pass
 
         # Update message with AI response
-        final_ai_response = ai_response
-        try:
-            from assistant_crm.business_utils import is_business_hours, get_out_of_hours_message
-            if not is_business_hours():
-                ooh_prefix = get_out_of_hours_message()
-                final_ai_response = f"{ooh_prefix}\n\n{ai_response}"
-        except Exception as ooh_err:
-            frappe.log_error(f"Error checking business hours: {str(ooh_err)}", "Business Hours Check Error")
-
         message_doc.set_ai_response(
-            response=final_ai_response,
+            response=ai_response,
             confidence=confidence,
-            model_used="WorkCom",
+            model_used="Anna AI Assistant",
             processing_time=processing_time
         )
-        # Store original response in ai_response field for internal tracking
-        message_doc.ai_response = final_ai_response
 
         # Update conversation
         conversation_doc.db_set("ai_confidence_score", confidence)
-        conversation_doc.db_set("ai_last_response", final_ai_response)
+        conversation_doc.db_set("ai_last_response", ai_response)
 
         # Send AI response if confidence is high enough
         if confidence >= 0.0 and ai_response:  # TEMPORARY: lowered threshold to 0.0 for visibility
@@ -1410,12 +1312,12 @@ def process_message_with_ai(message_id: str):
                 "platform": message_doc.platform,
                 "direction": "Outbound",
                 "message_type": "text",
-                "message_content": final_ai_response,
-                "sender_name": "WorkCom",
+                "message_content": ai_response,
+                "sender_name": "Anna AI Assistant",
                 "sender_id": "ai_assistant",
                 "timestamp": now(),
                 "processed_by_ai": 1,
-                "ai_response": final_ai_response,
+                "ai_response": ai_response,
                 "ai_confidence": confidence
             })
 
@@ -1466,6 +1368,16 @@ def process_message_with_ai(message_id: str):
                 f"Error in AI message processing: {str(e)}"[:2000],
                 "Unified Inbox AI Error"[:140],
             )
+        except Exception:
+            pass
+    finally:
+        # Emergency guard: if conversation is still in "AI Processing" status,
+        # reset it so it doesn't get stuck.
+        try:
+            # Re-fetch to avoid stale data issues
+            current_status = frappe.db.get_value("Unified Inbox Conversation", conversation_doc.name, "status")
+            if current_status == "AI Processing":
+                frappe.db.set_value("Unified Inbox Conversation", conversation_doc.name, "status", "New")
         except Exception:
             pass
 
@@ -1630,7 +1542,7 @@ def manual_import_last_webhook_messages(limit: int = 4, platform: str = 'Faceboo
     Returns a summary of created/exists/error per message.
     """
     try:
-        log_path = '/workspace/development/frappe-bench/logs/webhook_debug.log'
+        log_path = 'logs/webhook_debug.log'
         summary = {'platform': platform, 'limit': int(limit), 'results': []}
         if platform != 'Facebook':
             return {'status': 'error', 'message': f'Platform {platform} not supported by manual import yet'}
@@ -1737,7 +1649,7 @@ def enhanced_assign_conversation():
             "platform": conversation.platform,
             "direction": "System",
             "message_type": "system",
-            "message_content": f"👤 Conversation assigned to {agent_doc.full_name or target_agent}. {assignment_notes}",
+            "message_content": f"­ƒæñ Conversation assigned to {agent_doc.full_name or target_agent}. {assignment_notes}",
             "sender_name": "System",
             "timestamp": frappe.utils.now(),
             "is_system_message": 1
@@ -1948,58 +1860,6 @@ def get_available_agents():
 
 
 @frappe.whitelist()
-def get_supervisors():
-    """
-    Get list of supervisors (Assistant CRM Manager or System Manager).
-    Used for filtering the escalation target user list.
-    """
-    try:
-        # Get all enabled system users
-        users = frappe.get_all(
-            "User",
-            filters={
-                "enabled": 1,
-                "user_type": "System User",
-                "name": ["!=", "Administrator"]
-            },
-            fields=["name", "email", "full_name", "first_name"]
-        )
-
-        supervisors = []
-        # Define supervisor roles
-        supervisor_roles = ["System Manager", "Assistant CRM Manager", "Customer Service Manager"]
-
-        for user in users:
-            try:
-                user_roles = frappe.get_roles(user.name)
-                # Check for any supervisor role
-                if any(role in supervisor_roles for role in user_roles):
-                    supervisors.append({
-                        "name": user.name,
-                        "email": user.email,
-                        "full_name": user.full_name or user.first_name or user.email,
-                        "first_name": user.first_name
-                    })
-            except Exception:
-                continue
-
-        # If no specific supervisors found, return all available agents as fallback
-        if not supervisors:
-            agents_result = get_available_agents()
-            if agents_result.get("status") == "success":
-                supervisors = agents_result.get("data", [])
-
-        return {
-            "status": "success",
-            "data": supervisors,
-            "count": len(supervisors)
-        }
-    except Exception as e:
-        frappe.log_error(f"Error getting supervisors: {str(e)}", "Unified Inbox API Error")
-        return {"status": "error", "message": str(e), "data": []}
-
-
-@frappe.whitelist()
 def create_issue_for_conversation(conversation_name, customer_name, platform, initial_message, customer_phone=None, customer_nrc=None, priority="Medium"):
     """
     Create an ERPNext Issue for a new conversation.
@@ -2154,21 +2014,6 @@ def sync_conversation_issue_status(conversation_name, conversation_status, assig
     conversation's status. Robust to legacy records where only one side of the link exists.
     """
     try:
-        # Role check for closing status
-        if conversation_status in ["Closed", "Resolved"]:
-            supervisor_roles = ["System Manager", "Assistant CRM Manager", "Customer Service Manager"]
-            agent_roles = ["WCF Customer Service Assistant", "WCF Customer Service Officer"]
-            user_roles = frappe.get_roles()
-            
-            is_supervisor = any(role in supervisor_roles for role in user_roles)
-            is_agent = any(role in agent_roles for role in user_roles)
-
-            if is_agent and not is_supervisor:
-                frappe.throw(frappe._("WCF Customer Service Assistants and Officers are not authorized to close conversations."))
-            
-            if not is_supervisor:
-                frappe.throw(frappe._("Only Supervisors are authorized to close conversations."))
-
         # 1) Resolve the Issue linked to this conversation
         issue_name = frappe.db.get_value(
             "Issue",
@@ -2268,17 +2113,10 @@ def sync_conversation_issue_status(conversation_name, conversation_status, assig
         }
 
     except Exception as e:
-        log_title = "Unified Inbox: Status Sync Failed"
-        log_message = (
-            f"Conversation: {conversation_name}\n"
-            f"Target Status: {conversation_status}\n"
-            f"Error: {str(e)}\n\n"
-            f"Traceback:\n{frappe.get_traceback()}"
-        )
-        frappe.log_error(log_message, log_title)
+        frappe.log_error(f"Error syncing status for conversation {conversation_name}: {str(e)}", "Status Sync Error")
         return {
             "status": "error",
-            "message": "We were unable to synchronize the status change with the ERPNext ticket. The system administrator has been logged."
+            "message": f"Failed to sync status: {str(e)}"
         }
 
 
@@ -2357,7 +2195,7 @@ def escalate_to_erpnext_issue(conversation_name, issue_id, new_priority, assign_
 
         # Add escalation comment to Issue
         escalation_comment = f"""
-🚨 **ESCALATED FROM UNIFIED INBOX**
+­ƒÜ¿ **ESCALATED FROM UNIFIED INBOX**
 
 **Escalation Reason:** {escalation_reason or 'Not specified'}
 **Previous Priority:** {old_priority}
@@ -2369,17 +2207,6 @@ This Issue was escalated from the Unified Inbox conversation: {conversation_name
         """.strip()
 
         issue_doc.add_comment("Comment", escalation_comment)
-
-        # Update custom escalation fields for separation
-        if assign_to:
-            try:
-                user_name = frappe.get_value("User", assign_to, "full_name") or assign_to
-                display_name = f"{user_name} ({assign_to})"
-                issue_doc.custom_escalated_agent = assign_to
-                issue_doc.custom_escalated_agent_name = display_name
-                print(f"DEBUG: Set custom_escalated_agent to {display_name}")
-            except Exception as e:
-                print(f"DEBUG: Error setting custom escalation fields: {str(e)}")
 
         # Assign to user if specified (ERPNext native assignment)
         if assign_to:
@@ -2400,22 +2227,23 @@ This Issue was escalated from the Unified Inbox conversation: {conversation_name
 
         # Save the Issue
         issue_doc.save(ignore_permissions=True)
-        
-        # Update the conversation as well
-        if conversation_name and frappe.db.exists("Unified Inbox Conversation", conversation_name):
-            try:
-                frappe.db.set_value("Unified Inbox Conversation", conversation_name, {
-                    "escalated_agent": assign_to,
-                    "escalated_at": frappe.utils.now(),
-                    "escalated_by": frappe.session.user,
-                    "escalation_reason": escalation_reason,
-                    "status": "Escalated",
-                    "priority": new_priority
-                }, update_modified=True)
-            except Exception as e:
-                frappe.log_error(f"Failed to update conversation escalation status: {str(e)}", "Unified Inbox Escalation Sync")
-
         print(f"DEBUG: Issue {issue_id} escalated successfully")
+
+        # Update conversation status if it exists
+        try:
+            if frappe.db.exists("Unified Inbox Conversation", conversation_name):
+                frappe.db.set_value(
+                    "Unified Inbox Conversation",
+                    conversation_name,
+                    {
+                        "status": "Escalated",
+                        "priority": new_priority,
+                        "escalated_at": frappe.utils.now(),
+                        "escalated_by": frappe.session.user
+                    }
+                )
+        except Exception as conv_error:
+            print(f"DEBUG: Conversation update error: {str(conv_error)}")
 
         return {
             "status": "success",
@@ -2475,12 +2303,6 @@ def sync_issue_escalation_to_conversation(issue_id):
         # Update assignment if Issue is assigned
         if hasattr(issue, 'assigned_to') and issue.assigned_to:
             conversation.assigned_agent = issue.assigned_to
-            
-        # Update escalation fields if present
-        if hasattr(issue, 'custom_escalated_agent') and issue.custom_escalated_agent:
-            conversation.escalated_agent = issue.custom_escalated_agent
-            if not conversation.escalated_at:
-                conversation.escalated_at = frappe.utils.now()
 
         conversation.save(ignore_permissions=True)
 
@@ -3691,15 +3513,15 @@ def get_tawkto_setup_instructions():
                 "content_type": "application/json"
             },
             "integration_features": [
-                "✅ Automatic ERPNext Issue generation",
-                "✅ Real-time message timestamps",
-                "✅ Customer identification",
-                "✅ Message threading",
-                "✅ Agent assignment",
-                "✅ Issue escalation"
+                "Ô£à Automatic ERPNext Issue generation",
+                "Ô£à Real-time message timestamps",
+                "Ô£à Customer identification",
+                "Ô£à Message threading",
+                "Ô£à Agent assignment",
+                "Ô£à Issue escalation"
             ],
             "api_features": [
-                "🔑 API Key required for:",
+                "­ƒöæ API Key required for:",
                 "- Active message polling",
                 "- Sending replies from inbox",
                 "- Advanced chat management"
@@ -3759,12 +3581,12 @@ def get_tawkto_setup_instructions():
                 "content_type": "application/json"
             },
             "integration_features": [
-                "✅ Automatic ERPNext Issue generation",
-                "✅ Real-time message timestamps",
-                "✅ Customer identification",
-                "✅ Message threading",
-                "✅ Agent assignment",
-                "✅ Issue escalation"
+                "Ô£à Automatic ERPNext Issue generation",
+                "Ô£à Real-time message timestamps",
+                "Ô£à Customer identification",
+                "Ô£à Message threading",
+                "Ô£à Agent assignment",
+                "Ô£à Issue escalation"
             ],
             "troubleshooting": [
                 "If messages don't appear, check webhook configuration",
@@ -3828,20 +3650,20 @@ def get_instagram_setup_instructions():
                 "content_type": "application/json"
             },
             "integration_features": [
-                "✅ Automatic ERPNext Issue generation",
-                "✅ Real-time message timestamps",
-                "✅ Customer identification (username/profile)",
-                "✅ Message threading",
-                "✅ Agent assignment",
-                "✅ Issue escalation",
-                "✅ Direct message support",
-                "✅ Media message handling"
+                "Ô£à Automatic ERPNext Issue generation",
+                "Ô£à Real-time message timestamps",
+                "Ô£à Customer identification (username/profile)",
+                "Ô£à Message threading",
+                "Ô£à Agent assignment",
+                "Ô£à Issue escalation",
+                "Ô£à Direct message support",
+                "Ô£à Media message handling"
             ],
             "api_features": [
-                "📊 Active message polling",
-                "💬 Sending replies from inbox",
-                "👤 User profile information",
-                "📷 Media message support"
+                "­ƒôè Active message polling",
+                "­ƒÆ¼ Sending replies from inbox",
+                "­ƒæñ User profile information",
+                "­ƒôÀ Media message support"
             ],
             "troubleshooting": [
                 "If messages don't appear, check access token validity",
@@ -4078,10 +3900,10 @@ def send_escalation_notification(agent_name, conversation, escalation_reason):
     try:
         notification = frappe.get_doc({
             "doctype": "Notification Log",
-            "subject": f"🚨 Escalated Conversation: {conversation.customer_name or 'Unknown Customer'}",
+            "subject": f"­ƒÜ¿ Escalated Conversation: {conversation.customer_name or 'Unknown Customer'}",
             "email_content": f"""
             <div style="font-family: Arial, sans-serif; max-width: 600px;">
-                <h3 style="color: #d63384;">🚨 Conversation Escalated</h3>
+                <h3 style="color: #d63384;">­ƒÜ¿ Conversation Escalated</h3>
                 <p>A conversation has been escalated to you:</p>
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0;">
                     <p><strong>Customer:</strong> {conversation.customer_name or 'Unknown'}</p>
@@ -4107,10 +3929,10 @@ def send_assignment_notification(agent_name, conversation):
     try:
         notification = frappe.get_doc({
             "doctype": "Notification Log",
-            "subject": f"👤 New Assignment: {conversation.customer_name or 'Unknown Customer'}",
+            "subject": f"­ƒæñ New Assignment: {conversation.customer_name or 'Unknown Customer'}",
             "email_content": f"""
             <div style="font-family: Arial, sans-serif; max-width: 600px;">
-                <h3 style="color: #0d6efd;">👤 New Conversation Assignment</h3>
+                <h3 style="color: #0d6efd;">­ƒæñ New Conversation Assignment</h3>
                 <p>You have been assigned a new conversation:</p>
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0;">
                     <p><strong>Customer:</strong> {conversation.customer_name or 'Unknown'}</p>
@@ -4261,110 +4083,6 @@ def sweep_escalate_inactive_conversations():
         return {"status": "success", "processed": processed}
     except Exception as e:
         frappe.log_error(f"Auto escalation sweep failed: {str(e)}", "Unified Inbox Escalation Sweep")
-        return {"status": "error", "message": str(e)}
-
-
-def sweep_agent_reassignments():
-    """
-    Scheduled job: detect conversations assigned to unavailable agents and reassign them.
-    Agents are considered 'unavailable' if:
-    1. Agent Dashboard status is not 'Available' (Sick, On Leave, Busy, Offline, etc.)
-    2. Agent is outside their working hours
-    3. User account is disabled
-    """
-    try:
-        from assistant_crm.assistant_crm.assistant_crm_module.doctype.agent_dashboard.agent_dashboard import (
-            AgentDashboard,
-        )
-        from frappe.utils import now
-
-        # Find all open conversations that have an assigned agent
-        conversations = frappe.get_all(
-            "Unified Inbox Conversation",
-            filters={
-                "status": ["not in", ["Resolved", "Closed"]],
-                "assigned_agent": ["is", "set"],
-            },
-            fields=["name", "assigned_agent", "platform", "customer_name"],
-        )
-
-        reassigned_count = 0
-        for conv in conversations:
-            agent_user = conv.assigned_agent
-
-            # Check agent availability
-            dashboard_name = frappe.db.get_value(
-                "Agent Dashboard", {"agent_user": agent_user}, "name"
-            )
-            reassign = False
-            reason = ""
-
-            if not dashboard_name:
-                # No dashboard means they haven't set up availability,
-                # we treat them as unavailable to be safe if they're assigned.
-                reassign = True
-                reason = "No Agent Dashboard configured"
-            else:
-                agent_dashboard = frappe.get_doc("Agent Dashboard", dashboard_name)
-                # Sync load before checking
-                AgentDashboard.sync_unified_inbox_load_for_agent(agent_user)
-                agent_dashboard.reload()
-
-                if not agent_dashboard.is_available():
-                    reassign = True
-                    reason = f"Status: {agent_dashboard.status}"
-                    if not agent_dashboard.is_within_working_hours():
-                        reason = "Outside working hours"
-                elif not frappe.db.get_value("User", agent_user, "enabled"):
-                    reassign = True
-                    reason = "User account disabled"
-
-            if reassign:
-                # Find a new available agent
-                conv_doc = frappe.get_doc("Unified Inbox Conversation", conv.name)
-                new_agent = conv_doc.find_available_agent()
-
-                if new_agent and new_agent != agent_user:
-                    # Reassign
-                    conv_doc.db_set("assigned_agent", new_agent)
-                    conv_doc.db_set("agent_assigned_at", now())
-
-                    # Log the reassignment as a comment
-                    comment = (
-                        f"🔄 **AUTO-REASSIGNED**\n\n"
-                        f"Original agent **{agent_user}** became unavailable ({reason}).\n"
-                        f"Reassigned to **{new_agent}** for immediate handling."
-                    )
-                    conv_doc.add_comment("Comment", comment)
-
-                    # Notify new agent
-                    conv_doc.notify_agent_assignment(new_agent)
-
-                    # Sync with linked issue if it exists
-                    issue_id = getattr(conv_doc, "custom_issue_id", None)
-                    if issue_id:
-                        try:
-                            frappe.db.set_value(
-                                "Issue", issue_id, "custom_assigned_agent", new_agent
-                            )
-                        except Exception:
-                            pass
-
-                    reassigned_count += 1
-
-        if reassigned_count > 0:
-            frappe.log_error(
-                f"Auto-reassigned {reassigned_count} conversations due to agent unavailability.",
-                "Unified Inbox Sweep",
-            )
-
-        return {"status": "success", "reassigned": reassigned_count}
-
-    except Exception as e:
-        frappe.log_error(
-            f"Error in sweep_agent_reassignments: {str(e)}",
-            "Unified Inbox Reassignment Error",
-        )
         return {"status": "error", "message": str(e)}
 
 
@@ -4990,7 +4708,7 @@ def update_issue_with_conversation_history(conversation_name, new_message_conten
             content = (msg.message_content or "[No content]").strip()
 
             # Bullet line: timestamp, direction, sender, content
-            lines.append(f"- {timestamp_str} {direction_label} — {sender}: {content}")
+            lines.append(f"- {timestamp_str} {direction_label} ÔÇö {sender}: {content}")
 
         # Update Issue description with complete conversation, using HTML line breaks so it renders on separate lines
         try:
@@ -5052,9 +4770,8 @@ def update_issue_with_conversation_history(conversation_name, new_message_conten
 
         # Log to webhook debug file for easier monitoring
         try:
-            with open("/workspace/development/frappe-bench/logs/webhook_debug.log", "a") as f:
-                f.write(f"ERROR: Issue update failed for {conversation_name}: {error_msg}\n")
-                f.write(f"Traceback: {traceback.format_exc()}\n")
+            log = frappe.logger("assistant_crm.issue_update")
+            log.error(f"Issue update failed for {conversation_name}: {error_msg}")
         except:
             pass
 
@@ -5524,7 +5241,7 @@ def test_real_telegram_webhook_timestamp():
                     "expected_display": "Just now" if minutes_ago < 1 else f"{minutes_ago}m ago",
                     "timestamp_accuracy": "ACCURATE" if minutes_ago < 5 else "INACCURATE",
                     "real_webhook_fix_working": minutes_ago < 5,
-                    "webhook_path": "realtime_webhooks.py → omnichannel_router.py"
+                    "webhook_path": "realtime_webhooks.py ÔåÆ omnichannel_router.py"
                 }
             }
         else:
@@ -5541,4 +5258,3 @@ def test_real_telegram_webhook_timestamp():
             "status": "error",
             "message": error_msg
         }
-

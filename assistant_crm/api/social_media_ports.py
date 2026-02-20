@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 WCFCB Assistant CRM - Social Media Platform Ports
 =================================================
@@ -28,21 +28,6 @@ from typing import Dict, Any, Optional, List
 from abc import ABC, abstractmethod
 import hashlib
 import hmac
-import requests
-
-
-def get_decrypted_setting(settings, field: str) -> str:
-    """Safely retrieve and decrypt a field from Frappe settings."""
-    val = None
-    try:
-        val = settings.get_password(field)
-    except Exception:
-        pass
-    if not val:
-        val = settings.get(field)
-    if isinstance(val, (bytes, bytearray)):
-        val = val.decode("utf-8")
-    return (val or "").strip()
 
 
 class SocialMediaPlatform(ABC):
@@ -199,18 +184,18 @@ class SocialMediaPlatform(ABC):
             try:
                 self.create_issue_for_new_conversation(conversation_doc.name, platform_data)
             except Exception as issue_err:
-                # Log but don't propagate — the conversation was already created
+                # Log but don't propagate ÔÇö the conversation was already created
                 frappe.log_error(
-                    title="Conversation Issue Creation Failed",
-                    message=f"Issue creation failed for {conversation_doc.name}: {str(issue_err)}"
+                    message=f"Issue creation failed for {conversation_doc.name}: {str(issue_err)}",
+                    title="Auto Issue Creation Error"
                 )
 
             return conversation_doc.name
 
         except Exception as e:
             frappe.log_error(
-                title="Conversation Creation Failed",
-                message=f"Error creating conversation for {self.platform_name}: {str(e)}"
+                message=f"Error creating conversation for {self.platform_name}: {str(e)}",
+                title="Social Media Integration Error"
             )
             return None
 
@@ -276,7 +261,7 @@ class SocialMediaPlatform(ABC):
             return message_doc.name
 
         except Exception as e:
-            frappe.log_error(title="Message Creation Failed", message=f"Error creating message for {self.platform_name}: {str(e)}")
+            frappe.log_error(f"Error creating message for {self.platform_name}: {str(e)}", "Social Media Integration Error")
             return None
 
     def create_issue_for_new_conversation(self, conversation_name: str, platform_data: Dict[str, Any]):
@@ -311,8 +296,8 @@ class SocialMediaPlatform(ABC):
         except Exception as e:
             print(f"DEBUG: Error creating Issue for conversation {conversation_name}: {str(e)}")
             frappe.log_error(
-                title="Auto Issue Creation Failed",
-                message=f"Error creating Issue for {self.platform_name} conversation {conversation_name}: {str(e)}"
+                message=f"Error creating Issue for {self.platform_name} conversation {conversation_name}: {str(e)}",
+                title="Auto Issue Creation Error"
             )
 
     def update_conversation_timestamp(self, conversation_name: str, timestamp_str: str):
@@ -326,7 +311,7 @@ class SocialMediaPlatform(ABC):
                 update_modified=True,
             )
         except Exception as e:
-            frappe.log_error(title="Update Timestamp Failed", message=f"Error updating conversation timestamp: {str(e)}")
+            frappe.log_error(f"Error updating conversation timestamp: {str(e)}", "Social Media Integration")
 
     def update_issue_conversation_history(self, conversation_name: str, new_message_content: str, sender_name: str, timestamp_str: str, direction: str):
         """Update the ERPNext Issue with complete conversation history after each message."""
@@ -336,8 +321,8 @@ class SocialMediaPlatform(ABC):
         print(debug_msg)
 
         try:
-            with open("/workspace/development/frappe-bench/logs/webhook_debug.log", "a") as f:
-                f.write(debug_msg + "\n")
+            log = frappe.logger("assistant_crm.unified_inbox")
+            log.info(debug_msg)
         except:
             pass
 
@@ -374,7 +359,7 @@ class SocialMediaPlatform(ABC):
 
             for msg in messages:
                 timestamp_str_formatted = msg.timestamp.strftime('%Y-%m-%d %H:%M:%S') if msg.timestamp else "Unknown time"
-                direction_indicator = "→" if msg.direction == "Outbound" else "←"
+                direction_indicator = "ÔåÆ" if msg.direction == "Outbound" else "ÔåÉ"
                 sender = msg.sender_name or "Unknown"
                 content = msg.message_content or "[No content]"
 
@@ -404,7 +389,7 @@ class SocialMediaPlatform(ABC):
             print(f"DEBUG: Error updating Issue conversation history: {str(e)}")
             import traceback
             print(f"DEBUG: Traceback: {traceback.format_exc()}")
-            frappe.log_error(title="Issue History Sync Failed", message=f"Error updating Issue conversation history: {str(e)}")
+            frappe.log_error(f"Error updating Issue conversation history: {str(e)}", "Social Media Integration")
 
 
 class WhatsAppIntegration(SocialMediaPlatform):
@@ -415,18 +400,6 @@ class WhatsAppIntegration(SocialMediaPlatform):
 
     def get_platform_credentials(self) -> Dict[str, str]:
         """Get WhatsApp credentials from settings."""
-        try:
-            settings = frappe.get_single("Unified Inbox Settings")
-            if settings.get("enable_whatsapp"):
-                return {
-                    "access_token": get_decrypted_setting(settings, "whatsapp_access_token"),
-                    "phone_number_id": (settings.get("whatsapp_phone_number_id") or "").strip(),
-                    "webhook_verify_token": (settings.get("whatsapp_webhook_verify_token") or "").strip(),
-                    "app_secret": get_decrypted_setting(settings, "whatsapp_app_secret") or ""
-                }
-        except Exception:
-            pass
-
         return {
             "access_token": "EAAbmlrtdJlUBPZAM086pmTmr2mVB00sESyfdTPYxyZBYsdQxaVQx5sZAfZAdNP7jhQuAWulBWUvygF7MbdkWV8wbZAyyW6ZAIZAsYFxKMeeYAASzftA1h9bFurnI8OA8aTmlQeBZC4IjcEOZBsqb8KRjNIzddSrrZAo6w8ify2HF4D0QUvkErHNSTEYP7pLQZBKfr2HaE4P7PvzZCXXXhjio551YHOtZA4XnZAjMytqbeVq0xyc0kZB",  # Your provided access token
             "phone_number_id": "+264 81 419 3615",  # Your provided phone number
@@ -442,7 +415,7 @@ class WhatsAppIntegration(SocialMediaPlatform):
     def send_message(self, recipient_id: str, message: str, message_type: str = "text") -> bool:
         """Send WhatsApp message."""
         if not self.is_configured:
-            frappe.log_error(title="WhatsApp Config Missing", message="WhatsApp not configured")
+            frappe.log_error("WhatsApp not configured", "WhatsApp Integration")
             return False
 
         try:
@@ -464,7 +437,7 @@ class WhatsAppIntegration(SocialMediaPlatform):
             return response.status_code == 200
 
         except Exception as e:
-            frappe.log_error(title="WhatsApp Send Failed", message=f"WhatsApp send error: {str(e)}")
+            frappe.log_error(f"WhatsApp send error: {str(e)}", "WhatsApp Integration")
             return False
 
     def process_webhook(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -551,7 +524,7 @@ class WhatsAppIntegration(SocialMediaPlatform):
 
         except Exception as e:
             print(f"DEBUG: WhatsApp webhook error: {str(e)}")
-            frappe.log_error(title="WhatsApp Webhook Failed", message=f"WhatsApp webhook error: {str(e)}")
+            frappe.log_error(f"WhatsApp webhook error: {str(e)}", "WhatsApp Integration")
             return {"status": "error", "message": str(e)}
 
     def extract_whatsapp_message_content(self, message: Dict[str, Any]) -> str:
@@ -615,20 +588,21 @@ class FacebookIntegration(SocialMediaPlatform):
         try:
             settings = frappe.get_single("Social Media Settings")
             return {
-                "page_access_token": get_decrypted_setting(settings, "facebook_page_access_token"),
-                "app_secret": get_decrypted_setting(settings, "facebook_app_secret"),
-                "verify_token": (settings.get("webhook_verify_token") or "").strip(),
-                "page_id": (settings.get("facebook_page_id") or "").strip(),
-                "api_version": (settings.get("facebook_api_version") or "v21.0").strip(),
+                "page_access_token": settings.get("facebook_page_access_token") or "",
+                "app_secret": settings.get("facebook_app_secret") or "",
+                "verify_token": settings.get("webhook_verify_token") or "",
+                "page_id": settings.get("facebook_page_id") or "",
+                "api_version": settings.get("facebook_api_version") or "v23.0",
                 "use_fallback_names": False,
             }
         except Exception:
+            # Fallback to safe defaults
             return {
                 "page_access_token": "",
                 "app_secret": "",
                 "verify_token": "",
                 "page_id": "",
-                "api_version": "v21.0",
+                "api_version": "v23.0",
                 "use_fallback_names": False,
             }
 
@@ -648,7 +622,7 @@ class FacebookIntegration(SocialMediaPlatform):
           we attempt to exchange it for a page token using the configured page_id.
         """
         if not self.is_configured:
-            frappe.log_error(title="Facebook Config Missing", message="Facebook not configured")
+            frappe.log_error("Facebook not configured", "Facebook Integration")
             return False
 
         try:
@@ -674,8 +648,7 @@ class FacebookIntegration(SocialMediaPlatform):
             def do_send(token: str) -> requests.Response:
                 headers = {"Content-Type": "application/json"}
                 payload = {
-                    "messaging_type": "MESSAGE_TAG",
-                    "tag": "HUMAN_AGENT",
+                    "messaging_type": "RESPONSE",
                     "recipient": {"id": recipient_id},
                     "message": {"text": message},
                 }
@@ -696,22 +669,13 @@ class FacebookIntegration(SocialMediaPlatform):
                     pass
                 return resp
 
-            # Initial token from settings (sanitize thoroughly)
-            token = (self.credentials.get("page_access_token") or "").strip()
-            # Remove any leading/trailing quotes or hidden whitespace/newlines
-            token = token.strip('"').strip("'").strip()
-            token = "".join(token.split()) # Remove all whitespace characters
-            
+            # Initial token from settings (trim and sanitize)
+            token = (self.credentials.get("page_access_token") or "")
+            token = token.strip().strip('"').strip("'")
+            token = token.replace(" ", "").replace("\n", "").replace("\r", "")
             if not token:
-                frappe.log_error(title="Facebook Token Missing", message="Missing Facebook Page Access Token")
+                frappe.log_error("Missing Facebook Page Access Token", "Facebook Integration")
                 return False
-            
-            # Diagnostic log (first 6 characters)
-            try:
-                t_preview = f"{token[:6]}...{token[-4:]}" if len(token) > 10 else "too_short"
-                frappe.logger("assistant_crm.unified_send").info(f"[FB_SEND] token_len={len(token)} preview={t_preview}")
-            except Exception:
-                pass
 
             # First attempt
             resp = do_send(token)
@@ -739,14 +703,14 @@ class FacebookIntegration(SocialMediaPlatform):
                             ex_txt = ex.text
                         except Exception:
                             ex_txt = "<no response text>"
-                        # Enhanced diagnostics for exchange failure
-                        log_msg = (
-                            f"HTTP {ex.status_code} - {ex_txt}\n"
-                            f"URL: {exchange_url}\n"
-                            f"Page ID: {page_id}\n"
-                            f"Token Length: {len(token)}\n"
-                        )
-                        frappe.log_error(title="Facebook Token Exchange Failed", message=log_msg)
+                        # Track diagnostics for token exchange failure
+                        try:
+                            self.last_response_status = ex.status_code
+                            self.last_response_text = ex_txt
+                            self.last_error = "token_exchange_failed"
+                        except Exception:
+                            pass
+                        frappe.log_error(f"Facebook token exchange failed: HTTP {ex.status_code} - {ex_txt}", "Facebook Integration")
                     if ex.status_code == 200:
                         page_token = (ex.json() or {}).get("access_token")
                         if page_token:
@@ -764,7 +728,7 @@ class FacebookIntegration(SocialMediaPlatform):
                                 )
                                 return False
                 except Exception as ex_err:
-                    frappe.log_error(title="Facebook Token Exchange Exception", message=f"Facebook token exchange failed: {str(ex_err)}")
+                    frappe.log_error(f"Facebook token exchange failed: {str(ex_err)}", "Facebook Integration")
 
             # Log detailed error for diagnostics
             try:
@@ -772,8 +736,8 @@ class FacebookIntegration(SocialMediaPlatform):
             except Exception:
                 err_txt = "<no response text>"
             frappe.log_error(
-                title="Facebook Send Failed",
-                message=f"HTTP {resp.status_code} - {err_txt}"
+                f"Facebook send failed: HTTP {resp.status_code} - {err_txt}",
+                "Facebook Integration"
             )
             return False
 
@@ -782,7 +746,7 @@ class FacebookIntegration(SocialMediaPlatform):
                 self.last_error = str(e)
             except Exception:
                 pass
-            frappe.log_error(title="Facebook Send Exception", message=f"Facebook send error: {str(e)}")
+            frappe.log_error(f"Facebook send error: {str(e)}", "Facebook Integration")
             return False
 
     def process_webhook(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -919,16 +883,6 @@ class TelegramIntegration(SocialMediaPlatform):
 
     def get_platform_credentials(self) -> Dict[str, str]:
         """Get Telegram credentials from settings."""
-        try:
-            settings = frappe.get_single("Unified Inbox Settings")
-            if settings.get("enable_telegram"):
-                return {
-                    "bot_token": get_decrypted_setting(settings, "telegram_bot_token"),
-                    "webhook_secret": get_decrypted_setting(settings, "telegram_webhook_secret") or ""
-                }
-        except Exception:
-            pass
-
         return {
             "bot_token": "8329706646:AAFv4K1b2BCF5EYeKhQ144Cvkr5xgbb8-lM",  # WCFCB Assistant Bot
             "webhook_secret": "wcfcb_telegram_webhook_secret_2025"
@@ -1107,18 +1061,6 @@ class TawkToIntegration(SocialMediaPlatform):
 
     def get_platform_credentials(self) -> Dict[str, str]:
         """Get Tawk.to credentials from settings."""
-        try:
-            settings = frappe.get_single("Unified Inbox Settings")
-            if settings.get("enable_tawk_to_sync"):
-                return {
-                    "property_id": (settings.get("tawk_to_property_id") or "").strip(),
-                    "property_url": (get_public_url() or "https://erp.workers.com.zm").strip(),
-                    "api_key": get_decrypted_setting(settings, "tawk_to_api_key") or "",
-                    "webhook_secret": get_decrypted_setting(settings, "tawk_to_webhook_secret") or ""
-                }
-        except Exception:
-            pass
-
         return {
             "property_id": "68ac3c63fda87419226520f9",  # WCFCB Property ID
             "property_url": "https://erp.workers.com.zm",
@@ -1758,7 +1700,7 @@ class TawkToIntegration(SocialMediaPlatform):
 
         except Exception as e:
             print(f"DEBUG: Error in Tawk.to webhook processing: {str(e)}")
-            frappe.log_error(title="Tawk.to Webhook Failed", message=f"Tawk.to webhook error: {str(e)}")
+            frappe.log_error(f"Tawk.to webhook error: {str(e)}", "Tawk.to Integration")
             return {"status": "error", "message": str(e)}
 
 
@@ -1774,27 +1716,31 @@ class InstagramIntegration(SocialMediaPlatform):
         self.last_error = None
 
     def get_platform_credentials(self) -> Dict[str, str]:
-        """Get Instagram credentials from Social Media Settings."""
+        """Get Instagram credentials from settings.
+        Preference order for token:
+        1) instagram_access_token (if explicitly set)
+        2) facebook_page_access_token (reuse same long-lived token as Facebook)
+        """
         try:
             settings = frappe.get_single("Social Media Settings")
-            # Prefer Instagram-specific access token, fallback to Facebook Page access token
+            # Prefer Facebook Page access token for Instagram messaging, as required by Meta
             token = (
-                get_decrypted_setting(settings, "instagram_access_token")
-                or get_decrypted_setting(settings, "facebook_page_access_token")
+                settings.get("facebook_page_access_token")
+                or settings.get("instagram_access_token")
                 or ""
             )
             api_ver = (
-                (settings.get("instagram_api_version") or "").strip()
-                or (settings.get("facebook_api_version") or "").strip()
-                or "v21.0"
+                settings.get("instagram_api_version")
+                or settings.get("facebook_api_version")
+                or "v23.0"
             )
             webhook_secret = (
-                (settings.get("webhook_secret") or "").strip()
-                or (settings.get("facebook_app_secret") or "").strip()
-                or (settings.get("instagram_webhook_secret") or "").strip()
-                or (settings.get("webhook_verify_token") or "").strip()
+                settings.get("webhook_secret")
+                or settings.get("facebook_app_secret")
+                or settings.get("instagram_webhook_secret")
+                or settings.get("webhook_verify_token")
+                or ""
             )
-
             return {
                 "access_token": token,
                 "api_version": api_ver,
@@ -1804,7 +1750,7 @@ class InstagramIntegration(SocialMediaPlatform):
         except Exception:
             return {
                 "access_token": "",
-                "api_version": "v21.0",
+                "api_version": "v23.0",
                 "webhook_secret": "",
                 "use_fallback_names": False,
             }
@@ -1831,32 +1777,21 @@ class InstagramIntegration(SocialMediaPlatform):
             url = f"https://graph.facebook.com/{api_ver}/me/messages"
 
             # Sanitize token similar to Facebook sender
-            # Sanitize token thoroughly
-            token = (self.credentials.get("access_token") or "").strip()
-            token = token.strip('"').strip("'").strip()
-            token = "".join(token.split()) # Remove all whitespace
-            
+            raw_token = (self.credentials.get("access_token") or "")
+            token = raw_token.strip().strip('"').strip("'")
+            token = token.replace(" ", "").replace("\n", "").replace("\r", "")
             if not token:
                 self.last_error = "Missing Instagram/Facebook Page Access Token"
-                frappe.log_error(title="Instagram Token Missing", message="Missing Instagram Access Token")
+                frappe.log_error("Missing Instagram Access Token", "Instagram Integration")
                 return False
-            
-            # Diagnostic log (first 6 characters)
-            try:
-                t_preview = f"{token[:6]}...{token[-4:]}" if len(token) > 10 else "too_short"
-                frappe.logger("assistant_crm.unified_send").info(f"[IG_SEND] token_len={len(token)} preview={t_preview}")
-            except Exception:
-                pass
 
             def do_send(current_token: str) -> requests.Response:
                 params = {"access_token": current_token}
-                # Use HUMAN_AGENT tag to bypass the 24-hour window if applicable
                 payload = {
                     "messaging_product": "instagram",
                     "recipient": {"id": recipient_id},
                     "message": {"text": message},
-                    "messaging_type": "MESSAGE_TAG",
-                    "tag": "HUMAN_AGENT"
+                    "messaging_type": "RESPONSE",
                 }
                 # Track request/response diagnostics but mask the token
                 try:
@@ -1919,27 +1854,25 @@ class InstagramIntegration(SocialMediaPlatform):
                                 # Log failure after token exchange attempt
                                 try:
                                     frappe.log_error(
-                                        title="Instagram Send After Exchange Failed",
-                                        message=f"HTTP {response2.status_code} - {response2.text}"
+                                        f"Instagram send failed after token exchange: HTTP {response2.status_code} - {response2.text}",
+                                        "Instagram Integration",
                                     )
                                 except Exception:
                                     pass
                     else:
-                        # Enhanced diagnostics
-                        log_msg = (
-                            f"HTTP {exchange_resp.status_code} - {ex_txt}\n"
-                            f"URL: {exchange_url}\n"
-                            f"Page ID: {page_id}\n"
-                            f"Token Length: {len(token)}\n"
-                        )
+                        # Log token exchange diagnostics
+                        try:
+                            ex_txt = exchange_resp.text
+                        except Exception:
+                            ex_txt = "<no response text>"
                         frappe.log_error(
-                            title="Instagram Token Exchange Failed",
-                            message=log_msg
+                            f"Instagram token exchange failed: HTTP {exchange_resp.status_code} - {ex_txt}",
+                            "Instagram Integration",
                         )
                 except Exception as ex_err:
                     frappe.log_error(
-                        title="Instagram Token Exchange Exception",
-                        message=f"Instagram token exchange failed: {str(ex_err)}"
+                        f"Instagram token exchange failed: {str(ex_err)}",
+                        "Instagram Integration",
                     )
 
             # Log detailed error and return False
@@ -1957,7 +1890,7 @@ class InstagramIntegration(SocialMediaPlatform):
                 self.last_error = str(e)
             except Exception:
                 pass
-            frappe.log_error(title="Instagram Send Exception", message=f"Instagram send error: {str(e)}")
+            frappe.log_error(f"Instagram send error: {str(e)}", "Instagram Integration")
             return False
 
     def process_webhook(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -2171,19 +2104,34 @@ class TwitterIntegration(SocialMediaPlatform):
         """Get Twitter credentials from Social Media Settings."""
         try:
             settings = frappe.get_single("Social Media Settings")
+            def gp(field: str) -> str:
+                try:
+                    return settings.get_password(field)
+                except Exception:
+                    return settings.get(field)
             return {
-                "client_id": (settings.get("twitter_client_id") or "").strip(),
-                "client_secret": get_decrypted_setting(settings, "twitter_client_secret"),
-                "api_key": (settings.get("twitter_api_key") or "").strip(),
-                "api_secret": get_decrypted_setting(settings, "twitter_api_secret"),
-                "bearer_token": get_decrypted_setting(settings, "twitter_bearer_token"),
-                "access_token": get_decrypted_setting(settings, "twitter_access_token"),
-                "access_token_secret": get_decrypted_setting(settings, "twitter_access_token_secret"),
-                "webhook_env": (settings.get("twitter_webhook_env") or "").strip(),
-                "webhook_secret": get_decrypted_setting(settings, "twitter_webhook_secret"),
+                "client_id": settings.get("twitter_client_id") or "",
+                "client_secret": gp("twitter_client_secret") or "",
+                "api_key": settings.get("twitter_api_key") or "",
+                "api_secret": gp("twitter_api_secret") or "",
+                "bearer_token": gp("twitter_bearer_token") or "",
+                "access_token": gp("twitter_access_token") or "",
+                "access_token_secret": gp("twitter_access_token_secret") or "",
+                "webhook_env": settings.get("twitter_webhook_env") or "",
+                "webhook_secret": gp("twitter_webhook_secret") or "",
             }
         except Exception:
-            return {}
+            return {
+                "client_id": "",
+                "client_secret": "",
+                "api_key": "",
+                "api_secret": "",
+                "bearer_token": "",
+                "access_token": "",
+                "access_token_secret": "",
+                "webhook_env": "",
+                "webhook_secret": "",
+            }
 
     def check_configuration(self) -> bool:
         """Consider inbound configured if we have a webhook secret or bearer token."""
@@ -2267,7 +2215,7 @@ class TwitterIntegration(SocialMediaPlatform):
 
             self.last_request_payload = event_payload
 
-            # Build OAuth 1.0a Authorization header (RFC 5849) — JSON body not included in signature
+            # Build OAuth 1.0a Authorization header (RFC 5849) ÔÇö JSON body not included in signature
             auth_header = self._build_oauth1_header("POST", url, params={})
             headers = {
                 "Authorization": auth_header,
@@ -2538,20 +2486,38 @@ class LinkedInIntegration(SocialMediaPlatform):
         super().__init__("LinkedIn")
 
     def get_platform_credentials(self) -> Dict[str, str]:
-        """Get LinkedIn credentials from Social Media Settings."""
         try:
             settings = frappe.get_single("Social Media Settings")
-            return {
+            creds = {
                 "enabled": bool(settings.get("linkedin_enabled")),
                 "client_id": (settings.get("linkedin_client_id") or "").strip(),
                 "api_version": (settings.get("linkedin_api_version") or "v2").strip(),
                 "organization_id": (settings.get("linkedin_organization_id") or "").strip(),
-                "client_secret": get_decrypted_setting(settings, "linkedin_client_secret"),
-                "access_token": get_decrypted_setting(settings, "linkedin_access_token"),
-                "webhook_secret": get_decrypted_setting(settings, "linkedin_webhook_secret"),
             }
+            # Secrets via get_password when possible
+            try:
+                creds["client_secret"] = (settings.get_password("linkedin_client_secret") or "").strip()
+            except Exception:
+                creds["client_secret"] = (settings.get("linkedin_client_secret") or "").strip()
+            try:
+                creds["access_token"] = (settings.get_password("linkedin_access_token") or "").strip()
+            except Exception:
+                creds["access_token"] = (settings.get("linkedin_access_token") or "").strip()
+            try:
+                creds["webhook_secret"] = (settings.get_password("linkedin_webhook_secret") or "").strip()
+            except Exception:
+                creds["webhook_secret"] = (settings.get("linkedin_webhook_secret") or "").strip()
+            return creds
         except Exception:
-            return {}
+            return {
+                "enabled": False,
+                "client_id": "",
+                "client_secret": "",
+                "access_token": "",
+                "api_version": "v2",
+                "organization_id": "",
+                "webhook_secret": "",
+            }
 
 
 
@@ -2796,7 +2762,7 @@ class YouTubeIntegration(SocialMediaPlatform):
     - Replying to comments via the YouTube Data API
     - Community post comment handling
 
-    Flow: Webhook → Unified Inbox Conversation → Unified Inbox Message → AI Processing → Reply
+    Flow: Webhook ÔåÆ Unified Inbox Conversation ÔåÆ Unified Inbox Message ÔåÆ AI Processing ÔåÆ Reply
     """
 
     def __init__(self):
@@ -2808,21 +2774,48 @@ class YouTubeIntegration(SocialMediaPlatform):
         self.last_error = None
 
     def get_platform_credentials(self) -> Dict[str, str]:
-        """Get YouTube credentials from Social Media Settings."""
+        """Get YouTube credentials from Social Media Settings.
+
+        Required credentials:
+        - youtube_api_key: YouTube Data API key (for read operations)
+        - youtube_client_id: OAuth 2.0 client ID (for write operations like replying)
+        - youtube_client_secret: OAuth 2.0 client secret
+        - youtube_access_token: OAuth 2.0 access token (for authenticated requests)
+        - youtube_refresh_token: OAuth 2.0 refresh token
+        - youtube_channel_id: The channel ID to monitor
+        - youtube_webhook_secret: Secret for verifying webhook signatures
+        """
         try:
             settings = frappe.get_single("Social Media Settings")
+
+            def get_pwd(field: str) -> str:
+                """Safely retrieve password field."""
+                try:
+                    return settings.get_password(field) or ""
+                except Exception:
+                    return settings.get(field) or ""
+
             return {
-                "api_key": get_decrypted_setting(settings, "youtube_api_key"),
-                "client_id": (settings.get("youtube_client_id") or "").strip(),
-                "client_secret": get_decrypted_setting(settings, "youtube_client_secret"),
-                "access_token": get_decrypted_setting(settings, "youtube_access_token"),
-                "refresh_token": get_decrypted_setting(settings, "youtube_refresh_token"),
-                "channel_id": (settings.get("youtube_channel_id") or "").strip(),
-                "webhook_secret": get_decrypted_setting(settings, "youtube_webhook_secret"),
-                "api_version": (settings.get("youtube_api_version") or "v3").strip(),
+                "api_key": settings.get("youtube_api_key") or "",
+                "client_id": settings.get("youtube_client_id") or "",
+                "client_secret": get_pwd("youtube_client_secret"),
+                "access_token": get_pwd("youtube_access_token"),
+                "refresh_token": get_pwd("youtube_refresh_token"),
+                "channel_id": settings.get("youtube_channel_id") or "",
+                "webhook_secret": get_pwd("youtube_webhook_secret"),
+                "api_version": settings.get("youtube_api_version") or "v3",
             }
         except Exception:
-            return {}
+            return {
+                "api_key": "",
+                "client_id": "",
+                "client_secret": "",
+                "access_token": "",
+                "refresh_token": "",
+                "channel_id": "",
+                "webhook_secret": "",
+                "api_version": "v3",
+            }
 
     def check_configuration(self) -> bool:
         """Check if YouTube is properly configured for receiving and sending messages."""
@@ -3557,7 +3550,7 @@ def poll_twitter_inbox() -> Dict[str, Any]:
 
         return {"status": "success", "imported": imported}
     except Exception as e:
-        frappe.log_error(title="Twitter Poll Fatal", message=f"Twitter polling fatal error: {str(e)}")
+        frappe.log_error(f"Twitter polling fatal error: {str(e)}", "Twitter Polling")
         return {"status": "error", "message": str(e)}
 
 def get_platform_integration(platform_name: str) -> Optional[SocialMediaPlatform]:
@@ -3630,10 +3623,10 @@ DEBUG: Request args: {frappe.request.args}
 
         # Also log to file for easier monitoring
         try:
-            with open("/workspace/development/frappe-bench/logs/webhook_debug.log", "a") as f:
-                f.write(webhook_log + "\n")
+            log = frappe.logger("assistant_crm.webhook")
+            log.info(webhook_log)
         except Exception as e:
-            print(f"DEBUG: Could not write to webhook log file: {str(e)}")
+            pass
 
         if not webhook_data:
             print(f"DEBUG: No webhook data received - returning error")
@@ -3646,8 +3639,8 @@ DEBUG: Request args: {frappe.request.args}
 
             # Log parsed data to file
             try:
-                with open("/workspace/development/frappe-bench/logs/webhook_debug.log", "a") as f:
-                    f.write(parsed_log + "\n")
+                log = frappe.logger("assistant_crm.webhook")
+                log.info(parsed_log)
             except:
                 pass
 
@@ -3663,8 +3656,8 @@ DEBUG: Request args: {frappe.request.args}
 
         # Log platform detection to file
         try:
-            with open("/workspace/development/frappe-bench/logs/webhook_debug.log", "a") as f:
-                f.write(platform_log + "\n")
+            log = frappe.logger("assistant_crm.webhook")
+            log.info(platform_log)
         except:
             pass
 
@@ -3727,7 +3720,7 @@ DEBUG: Request args: {frappe.request.args}
     except Exception as e:
         error_msg = f"Social media webhook error: {str(e)}"
         print(f"DEBUG: EXCEPTION in webhook processing: {error_msg}")
-        frappe.log_error(title="Social Media Webhook Fatal", message=error_msg)
+        frappe.log_error(error_msg, "Social Media Webhook Error")
         return {"status": "error", "message": "Webhook processing failed"}
 
 
@@ -3769,28 +3762,9 @@ def detect_platform_from_webhook(data: Dict[str, Any]) -> Optional[str]:
     if "entry" in data and any("messaging" in entry for entry in data.get("entry", [])):
         print(f"DEBUG: Detected Facebook/Instagram webhook structure")
 
-        # Analyze the messaging structure to differentiate Instagram from Facebook
-        # Meta often sends Instagram DMs under 'object: page' for linked accounts,
-        # so we must check the IDs first.
-        try:
-            entry = data["entry"][0]
-            messaging = entry.get("messaging", [])
-            if messaging:
-                message_event = messaging[0]
-                sender_id = str(message_event.get("sender", {}).get("id", ""))
-                recipient_id = str(message_event.get("recipient", {}).get("id", ""))
-                
-                # Instagram Business IDs are typically 17+ digits. 
-                # Facebook Page IDs/User IDs are usually 15-16.
-                if len(sender_id) >= 17 or len(recipient_id) >= 17:
-                    print(f"DEBUG: Long numeric IDs detected ({len(sender_id)}/{len(recipient_id)}) - mapping to Instagram")
-                    return "Instagram"
-        except Exception as e:
-            print(f"DEBUG: Error during deep platform inspection: {str(e)}")
-
-        # Check object type fallback
+        # Check object type first (most reliable for Facebook)
         if data.get("object") == "page":
-            print(f"DEBUG: Object type 'page' and ID check inconclusive - defaulting to Facebook")
+            print(f"DEBUG: Object type 'page' - this is Facebook")
             return "Facebook"
 
         # Analyze the messaging structure to differentiate Instagram from Facebook
@@ -3799,6 +3773,23 @@ def detect_platform_from_webhook(data: Dict[str, Any]) -> Optional[str]:
 
         if messaging:
             message_event = messaging[0]
+            print(f"DEBUG: Message event structure: {json.dumps(message_event, indent=2)}")
+
+            # Check for Instagram-specific indicators
+            # Instagram messages often have different recipient/sender ID patterns
+            # Instagram Business accounts typically have longer numeric IDs
+            sender_id = message_event.get("sender", {}).get("id", "")
+            recipient_id = message_event.get("recipient", {}).get("id", "")
+
+            print(f"DEBUG: Sender ID: {sender_id}, Recipient ID: {recipient_id}")
+
+            # More reliable Instagram detection:
+            # Instagram Business account IDs are typically 17+ digits
+            # Facebook page IDs are usually 15-16 digits
+            if len(str(sender_id)) >= 17 and len(str(recipient_id)) >= 17:
+                print(f"DEBUG: Very long IDs (17+ digits) detected - likely Instagram")
+                return "Instagram"
+
             # Check for Instagram-specific fields in the message structure
             message = message_event.get("message", {})
             if message:
@@ -4093,7 +4084,7 @@ def send_social_media_message(platform: str, conversation_name: str, message: st
             )
         except Exception:
             pass
-        frappe.log_error(title="Social Media Send Failed", message=f"Error sending {platform} message: {str(e)}")
+        frappe.log_error(f"Error sending {platform} message: {str(e)}", "Social Media Send Error")
         return {"status": "error", "message": "Failed to send message"}
 
 

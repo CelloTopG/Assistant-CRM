@@ -1,4 +1,4 @@
-"""Unified Inbox Message DocType for managing individual messages.
+﻿"""Unified Inbox Message DocType for managing individual messages.
 
 This module handles message lifecycle inside the Unified Inbox system,
 including AI processing, escalation, and agent notifications.
@@ -42,14 +42,9 @@ class UnifiedInboxMessage(Document):
         except Exception:
             pass
 
-        # Fallback file log to ensure visibility even if logger not configured
         try:
-            with open(
-                "/workspace/development/frappe-bench/logs/webhook_debug.log", "a"
-            ) as f:
-                f.write(
-                    f"[AI-DIAG] after_insert doc={self.name} dir={self.direction} platform={self.platform}\n"
-                )
+            log = frappe.logger("assistant_crm.unified_inbox_ai")
+            log.info(f"[AI-DIAG] after_insert doc={self.name} dir={self.direction} platform={self.platform}")
         except Exception:
             pass
 
@@ -152,13 +147,8 @@ class UnifiedInboxMessage(Document):
 
                 # Fallback file log
                 try:
-                    with open(
-                        "/workspace/development/frappe-bench/logs/webhook_debug.log",
-                        "a",
-                    ) as f:
-                        f.write(
-                            f"[AI-DIAG] gate=allow message_id={self.name} conv={self.conversation} platform={self.platform}\n"
-                        )
+                    log = frappe.logger("assistant_crm.unified_inbox_ai")
+                    log.info(f"[AI-DIAG] gate=allow message_id={self.name} conv={self.conversation} platform={self.platform}")
                 except Exception:
                     pass
 
@@ -173,13 +163,8 @@ class UnifiedInboxMessage(Document):
                     pass
 
                 try:
-                    with open(
-                        "/workspace/development/frappe-bench/logs/webhook_debug.log",
-                        "a",
-                    ) as f:
-                        f.write(
-                            f"[AI-DIAG] gate=blocked reason=agent_or_settings message_id={self.name} conv={self.conversation}\n"
-                        )
+                    log = frappe.logger("assistant_crm.unified_inbox_ai")
+                    log.info(f"[AI-DIAG] gate=blocked reason=agent_or_settings message_id={self.name} conv={self.conversation}")
                 except Exception:
                     pass
 
@@ -198,15 +183,8 @@ class UnifiedInboxMessage(Document):
                     pass
 
                 try:
-                    with open(
-                        "/workspace/development/frappe-bench/logs/webhook_debug.log",
-                        "a",
-                    ) as f:
-                        f.write(
-                            "[AI-DIAG] gate-blocked "
-                            "reason=ai_disabled_or_platform "
-                            f"message_id={self.name} conv={self.conversation} platform={self.platform}\n"
-                        )
+                    log = frappe.logger("assistant_crm.unified_inbox_ai")
+                    log.info(f"[AI-DIAG] gate-blocked reason=ai_disabled_or_platform message_id={self.name} conv={self.conversation} platform={self.platform}")
                 except Exception:
                     pass
 
@@ -237,13 +215,8 @@ class UnifiedInboxMessage(Document):
         try:
             # Fallback file log prior to enqueue attempt
             try:
-                with open(
-                    "/workspace/development/frappe-bench/logs/webhook_debug.log",
-                    "a",
-                ) as f:
-                    f.write(
-                        f"[AI-DIAG] enqueue_attempt message_id={self.name} conv={self.conversation} platform={self.platform}\n"
-                    )
+                log = frappe.logger("assistant_crm.unified_inbox_ai")
+                log.info(f"[AI-DIAG] enqueue_attempt message_id={self.name} conv={self.conversation} platform={self.platform}")
             except Exception:
                 pass
 
@@ -252,13 +225,8 @@ class UnifiedInboxMessage(Document):
             # 1) Hard override: force sync processing if configured
             if conf.get("ai_force_sync_processing"):
                 try:
-                    with open(
-                        "/workspace/development/frappe-bench/logs/webhook_debug.log",
-                        "a",
-                    ) as f:
-                        f.write(
-                            f"[AI-DIAG] force_sync_processing message_id={self.name} conv={self.conversation}\n"
-                        )
+                    log = frappe.logger("assistant_crm.unified_inbox_ai")
+                    log.info(f"[AI-DIAG] force_sync_processing message_id={self.name} conv={self.conversation}")
                 except Exception:
                     pass
 
@@ -310,13 +278,8 @@ class UnifiedInboxMessage(Document):
                 # DEV GUARDRAIL: No workers online and fallback enabled 
                 # process synchronously
                 try:
-                    with open(
-                        "/workspace/development/frappe-bench/logs/webhook_debug.log",
-                        "a",
-                    ) as f:
-                        f.write(
-                            f"[AI-DIAG] no_workers_online fallback_sync message_id={self.name} conv={self.conversation}\n"
-                        )
+                    log = frappe.logger("assistant_crm.unified_inbox_ai")
+                    log.info(f"[AI-DIAG] no_workers_online fallback_sync message_id={self.name} conv={self.conversation}")
                 except Exception:
                     pass
 
@@ -367,13 +330,8 @@ class UnifiedInboxMessage(Document):
 
             # Fallback file log after enqueue
             try:
-                with open(
-                    "/workspace/development/frappe-bench/logs/webhook_debug.log",
-                    "a",
-                ) as f:
-                    f.write(
-                        f"[AI-DIAG] enqueued message_id={self.name} conv={self.conversation} queue={queue_name} platform={self.platform}\n"
-                    )
+                log = frappe.logger("assistant_crm.unified_inbox_ai")
+                log.info(f"[AI-DIAG] enqueued message_id={self.name} conv={self.conversation} queue={queue_name} platform={self.platform}")
             except Exception:
                 pass
 
@@ -442,7 +400,7 @@ class UnifiedInboxMessage(Document):
         if confidence < 0.7:
             self.db_set("requires_escalation", 1)
 
-            # Update conversation – use the valid enum value expected by
+            # Update conversation ÔÇô use the valid enum value expected by
             # the Escalation Workflow doctype instead of a free-text string.
             try:
                 conversation_doc = frappe.get_doc(
@@ -450,7 +408,7 @@ class UnifiedInboxMessage(Document):
                 )
                 conversation_doc.escalate_to_human_agent("low_confidence")
             except Exception as esc_err:
-                # Never let escalation failures crash the caller – the AI
+                # Never let escalation failures crash the caller ÔÇô the AI
                 # response should still be persisted and sent.
                 try:
                     frappe.log_error(
