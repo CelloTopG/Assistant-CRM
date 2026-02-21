@@ -470,26 +470,46 @@ class UnifiedInboxConversation(Document):
                 pass
     
     def notify_agent_assignment(self, agent: str):
-        """Notify agent of new conversation assignment."""
+        """Notify agent of new conversation assignment via System Log and Email."""
         try:
-            # Create notification
+            from assistant_crm.utils import get_public_url
+            
+            subject = f"New Assignment: {self.customer_name or 'Unknown Customer'}"
+            content = f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; line-height: 1.6;">
+                <h3 style="color: #0d6efd;">Conversation Assigned</h3>
+                <p>You have been assigned a new conversation to handle:</p>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 4px solid #0d6efd; margin: 10px 0;">
+                    <p><strong>Customer:</strong> {self.customer_name or 'Unknown'}</p>
+                    <p><strong>Platform:</strong> {self.platform}</p>
+                    <p><strong>Priority:</strong> {self.priority}</p>
+                    <p><strong>Conversation ID:</strong> <a href="{get_public_url()}/app/unified-inbox-conversation/{self.name}">{self.name}</a></p>
+                </div>
+                <p><strong>Last Message:</strong> {self.last_message_preview or 'No preview available'}</p>
+                <p style="color: #6c757d; font-size: 12px; margin-top: 20px;">Please review the details and engage with the customer.</p>
+            </div>
+            """
+
+            # 1. System Notification Log
             notification = frappe.get_doc({
                 "doctype": "Notification Log",
-                "subject": f"New conversation assigned: {self.customer_name or 'Unknown Customer'}",
-                "email_content": f"""
-                <p>You have been assigned a new conversation:</p>
-                <ul>
-                    <li><strong>Platform:</strong> {self.platform}</li>
-                    <li><strong>Customer:</strong> {self.customer_name or 'Unknown'}</li>
-                    <li><strong>Priority:</strong> {self.priority}</li>
-                    <li><strong>Last Message:</strong> {self.last_message_preview or 'No preview available'}</li>
-                </ul>
-                <p>Please respond as soon as possible.</p>
-                """,
+                "subject": subject,
+                "email_content": content,
                 "for_user": agent,
-                "type": "Assignment"
+                "type": "Assignment",
+                "document_type": "Unified Inbox Conversation",
+                "document_name": self.name
             })
             notification.insert(ignore_permissions=True)
+
+            # 2. Direct Email
+            frappe.sendmail(
+                recipients=[agent],
+                subject=subject,
+                message=content,
+                reference_doctype="Unified Inbox Conversation",
+                reference_name=self.name
+            )
             
         except Exception as e:
             frappe.log_error(f"Failed to notify agent: {str(e)}", "Unified Inbox - Agent Notification Error")

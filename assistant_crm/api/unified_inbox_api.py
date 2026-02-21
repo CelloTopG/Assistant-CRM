@@ -3896,58 +3896,90 @@ def get_agent_performance_data(agent_name):
 
 
 def send_escalation_notification(agent_name, conversation, escalation_reason):
-    """Send notification to agent about escalation."""
+    """Send notification to agent about escalation via System Log and Email."""
     try:
+        subject = f"Urgent: Escalated Conversation - {conversation.customer_name or 'Unknown Customer'}"
+        content = f"""
+        <div style="font-family: Arial, sans-serif; max-width: 600px; line-height: 1.6;">
+            <h3 style="color: #d63384;">Escalation Alert</h3>
+            <p>A conversation has been escalated to you for immediate attention:</p>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 4px solid #d63384; margin: 10px 0;">
+                <p><strong>Customer:</strong> {conversation.customer_name or 'Unknown'}</p>
+                <p><strong>Platform:</strong> {conversation.platform}</p>
+                <p><strong>Priority:</strong> <span style="color: #dc3545; font-weight: bold;">{conversation.priority}</span></p>
+                <p><strong>Escalation Reason:</strong> {escalation_reason}</p>
+                <p><strong>Conversation ID:</strong> <a href="{get_public_url()}/app/unified-inbox-conversation/{conversation.name}">{conversation.name}</a></p>
+            </div>
+            <p><strong>Last Message:</strong> {conversation.last_message_preview or 'No preview available'}</p>
+            <p style="color: #6c757d; font-size: 12px; margin-top: 20px;">Please review and respond promptly to maintain service levels.</p>
+        </div>
+        """
+
+        # 1. System Notification Log
         notification = frappe.get_doc({
             "doctype": "Notification Log",
-            "subject": f"­ƒÜ¿ Escalated Conversation: {conversation.customer_name or 'Unknown Customer'}",
-            "email_content": f"""
-            <div style="font-family: Arial, sans-serif; max-width: 600px;">
-                <h3 style="color: #d63384;">­ƒÜ¿ Conversation Escalated</h3>
-                <p>A conversation has been escalated to you:</p>
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0;">
-                    <p><strong>Customer:</strong> {conversation.customer_name or 'Unknown'}</p>
-                    <p><strong>Platform:</strong> {conversation.platform}</p>
-                    <p><strong>Priority:</strong> <span style="color: #dc3545;">{conversation.priority}</span></p>
-                    <p><strong>Escalation Reason:</strong> {escalation_reason}</p>
-                    <p><strong>Subject:</strong> {conversation.subject or 'No subject'}</p>
-                </div>
-                <p><strong>Last Message:</strong> {conversation.last_message_preview or 'No preview available'}</p>
-                <p style="color: #6c757d; font-size: 12px;">Please respond promptly to this escalated conversation.</p>
-            </div>
-            """,
+            "subject": subject,
+            "email_content": content,
             "for_user": agent_name,
-            "type": "Alert"
+            "type": "Alert",
+            "document_type": "Unified Inbox Conversation",
+            "document_name": conversation.name
         })
         notification.insert(ignore_permissions=True)
+
+        # 2. Direct Email
+        frappe.sendmail(
+            recipients=[agent_name],
+            subject=subject,
+            message=content,
+            reference_doctype="Unified Inbox Conversation",
+            reference_name=conversation.name
+        )
+
     except Exception as e:
         frappe.log_error(f"Error sending escalation notification: {str(e)}", "Notification Error")
 
 
 def send_assignment_notification(agent_name, conversation):
-    """Send notification to agent about assignment."""
+    """Send notification to agent about assignment via System Log and Email."""
     try:
+        subject = f"New Assignment: {conversation.customer_name or 'Unknown Customer'}"
+        content = f"""
+        <div style="font-family: Arial, sans-serif; max-width: 600px; line-height: 1.6;">
+            <h3 style="color: #0d6efd;">Conversation Assigned</h3>
+            <p>You have been assigned a new conversation to handle:</p>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 4px solid #0d6efd; margin: 10px 0;">
+                <p><strong>Customer:</strong> {conversation.customer_name or 'Unknown'}</p>
+                <p><strong>Platform:</strong> {conversation.platform}</p>
+                <p><strong>Priority:</strong> {conversation.priority}</p>
+                <p><strong>Conversation ID:</strong> <a href="{get_public_url()}/app/unified-inbox-conversation/{conversation.name}">{conversation.name}</a></p>
+            </div>
+            <p><strong>Last Message:</strong> {conversation.last_message_preview or 'No preview available'}</p>
+            <p style="color: #6c757d; font-size: 12px; margin-top: 20px;">Please review the details and engage with the customer.</p>
+        </div>
+        """
+
+        # 1. System Notification Log
         notification = frappe.get_doc({
             "doctype": "Notification Log",
-            "subject": f"­ƒæñ New Assignment: {conversation.customer_name or 'Unknown Customer'}",
-            "email_content": f"""
-            <div style="font-family: Arial, sans-serif; max-width: 600px;">
-                <h3 style="color: #0d6efd;">­ƒæñ New Conversation Assignment</h3>
-                <p>You have been assigned a new conversation:</p>
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0;">
-                    <p><strong>Customer:</strong> {conversation.customer_name or 'Unknown'}</p>
-                    <p><strong>Platform:</strong> {conversation.platform}</p>
-                    <p><strong>Priority:</strong> {conversation.priority}</p>
-                    <p><strong>Subject:</strong> {conversation.subject or 'No subject'}</p>
-                </div>
-                <p><strong>Last Message:</strong> {conversation.last_message_preview or 'No preview available'}</p>
-                <p style="color: #6c757d; font-size: 12px;">Please review and respond to this conversation.</p>
-            </div>
-            """,
+            "subject": subject,
+            "email_content": content,
             "for_user": agent_name,
-            "type": "Assignment"
+            "type": "Assignment",
+            "document_type": "Unified Inbox Conversation",
+            "document_name": conversation.name
         })
         notification.insert(ignore_permissions=True)
+
+        # 2. Direct Email
+        frappe.sendmail(
+            recipients=[agent_name],
+            subject=subject,
+            message=content,
+            reference_doctype="Unified Inbox Conversation",
+            reference_name=conversation.name
+        )
+
     except Exception as e:
         frappe.log_error(f"Error sending assignment notification: {str(e)}", "Notification Error")
 
