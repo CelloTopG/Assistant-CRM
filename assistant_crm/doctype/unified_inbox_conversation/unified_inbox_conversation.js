@@ -4,14 +4,21 @@ frappe.ui.form.on('Unified Inbox Conversation', {
     },
 
     update_sla_timer: function (frm) {
+        // Clear any old interval on this form object
+        if (frm.sla_timer_timer) {
+            clearInterval(frm.sla_timer_timer);
+        }
+
         if (!frm.doc.resolution_sla_expiry || ['Resolved', 'Closed'].includes(frm.doc.status)) {
             frm.dashboard.clear_headline();
             return;
         }
 
-        const update_countdown = () => {
-            if (['Resolved', 'Closed'].includes(frm.doc.status)) {
-                frm.dashboard.clear_headline();
+        const timer_id = `sla-timer-container`;
+
+        const update_ui = () => {
+            if (!cur_frm || cur_frm.doc.name !== frm.doc.name || ['Resolved', 'Closed'].includes(frm.doc.status)) {
+                clearInterval(frm.sla_timer_timer);
                 return;
             }
 
@@ -19,33 +26,41 @@ frappe.ui.form.on('Unified Inbox Conversation', {
             const now = moment();
             const diff = expiry.diff(now);
 
+            let text, color;
             if (diff <= 0) {
-                frm.dashboard.set_headline_alert(
-                    '<span class="indicator red"><b>SLA EXCEEDED</b></span>',
-                    'red'
-                );
-                return;
+                text = '<b>SLA EXCEEDED</b>';
+                color = 'red';
+            } else {
+                const duration = moment.duration(diff);
+                const hours = Math.floor(duration.asHours());
+                const minutes = duration.minutes();
+                const seconds = duration.seconds();
+                text = `Time to Resolve: <b>${hours}h ${minutes}m ${seconds}s</b>`;
+                color = hours < 2 ? 'red' : (hours < 12 ? 'orange' : 'blue');
             }
 
-            const duration = moment.duration(diff);
-            const hours = Math.floor(duration.asHours());
-            const minutes = duration.minutes();
-            const seconds = duration.seconds();
+            let $timer = $(`#${timer_id}`);
+            if (!$timer.length) {
+                // Completely clear and set once to avoid the "multi-row" look
+                frm.dashboard.clear_headline();
+                frm.dashboard.set_headline_alert(
+                    `<span id="${timer_id}" class="indicator ${color}">${text}</span>`,
+                    color
+                );
+            } else {
+                // Update existing text and color for smooth transition
+                $timer.attr('class', `indicator ${color}`).html(text);
+                // Also update the Frappe alert wrapper class if possible
+                $timer.closest('.alert').css('border-left', `4px solid ${color}`);
+            }
 
-            const time_str = `${hours}h ${minutes}m ${seconds}s`;
-            const color = hours < 2 ? 'red' : (hours < 12 ? 'orange' : 'blue');
-
-            frm.dashboard.set_headline_alert(
-                `<span class="indicator ${color}">Time to Resolve: <b>${time_str}</b></span>`,
-                color
-            );
-
-            // Re-run every second if the form is still open
-            if (cur_frm && cur_frm.doc.name === frm.doc.name) {
-                setTimeout(update_countdown, 1000);
+            if (diff <= 0) {
+                clearInterval(frm.sla_timer_timer);
             }
         };
 
-        update_countdown();
+        // Run immediately and then stay active
+        update_ui();
+        frm.sla_timer_timer = setInterval(update_ui, 1000);
     }
 });
