@@ -1,6 +1,18 @@
 frappe.ui.form.on('Unified Inbox Conversation', {
     refresh: function (frm) {
         frm.trigger('update_sla_timer');
+
+        // Add Export Menu
+        frm.add_custom_button(__('PDF'), () => frm.trigger('export_conv', 'pdf'), __('Export'));
+        frm.add_custom_button(__('Excel'), () => frm.trigger('export_conv', 'excel'), __('Export'));
+        frm.add_custom_button(__('Word'), () => frm.trigger('export_conv', 'word'), __('Export'));
+    },
+
+    export_conv: function (frm, format) {
+        const url = frappe.urllib.get_full_url(
+            `/api/method/assistant_crm.api.unified_inbox_api.export_conversation?conversation_name=${frm.doc.name}&format=${format}`
+        );
+        window.open(url, '_blank');
     },
 
     update_sla_timer: function (frm) {

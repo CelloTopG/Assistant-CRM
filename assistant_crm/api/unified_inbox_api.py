@@ -5385,3 +5385,88 @@ def test_real_telegram_webhook_timestamp():
             "status": "error",
             "message": error_msg
         }
+
+
+@frappe.whitelist()
+def export_conversation(conversation_name: str, format: str = "pdf"):
+    """
+    Export a conversation thread in PDF, Excel, or Word format.
+    """
+    try:
+        from assistant_crm.utils import get_public_url
+        if not conversation_name:
+            frappe.throw(_("Conversation name is required"))
+            
+        conv = frappe.get_doc("Unified Inbox Conversation", conversation_name)
+        messages = frappe.get_all(
+            "Unified Inbox Message",
+            filters={"conversation": conversation_name},
+            fields=["direction", "sender_name", "message_content", "timestamp"],
+            order_by="timestamp asc"
+        )
+        
+        if format == "pdf":
+            return _export_as_pdf(conv, messages)
+        elif format == "excel":
+            return _export_as_excel(conv, messages)
+        elif format == "word":
+            return _export_as_word(conv, messages)
+        else:
+            frappe.throw(_("Invalid format choice"))
+            
+    except Exception as e:
+        frappe.log_error(f"Conversation export failed: {str(e)}", "Unified Inbox Export Error")
+        frappe.throw(_("Failed to export conversation: {0}").format(str(e)))
+
+
+def _export_as_pdf(conv, messages):
+    """Generate PDF using Frappe's print system."""
+    from frappe.utils.pdf import get_pdf
+    
+    html = frappe.render_template("assistant_crm/templates/conversation_export.html", {
+        "doc": conv,
+        "messages": messages,
+        "title": _("Conversation Export")
+    })
+    
+    frappe.local.response.filename = f"{conv.name}.pdf"
+    frappe.local.response.filecontent = get_pdf(html)
+    frappe.local.response.type = "pdf"
+
+
+def _export_as_excel(conv, messages):
+    """Generate Excel file using xlsxutils."""
+    from frappe.utils.xlsxutils import make_xlsx
+    
+    data = [["Direction", "Sender", "Message", "Timestamp"]]
+    for m in messages:
+        data.append([
+            m.direction,
+            m.sender_name or "Unknown",
+            m.message_content,
+            str(m.timestamp)
+        ])
+    
+    xlsx_file = make_xlsx(data, "Conversation")
+    
+    frappe.local.response.filename = f"{conv.name}.xlsx"
+    frappe.local.response.filecontent = xlsx_file.getvalue()
+    frappe.local.response.type = "binary"
+
+
+def _export_as_word(conv, messages):
+    """Generate a Word-compatible HTML file."""
+    html = frappe.render_template("assistant_crm/templates/conversation_export.html", {
+        "doc": conv,
+        "messages": messages,
+        "title": _("Conversation Export")
+    })
+    
+    # Word can open HTML as a document if headers are set correctly
+    frappe.local.response.filename = f"{conv.name}.doc"
+    frappe.local.response.filecontent = html
+    frappe.local.response.type = "download"
+    frappe.local.response.headers = {
+        "Content-Type": "application/msword",
+        "Content-Disposition": f"attachment; filename={conv.name}.doc"
+    }
