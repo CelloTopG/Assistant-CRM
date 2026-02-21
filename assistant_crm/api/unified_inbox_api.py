@@ -2789,7 +2789,7 @@ def fetch_instagram_messages():
             "Unified Inbox Conversation",
             filters={
                 "platform": "Instagram",
-                "creation": [">=", frappe.utils.add_hours(now(), -1)]  # Last hour
+                "creation": [">=", frappe.utils.add_to_date(now(), hours=-1)]  # Last hour
             },
             fields=["name", "customer_name", "custom_issue_id", "creation"],
             order_by="creation desc",
@@ -2803,7 +2803,7 @@ def fetch_instagram_messages():
             "Unified Inbox Message",
             filters={
                 "platform": "Instagram",
-                "timestamp": [">=", frappe.utils.add_hours(now(), -1)]  # Last hour
+                "timestamp": [">=", frappe.utils.add_to_date(now(), hours=-1)]  # Last hour
             },
             fields=["name", "conversation", "message_content", "timestamp"],
             order_by="timestamp desc",
@@ -4092,12 +4092,12 @@ def sweep_sla_reminders():
     Reminders sent 12 hours and 2 hours before expiry.
     """
     try:
-        from frappe.utils import add_hours, get_datetime
+        from frappe.utils import add_to_date, get_datetime
         
         now_dt = get_datetime(now())
         
         # 1. Check for 12h reminders
-        threshold_12h = add_hours(now_dt, 12)
+        threshold_12h = add_to_date(now_dt, hours=12)
         convs_12h = frappe.get_all(
             "Unified Inbox Conversation",
             filters={
@@ -4114,7 +4114,7 @@ def sweep_sla_reminders():
             frappe.db.set_value("Unified Inbox Conversation", c.name, "reminder_12h_sent", 1, update_modified=False)
 
         # 2. Check for 2h reminders
-        threshold_2h = add_hours(now_dt, 2)
+        threshold_2h = add_to_date(now_dt, hours=2)
         convs_2h = frappe.get_all(
             "Unified Inbox Conversation",
             filters={

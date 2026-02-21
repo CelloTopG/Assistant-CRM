@@ -70,13 +70,13 @@ class UnifiedInboxConversation(Document):
         if self.resolution_sla_expiry:
             return
 
-        from frappe.utils import add_hours
+        from frappe.utils import add_to_date
         
         meta_platforms = ["WhatsApp", "Facebook", "Instagram"]
         hours = 24 if self.platform in meta_platforms else 48
         
         start_time = self.creation_time or now()
-        self.resolution_sla_expiry = add_hours(start_time, hours)
+        self.resolution_sla_expiry = add_to_date(start_time, hours=hours)
 
     def update_sla_status(self):
         """Update the SLA status based on current time and document status."""
