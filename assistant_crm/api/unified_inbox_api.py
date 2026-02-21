@@ -5431,7 +5431,7 @@ def _export_as_pdf(conv, messages):
     
     frappe.local.response.filename = f"{conv.name}.pdf"
     frappe.local.response.filecontent = get_pdf(html)
-    frappe.local.response.type = "pdf"
+    frappe.local.response.type = "download"
 
 
 def _export_as_excel(conv, messages):
@@ -5451,7 +5451,7 @@ def _export_as_excel(conv, messages):
     
     frappe.local.response.filename = f"{conv.name}.xlsx"
     frappe.local.response.filecontent = xlsx_file.getvalue()
-    frappe.local.response.type = "binary"
+    frappe.local.response.type = "download"
 
 
 def _export_as_word(conv, messages):

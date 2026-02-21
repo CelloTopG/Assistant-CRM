@@ -9,10 +9,8 @@ frappe.ui.form.on('Unified Inbox Conversation', {
     },
 
     export_conv: function (frm, format) {
-        const url = frappe.urllib.get_full_url(
-            `/api/method/assistant_crm.api.unified_inbox_api.export_conversation?conversation_name=${frm.doc.name}&format=${format}`
-        );
-        window.open(url, '_blank');
+        const url = `/api/method/assistant_crm.api.unified_inbox_api.export_conversation?conversation_name=${encodeURIComponent(frm.doc.name)}&format=${format}`;
+        window.location.href = url;
     },
 
     update_sla_timer: function (frm) {
