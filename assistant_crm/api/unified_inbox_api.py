@@ -5389,7 +5389,9 @@ def test_real_telegram_webhook_timestamp():
 @frappe.whitelist()
 def export_conversation(conversation_name: str, format: str = "pdf"):
     """
-    Export a conversation thread in PDF, Excel, or Word format.
+    Export a conversation thread in Excel or Word format.
+    Note: PDF export is now handled directly via frappe.utils.print_format.download_pdf
+    using the 'Conversation Export' print format.
     """
     try:
         if not conversation_name:
@@ -5403,34 +5405,16 @@ def export_conversation(conversation_name: str, format: str = "pdf"):
             order_by="timestamp asc"
         )
         
-        if format == "pdf":
-            # return _export_as_pdf(conv, messages)
-            frappe.throw(_("PDF export is temporarily disabled due to server configuration. Please use Excel or Word."))
-        elif format == "excel":
+        if format == "excel":
             return _export_as_excel(conv, messages)
         elif format == "word":
             return _export_as_word(conv, messages)
         else:
-            frappe.throw(_("Invalid format choice"))
+            frappe.throw(_("Invalid format for this endpoint. PDF should use native print download."))
             
     except Exception as e:
         frappe.log_error(f"Conversation export failed: {str(e)}", "Unified Inbox Export Error")
         frappe.throw(_("Failed to export conversation: {0}").format(str(e)))
-
-
-# def _export_as_pdf(conv, messages):
-#     """Generate PDF using Frappe's print system."""
-#     from frappe.utils.pdf import get_pdf
-#     
-#     html = frappe.render_template("assistant_crm/templates/conversation_export.html", {
-#         "doc": conv,
-#         "messages": messages,
-#         "title": _("Conversation Export")
-#     })
-#     
-#     frappe.local.response.filename = f"{conv.name}.pdf"
-#     frappe.local.response.filecontent = get_pdf(html)
-#     frappe.local.response.type = "download"
 
 
 def _export_as_excel(conv, messages):
@@ -5461,11 +5445,7 @@ def _export_as_word(conv, messages):
         "title": _("Conversation Export")
     })
     
-    # Serve as a download with .doc extension
+    # Word can open HTML as a document if headers and extension are set
     frappe.local.response.filename = f"{conv.name}.doc"
     frappe.local.response.filecontent = html
     frappe.local.response.type = "download"
-    # Word can open HTML if Content-Type is set to msword
-    if not hasattr(frappe.local.response, "headers"):
-        frappe.local.response.headers = {}
-    frappe.local.response.headers["Content-Type"] = "application/msword"

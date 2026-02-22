@@ -9,8 +9,15 @@ frappe.ui.form.on('Unified Inbox Conversation', {
     },
 
     export_conv: function (frm, format) {
-        const url = `/api/method/assistant_crm.api.unified_inbox_api.export_conversation?conversation_name=${encodeURIComponent(frm.doc.name)}&format=${format}`;
-        window.location.href = url;
+        if (format === 'pdf') {
+            // Use native PDF download URL
+            const url = `/api/method/frappe.utils.print_format.download_pdf?doctype=Unified Inbox Conversation&name=${encodeURIComponent(frm.doc.name)}&format=Conversation Export&no_letterhead=1`;
+            window.location.href = url;
+        } else {
+            // Use custom API for Excel and Word
+            const url = `/api/method/assistant_crm.api.unified_inbox_api.export_conversation?conversation_name=${encodeURIComponent(frm.doc.name)}&format=${format}`;
+            window.location.href = url;
+        }
     },
 
     update_sla_timer: function (frm) {

@@ -26,6 +26,12 @@ def after_install():
 		except Exception as e:
 			frappe.log_error(f"Error setting up automated notifications: {str(e)}", "Assistant CRM Install")
 
+		# Setup Conversation Export Print Format
+		try:
+			ensure_conversation_export_print_format()
+		except Exception as e:
+			frappe.log_error(f"Error setting up conversation export print format: {str(e)}", "Assistant CRM Install")
+
 		# Ensure Issue has Employer link field for per-employer case linking
 		try:
 			ensure_issue_employer_link_field()
@@ -1063,6 +1069,12 @@ def after_migrate():
             setup_automated_notifications()
         except Exception as e:
             frappe.log_error(f"after_migrate automated notifications setup error: {str(e)}", "Assistant CRM Install")
+
+        # Setup Conversation Export Print Format after migrations
+        try:
+            ensure_conversation_export_print_format()
+        except Exception as e:
+            frappe.log_error(f"after_migrate conversation export print format error: {str(e)}", "Assistant CRM Install")
 
     finally:
         try:
