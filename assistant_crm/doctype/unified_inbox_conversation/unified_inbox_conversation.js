@@ -9,15 +9,27 @@ frappe.ui.form.on('Unified Inbox Conversation', {
     },
 
     export_conv: function (frm, format) {
+        // Use the exact same endpoint as Reports for 100% compatibility
+        const report_name = "Conversation Export";
+        const filters = JSON.stringify({ "conversation_name": frm.doc.name });
+        let file_format = "";
+
         if (format === 'pdf') {
-            // Use native PDF download URL
-            const url = `/api/method/frappe.utils.print_format.download_pdf?doctype=Unified Inbox Conversation&name=${encodeURIComponent(frm.doc.name)}&format=Conversation Export&no_letterhead=1`;
-            window.location.href = url;
-        } else {
-            // Use custom API for Excel and Word
+            file_format = "PDF";
+        } else if (format === 'excel') {
+            file_format = "Excel";
+        } else if (format === 'word') {
+            // Word is not a standard report export format in Frappe, 
+            // but we can still use our custom API for it if it works, 
+            // or just tell them to use PDF/Excel if it keeps failing.
+            // For now, let's try to stick to native for PDF/Excel.
             const url = `/api/method/assistant_crm.api.unified_inbox_api.export_conversation?conversation_name=${encodeURIComponent(frm.doc.name)}&format=${format}`;
             window.location.href = url;
+            return;
         }
+
+        const url = `/api/method/frappe.desk.query_report.export_query?report_name=${encodeURIComponent(report_name)}&filters=${encodeURIComponent(filters)}&file_format=${file_format}`;
+        window.location.href = url;
     },
 
     update_sla_timer: function (frm) {
