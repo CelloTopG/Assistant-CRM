@@ -5405,17 +5405,36 @@ def export_conversation(conversation_name: str, format: str = "pdf"):
             order_by="timestamp asc"
         )
         
-        if format == "excel":
+        if format == "pdf":
+            return _export_as_pdf(conv, messages)
+        elif format == "excel":
             return _export_as_excel(conv, messages)
         elif format == "word":
             return _export_as_word(conv, messages)
         else:
-            frappe.throw(_("Invalid format for this endpoint. PDF should use native print download."))
+            frappe.throw(_("Invalid format choice"))
             
     except Exception as e:
         frappe.log_error(f"Conversation export failed: {str(e)}", "Unified Inbox Export Error")
         frappe.throw(_("Failed to export conversation: {0}").format(str(e)))
 
+def _export_as_pdf(conv, messages):
+    """Generate PDF using Frappe's print system."""
+    try:
+        from frappe.utils.pdf import get_pdf
+        
+        html = frappe.render_template("assistant_crm/templates/conversation_export.html", {
+            "doc": conv,
+            "messages": messages,
+            "title": _("Conversation Export")
+        })
+        
+        frappe.local.response.filename = f"{conv.name}.pdf"
+        frappe.local.response.filecontent = get_pdf(html)
+        frappe.local.response.type = "download"
+    except Exception as e:
+        frappe.log_error(f"PDF Export Error: {str(e)}", "Unified Inbox Export Error")
+        frappe.throw(_("PDF generation failed. This usually means wkhtmltopdf is not installed or accessible on the server. Error: {0}").format(str(e)))
 
 def _export_as_excel(conv, messages):
     """Generate Excel file using xlsxutils."""
@@ -5449,3 +5468,6 @@ def _export_as_word(conv, messages):
     frappe.local.response.filename = f"{conv.name}.doc"
     frappe.local.response.filecontent = html
     frappe.local.response.type = "download"
+    frappe.local.response.headers = {
+        "Content-Type": "application/msword"
+    }

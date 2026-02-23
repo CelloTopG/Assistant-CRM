@@ -1,14 +1,17 @@
 frappe.ui.form.on('Unified Inbox Conversation', {
     refresh: function (frm) {
+        console.log(`[Unified Inbox] Form refreshed: ${frm.doc.name}`);
         frm.trigger('update_sla_timer');
 
         // Add Export Menu
-        frm.add_custom_button(__('PDF'), () => frm.trigger('export_conv', 'pdf'), __('Export'));
-        frm.add_custom_button(__('Excel'), () => frm.trigger('export_conv', 'excel'), __('Export'));
-        frm.add_custom_button(__('Word'), () => frm.trigger('export_conv', 'word'), __('Export'));
+        frm.add_custom_button(__('PDF'), () => frm.events.export_conv(frm, 'pdf'), __('Export'));
+        frm.add_custom_button(__('Excel'), () => frm.events.export_conv(frm, 'excel'), __('Export'));
+        frm.add_custom_button(__('Word'), () => frm.events.export_conv(frm, 'word'), __('Export'));
     },
 
     export_conv: function (frm, format) {
+        console.log(`[Unified Inbox] Exporting conversation ${frm.doc.name} as ${format}...`);
+
         // Use the exact same endpoint as Reports for 100% compatibility
         const report_name = "Conversation Export";
         const filters = JSON.stringify({ "conversation_name": frm.doc.name });
@@ -19,16 +22,16 @@ frappe.ui.form.on('Unified Inbox Conversation', {
         } else if (format === 'excel') {
             file_format = "Excel";
         } else if (format === 'word') {
-            // Word is not a standard report export format in Frappe, 
-            // but we can still use our custom API for it if it works, 
-            // or just tell them to use PDF/Excel if it keeps failing.
-            // For now, let's try to stick to native for PDF/Excel.
             const url = `/api/method/assistant_crm.api.unified_inbox_api.export_conversation?conversation_name=${encodeURIComponent(frm.doc.name)}&format=${format}`;
+            console.log(`[Unified Inbox] Redirecting to Word Export: ${url}`);
             window.location.href = url;
             return;
         }
 
         const url = `/api/method/frappe.desk.query_report.export_query?report_name=${encodeURIComponent(report_name)}&filters=${encodeURIComponent(filters)}&file_format=${file_format}`;
+        console.log(`[Unified Inbox] Redirecting to Native Export: ${url}`);
+
+        // Use window.location.href to trigger download
         window.location.href = url;
     },
 
