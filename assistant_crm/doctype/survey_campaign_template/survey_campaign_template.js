@@ -206,29 +206,23 @@ function generate_recommended_for(frm, preferences) {
 
 // Show preview dialog for text suggestions
 function show_suggestion_preview(frm, fieldname, field_label, suggestion) {
-  // Trim and normalize whitespace in the suggestion
-  const cleanedSuggestion = suggestion.trim().replace(/\s+/g, ' ');
+  const cleanedSuggestion = suggestion.trim();
 
   const dialog = new frappe.ui.Dialog({
-    title: __('WorkCom Suggestion Preview'),
+    title: __('Edit WorkCom Suggestion'),
     size: 'large',
     fields: [
       {
-        fieldtype: 'HTML',
-        fieldname: 'preview_html',
-        options: `
-          <div style="margin-bottom: 15px;">
-            <label class="control-label" style="font-weight: bold;">${__('Suggested')} ${field_label}:</label>
-            <div style="background: #f5f7fa; border: 1px solid #d1d8dd; border-radius: 4px; padding: 15px; margin-top: 8px; text-align: left; line-height: 1.5;">
-              ${frappe.utils.escape_html(cleanedSuggestion)}
-            </div>
-          </div>
-        `
+        label: __('Suggested') + ' ' + field_label,
+        fieldtype: 'Small Text',
+        fieldname: 'edited_suggestion',
+        default: cleanedSuggestion,
+        description: __('You can edit the AI-generated text before applying it.')
       }
     ],
     primary_action_label: __('Apply Suggestion'),
-    primary_action: () => {
-      frm.set_value(fieldname, cleanedSuggestion);
+    primary_action: (values) => {
+      frm.set_value(fieldname, values.edited_suggestion);
       frappe.show_alert({ message: __(`${field_label} applied!`), indicator: 'green' }, 3);
       dialog.hide();
     },
@@ -336,56 +330,69 @@ function generate_ai_questions(frm, preferences) {
 
 // Show preview dialog for questions
 function show_questions_preview(frm, questions, replace_existing) {
-  // Build HTML table for questions preview
-  let questions_html = `
-    <div style="margin-bottom: 15px;">
-      <label class="control-label" style="font-weight: bold;">${__('WorkCom Generated Questions')}:</label>
-      <table class="table table-bordered" style="margin-top: 10px;">
-        <thead>
-          <tr style="background: #f5f7fa;">
-            <th style="width: 5%;">#</th>
-            <th style="width: 50%;">${__('Question')}</th>
-            <th style="width: 20%;">${__('Type')}</th>
-            <th style="width: 15%;">${__('Required')}</th>
-          </tr>
-        </thead>
-        <tbody>
-  `;
-
-  questions.forEach((q, idx) => {
-    questions_html += `
-      <tr>
-        <td>${idx + 1}</td>
-        <td>${frappe.utils.escape_html(q.question_text)}</td>
-        <td><span class="badge">${q.question_type}</span></td>
-        <td>${q.is_required ? '<i class="fa fa-check text-success"></i> Yes' : '<i class="fa fa-times text-muted"></i> No'}</td>
-      </tr>
-    `;
-  });
-
-  questions_html += `
-        </tbody>
-      </table>
-      <p class="text-muted" style="margin-top: 10px;">
-        <i class="fa fa-info-circle"></i>
-        ${replace_existing ? __('This will replace all existing questions.') : __('These questions will be added to existing ones.')}
-      </p>
-    </div>
-  `;
-
   const dialog = new frappe.ui.Dialog({
-    title: __('WorkCom Questions Preview'),
+    title: __('Edit WorkCom Generated Questions'),
     size: 'extra-large',
     fields: [
       {
-        fieldtype: 'HTML',
-        fieldname: 'questions_preview_html',
-        options: questions_html
+        fieldname: 'questions_table',
+        fieldtype: 'Table',
+        label: __('Review & Edit Questions'),
+        options: 'Survey Template Question',
+        cannot_add_rows: false,
+        cannot_delete_rows: false,
+        fields: [
+          {
+            fieldname: 'question_text',
+            fieldtype: 'Data',
+            label: __('Question'),
+            in_list_view: 1,
+            reqd: 1,
+            columns: 5
+          },
+          {
+            fieldname: 'question_type',
+            fieldtype: 'Select',
+            label: __('Type'),
+            options: 'Rating\nMultiple Choice\nText\nYes/No',
+            in_list_view: 1,
+            columns: 2
+          },
+          {
+            fieldname: 'is_required',
+            fieldtype: 'Check',
+            label: __('Required'),
+            in_list_view: 1,
+            columns: 1
+          },
+          {
+            fieldname: 'options',
+            fieldtype: 'Long Text',
+            label: __('Options (for Multi Choice)'),
+            in_list_view: 0
+          }
+        ]
+      },
+      {
+        fieldtype: 'Section Break'
+      },
+      {
+        fieldname: 'replace_existing_questions',
+        label: __('Replace all existing questions in template'),
+        fieldtype: 'Check',
+        default: replace_existing ? 1 : 0
       }
     ],
     primary_action_label: __('Apply Questions'),
-    primary_action: () => {
-      apply_ai_questions(frm, questions, replace_existing);
+    primary_action: (values) => {
+      const edited_questions = dialog.fields_dict.questions_table.grid.get_data();
+      const valid_questions = edited_questions.filter(q => q && !q.__deleted && q.question_text);
+
+      if (valid_questions.length === 0) {
+        frappe.msgprint(__('Please keep at least one question.'));
+        return;
+      }
+      apply_ai_questions(frm, valid_questions, values.replace_existing_questions);
       dialog.hide();
     },
     secondary_action_label: __('Cancel'),
@@ -394,7 +401,19 @@ function show_questions_preview(frm, questions, replace_existing) {
     }
   });
 
+  // Populate table and show
   dialog.show();
+
+  const grid = dialog.fields_dict.questions_table.grid;
+  questions.forEach(q => {
+    grid.add_new_row(null, null, {
+      question_text: q.question_text,
+      question_type: q.question_type,
+      is_required: q.is_required ? 1 : 0,
+      options: q.options || ''
+    });
+  });
+  grid.refresh();
 }
 
 function apply_ai_questions(frm, questions, replace_existing) {
