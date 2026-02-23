@@ -330,6 +330,9 @@ function generate_ai_questions(frm, preferences) {
 
 // Show preview dialog for questions
 function show_questions_preview(frm, questions, replace_existing) {
+  // Ensure we unfreeze manually to be safe
+  frappe.unfreeze();
+
   const dialog = new frappe.ui.Dialog({
     title: __('Edit WorkCom Generated Questions'),
     size: 'extra-large',
@@ -385,14 +388,14 @@ function show_questions_preview(frm, questions, replace_existing) {
     ],
     primary_action_label: __('Apply Questions'),
     primary_action: (values) => {
-      const edited_questions = dialog.fields_dict.questions_table.grid.get_data();
-      const valid_questions = edited_questions.filter(q => q && !q.__deleted && q.question_text);
+      const grid = dialog.get_field('questions_table').grid;
+      const edited_questions = grid.get_data().filter(q => q && !q.__deleted && q.question_text);
 
-      if (valid_questions.length === 0) {
+      if (edited_questions.length === 0) {
         frappe.msgprint(__('Please keep at least one question.'));
         return;
       }
-      apply_ai_questions(frm, valid_questions, values.replace_existing_questions);
+      apply_ai_questions(frm, edited_questions, values.replace_existing_questions);
       dialog.hide();
     },
     secondary_action_label: __('Cancel'),
@@ -401,19 +404,19 @@ function show_questions_preview(frm, questions, replace_existing) {
     }
   });
 
-  // Populate table and show
+  // Populate table data reliably
+  const table_field = dialog.get_field('questions_table');
+  table_field.df.data = questions.map(q => ({
+    question_text: q.question_text,
+    question_type: q.question_type,
+    is_required: q.is_required ? 1 : 0,
+    options: q.options || ''
+  }));
+
   dialog.show();
 
-  const grid = dialog.fields_dict.questions_table.grid;
-  questions.forEach(q => {
-    grid.add_new_row(null, null, {
-      question_text: q.question_text,
-      question_type: q.question_type,
-      is_required: q.is_required ? 1 : 0,
-      options: q.options || ''
-    });
-  });
-  grid.refresh();
+  // Refresh grid after show to ensure rendering
+  table_field.grid.refresh();
 }
 
 function apply_ai_questions(frm, questions, replace_existing) {
