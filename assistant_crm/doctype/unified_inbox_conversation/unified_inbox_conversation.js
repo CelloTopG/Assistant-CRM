@@ -12,24 +12,10 @@ frappe.ui.form.on('Unified Inbox Conversation', {
     export_conv: function (frm, format) {
         console.log(`[Unified Inbox] Exporting conversation ${frm.doc.name} as ${format}...`);
 
-        // Use the exact same endpoint as Reports for 100% compatibility
-        const report_name = "Conversation Export";
-        const filters = JSON.stringify({ "conversation_name": frm.doc.name });
-        let file_format = "";
+        // Use our custom API which confirmed working for Word
+        const url = `/api/method/assistant_crm.api.unified_inbox_api.export_conversation?conversation_name=${encodeURIComponent(frm.doc.name)}&format=${format}`;
 
-        if (format === 'pdf') {
-            file_format = "PDF";
-        } else if (format === 'excel') {
-            file_format = "Excel";
-        } else if (format === 'word') {
-            const url = `/api/method/assistant_crm.api.unified_inbox_api.export_conversation?conversation_name=${encodeURIComponent(frm.doc.name)}&format=${format}`;
-            console.log(`[Unified Inbox] Redirecting to Word Export: ${url}`);
-            window.location.href = url;
-            return;
-        }
-
-        const url = `/api/method/frappe.desk.query_report.export_query?report_name=${encodeURIComponent(report_name)}&filters=${encodeURIComponent(filters)}&file_format=${file_format}`;
-        console.log(`[Unified Inbox] Redirecting to Native Export: ${url}`);
+        console.log(`[Unified Inbox] Redirecting to Export: ${url}`);
 
         // Use window.location.href to trigger download
         window.location.href = url;
