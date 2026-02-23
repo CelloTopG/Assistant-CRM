@@ -331,7 +331,9 @@ function generate_ai_questions(frm, preferences) {
 // Show preview dialog for questions
 function show_questions_preview(frm, questions, replace_existing) {
   // Ensure we unfreeze manually to be safe
-  frappe.unfreeze();
+  if (frappe.dom && frappe.dom.unfreeze) {
+    frappe.dom.unfreeze();
+  }
 
   const dialog = new frappe.ui.Dialog({
     title: __('Edit WorkCom Generated Questions'),
