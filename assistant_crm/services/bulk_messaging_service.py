@@ -111,26 +111,40 @@ class BulkMessagingService:
                         # Personalize message
                         personalized_message = campaign.personalize_message(message_content, recipient)
                         
-                        # Send via each enabled channel
-                        for channel in enabled_channels:
+                        # Send via each enabled channel (except SMS which we handle in bulk)
+                        for channel in [ch for ch in enabled_channels if ch != 'SMS']:
                             success = self.send_single_message(
                                 recipient, personalized_message, channel, campaign
                             )
-                            
                             if success:
                                 total_delivered += 1
                             else:
                                 total_failed += 1
-                            
                             total_sent += 1
-                            
-                            # Small delay between messages to avoid overwhelming APIs
-                            time.sleep(0.1)
-                    
                     except Exception as e:
-                        total_failed += len(enabled_channels)
-                        frappe.log_error(f"Failed to send message to {recipient.get('email_id')}: {str(e)}", 
-                                       "Bulk Messaging Service")
+                        frappe.log_error(f"Failed to process recipient {recipient.get('email_id')}: {str(e)}")
+
+                # Bulk send SMS for this batch
+                if 'SMS' in enabled_channels:
+                    sms_recipients = []
+                    for recipient in batch:
+                        personalized_message = campaign.personalize_message(message_content, recipient)
+                        sms_recipients.append({
+                            'mobile_no': recipient.get('mobile_no'),
+                            'phone': recipient.get('phone'),
+                            'message': personalized_message
+                        })
+                    
+                    if sms_recipients:
+                        from assistant_crm.services.sms_service import SMSService
+                        sms_service = SMSService()
+                        # We need to handle the fact that send_bulk_messages in SMSService 
+                        # currently expects a single message for all recipients.
+                        # I'll update SMSService to support a list of personalized messages.
+                        bulk_result = sms_service.send_bulk_messages(sms_recipients, message_content)
+                        total_sent += bulk_result.get('total', 0)
+                        total_delivered += bulk_result.get('sent', 0)
+                        total_failed += bulk_result.get('failed', 0)
                 
                 # Update progress
                 campaign.messages_sent = total_sent

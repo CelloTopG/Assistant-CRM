@@ -15,11 +15,14 @@ class SMSService:
     
     def __init__(self):
         self.settings = self.get_sms_settings()
+        self.provider = self.settings.get("provider", "Twilio")
         self.account_sid = self.settings.get("account_sid")
         self.auth_token = self.settings.get("auth_token")
         self.from_number = self.settings.get("from_number")
+        self.rate_limit = self.settings.get("rate_limit", 60)
+        self.custom_url = self.settings.get("custom_url")
+        self.custom_api_key = self.settings.get("custom_api_key")
         self.base_url = "https://api.twilio.com/2010-04-01"
-        self.rate_limit = self.settings.get("rate_limit", 60)  # per minute
         self.last_request_time = 0
         
     def get_sms_settings(self) -> Dict[str, Any]:
@@ -27,21 +30,30 @@ class SMSService:
         try:
             settings = frappe.get_single("Assistant CRM Settings")
             return {
+                "provider": settings.get("sms_provider", "Twilio"),
                 "account_sid": settings.get("sms_account_sid"),
                 "auth_token": settings.get("sms_auth_token"),
                 "from_number": settings.get("sms_from_number"),
                 "rate_limit": settings.get("sms_rate_limit", 60),
-                "enabled": settings.get("sms_enabled", 1)
+                "enabled": settings.get("sms_enabled", 1),
+                "custom_url": settings.get("sms_custom_url"),
+                "custom_api_key": settings.get("sms_custom_api_key")
             }
         except Exception as e:
             frappe.log_error(f"Error getting SMS settings: {str(e)}")
             return {}
     
     def send_message(self, to_number: str, message: str) -> Dict[str, Any]:
-        """Send single SMS message"""
+        """Send single SMS message via configured provider"""
+        if self.provider == "Custom Gateway":
+            return self.send_via_custom_gateway(to_number, message)
+        return self.send_via_twilio(to_number, message)
+
+    def send_via_twilio(self, to_number: str, message: str) -> Dict[str, Any]:
+        """Send single SMS message via Twilio"""
         try:
             if not self.account_sid or not self.auth_token:
-                return {"success": False, "error": "SMS credentials not configured"}
+                return {"success": False, "error": "Twilio credentials not configured"}
             
             # Rate limiting
             self._apply_rate_limit()
@@ -87,11 +99,53 @@ class SMSService:
                 }
                 
         except Exception as e:
-            frappe.log_error(f"SMS send error: {str(e)}")
+            frappe.log_error(f"Twilio SMS send error: {str(e)}")
+            return {"success": False, "error": str(e)}
+
+    def send_via_custom_gateway(self, to_number: str, message: str) -> Dict[str, Any]:
+        """Send single SMS message via Custom Gateway endpoint"""
+        try:
+            if not self.custom_url:
+                return {"success": False, "error": "Custom Gateway URL not configured"}
+
+            clean_number = self._clean_phone_number(to_number)
+            
+            # Payload for saveBulkSms endpoint (expects a list of messages)
+            payload = [{
+                "mobileNumber": clean_number,
+                "message": message,
+                "source": self.from_number or "SurveyBot"
+            }]
+            
+            headers = {
+                "Content-Type": "application/json"
+            }
+            if self.custom_api_key:
+                headers["X-API-Key"] = self.custom_api_key
+
+            response = requests.post(self.custom_url, json=payload, headers=headers, timeout=30)
+            
+            if response.status_code in (200, 201):
+                return {
+                    "success": True,
+                    "status": "sent",
+                    "to": clean_number
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": f"HTTP {response.status_code}: {response.text}"
+                }
+        except Exception as e:
+            frappe.log_error(f"Custom SMS Gateway error: {str(e)}")
             return {"success": False, "error": str(e)}
     
     def send_bulk_messages(self, recipients: list, message: str) -> Dict[str, Any]:
-        """Send bulk SMS messages"""
+        """Send bulk SMS messages. Efficiently uses the bulk endpoint if provider is Custom."""
+        if self.provider == "Custom Gateway" and self.custom_url:
+            return self.send_bulk_via_custom_gateway(recipients, message)
+        
+        # Fallback to loop for Twilio or if custom URL is missing
         results = {
             "total": len(recipients),
             "sent": 0,
@@ -110,7 +164,7 @@ class SMSService:
                 })
                 continue
             
-            result = self.send_message(phone, message)
+            result = self.send_message(phone, recipient.get('message', message))
             
             if result["success"]:
                 results["sent"] += 1
@@ -124,11 +178,58 @@ class SMSService:
             })
         
         return results
-    
+
+    def send_bulk_via_custom_gateway(self, recipients: list, message: str) -> Dict[str, Any]:
+        """Send all SMS messages in a single request for the Custom Gateway"""
+        try:
+            payload = []
+            results = {
+                "total": len(recipients),
+                "sent": 0,
+                "failed": 0,
+                "results": []
+            }
+
+            for recipient in recipients:
+                phone = recipient.get("mobile_no") or recipient.get("phone")
+                if not phone:
+                    results["failed"] += 1
+                    continue
+                
+                clean_number = self._clean_phone_number(phone)
+                payload.append({
+                    "mobileNumber": clean_number,
+                    "message": recipient.get('message', message),
+                    "source": self.from_number or "SurveyBot"
+                })
+
+            if not payload:
+                return results
+
+            headers = {
+                "Content-Type": "application/json"
+            }
+            if self.custom_api_key:
+                headers["X-API-Key"] = self.custom_api_key
+
+            response = requests.post(self.custom_url, json=payload, headers=headers, timeout=60)
+            
+            if response.status_code in (200, 201):
+                results["sent"] = len(payload)
+                return results
+            else:
+                results["failed"] = len(payload)
+                frappe.log_error(f"Bulk Custom Gateway error: HTTP {response.status_code} - {response.text}")
+                return results
+
+        except Exception as e:
+            frappe.log_error(f"Bulk Custom Gateway exception: {str(e)}")
+            return {"success": False, "error": str(e)}
+
     def _clean_phone_number(self, phone: str) -> str:
         """Clean and format phone number"""
         # Remove all non-digit characters except +
-        cleaned = ''.join(c for c in phone if c.isdigit() or c == '+')
+        cleaned = ''.join(c for c in str(phone) if c.isdigit() or c == '+')
         
         # Add + if not present and number doesn't start with country code
         if not cleaned.startswith('+'):

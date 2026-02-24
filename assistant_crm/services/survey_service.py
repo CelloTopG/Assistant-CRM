@@ -825,9 +825,11 @@ WCFCB Team
                 return result is not None
 
             elif channel == 'SMS' and recipient.get('mobile_no'):
-                # Implement SMS sending
-                # This would integrate with your SMS provider
-                return False
+                # Implement SMS sending via SMSService
+                from assistant_crm.services.sms_service import SMSService
+                sms = SMSService()
+                result = sms.send_message(recipient.get('mobile_no'), message)
+                return result.get('success', False)
 
             return False
 
