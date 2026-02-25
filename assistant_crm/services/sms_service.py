@@ -40,7 +40,7 @@ class SMSService:
                 "custom_api_key": settings.get("sms_custom_api_key")
             }
         except Exception as e:
-            frappe.log_error(f"Error getting SMS settings: {str(e)}")
+            frappe.log_error(title="SMSService.get_sms_settings Error", message=frappe.get_traceback())
             return {}
     
     def send_message(self, to_number: str, message: str) -> Dict[str, Any]:
@@ -103,7 +103,7 @@ class SMSService:
                 
         except Exception as e:
             error_msg = f"Twilio SMS send error: {str(e)}"
-            frappe.log_error(error_msg, "SMSService.send_via_twilio")
+            frappe.log_error(title="SMSService.send_via_twilio", message=f"{error_msg}\n\n{frappe.get_traceback()}")
             return {"success": False, "error": error_msg}
 
     def send_via_custom_gateway(self, to_number: str, message: str) -> Dict[str, Any]:
@@ -146,7 +146,7 @@ class SMSService:
                 }
         except Exception as e:
             error_msg = f"Custom SMS Gateway error: {str(e)}"
-            frappe.log_error(error_msg, "SMSService.send_via_custom_gateway")
+            frappe.log_error(title="SMSService.send_via_custom_gateway", message=f"{error_msg}\n\n{frappe.get_traceback()}")
             return {"success": False, "error": error_msg}
     
     def send_bulk_messages(self, recipients: list, message: str) -> Dict[str, Any]:
@@ -238,7 +238,7 @@ class SMSService:
                 return results
 
         except Exception as e:
-            frappe.log_error(f"Bulk Custom Gateway exception: {str(e)}")
+            frappe.log_error(title="SMSService.send_bulk_via_custom_gateway", message=frappe.get_traceback())
             return {"success": False, "error": str(e)}
 
     def _clean_phone_number(self, phone: str) -> str:

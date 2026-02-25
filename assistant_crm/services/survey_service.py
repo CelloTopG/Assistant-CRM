@@ -493,7 +493,7 @@ class SurveyService:
                 f"Error: {str(e)}\n"
                 f"Traceback:\n{frappe.get_traceback()}"
             )
-            frappe.log_error(log_message, log_title)
+            frappe.log_error(title="Survey Distribution Fatal Error", message=log_message)
             return {
                 'success': False,
                 'error': "A fatal error occurred during survey distribution. System logs have been captured."
@@ -844,7 +844,7 @@ WCFCB Team
 
         except Exception as e:
             error_msg = f"Failed to send survey invitation: {str(e)}"
-            frappe.log_error(error_msg, "Survey Service Error")
+            frappe.log_error(title="Survey Service SMS Error", message=f"{error_msg}\n\n{frappe.get_traceback()}")
             return {"success": False, "error": error_msg}
 
     def start_conversational_survey_session(self, recipient, campaign, response_id: str, platform: str):
