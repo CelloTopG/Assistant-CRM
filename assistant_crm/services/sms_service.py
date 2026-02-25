@@ -45,6 +45,9 @@ class SMSService:
     
     def send_message(self, to_number: str, message: str) -> Dict[str, Any]:
         """Send single SMS message via configured provider"""
+        if not self.settings.get("enabled"):
+            return {"success": False, "error": "SMS is disabled in Assistant CRM Settings"}
+            
         if self.provider == "Custom Gateway":
             return self.send_via_custom_gateway(to_number, message)
         return self.send_via_twilio(to_number, message)
@@ -124,6 +127,8 @@ class SMSService:
             if self.custom_api_key:
                 headers["X-API-Key"] = self.custom_api_key
 
+            # Send request
+            frappe.log_error(f"Sending Custom SMS to {clean_number} via {self.custom_url}\nPayload: {json.dumps(payload)}", "SMSService.send_via_custom_gateway Debug")
             response = requests.post(self.custom_url, json=payload, headers=headers, timeout=30)
             
             if response.status_code in (200, 201):
@@ -133,9 +138,11 @@ class SMSService:
                     "to": clean_number
                 }
             else:
+                error_info = f"HTTP {response.status_code}: {response.text}"
+                frappe.log_error(f"Custom SMS Gateway failed: {error_info}", "SMSService.send_via_custom_gateway")
                 return {
                     "success": False,
-                    "error": f"HTTP {response.status_code}: {response.text}"
+                    "error": error_info
                 }
         except Exception as e:
             error_msg = f"Custom SMS Gateway error: {str(e)}"
@@ -144,6 +151,9 @@ class SMSService:
     
     def send_bulk_messages(self, recipients: list, message: str) -> Dict[str, Any]:
         """Send bulk SMS messages. Efficiently uses the bulk endpoint if provider is Custom."""
+        if not self.settings.get("enabled"):
+            return {"total": len(recipients), "sent": 0, "failed": len(recipients), "error": "SMS is disabled"}
+            
         if self.provider == "Custom Gateway" and self.custom_url:
             return self.send_bulk_via_custom_gateway(recipients, message)
         
@@ -183,6 +193,9 @@ class SMSService:
 
     def send_bulk_via_custom_gateway(self, recipients: list, message: str) -> Dict[str, Any]:
         """Send all SMS messages in a single request for the Custom Gateway"""
+        if not self.settings.get("enabled"):
+            return {"total": len(recipients), "sent": 0, "failed": len(recipients), "error": "SMS is disabled"}
+            
         try:
             payload = []
             results = {
