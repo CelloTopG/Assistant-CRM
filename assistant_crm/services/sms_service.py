@@ -90,7 +90,9 @@ class SMSService:
     def send_message(self, to_number: str, message: str, survey_id: str = None) -> Dict[str, Any]:
         """Send single SMS message via configured provider and log the attempt."""
         if not self.enabled:
-            return {"success": False, "error": "SMS is disabled in Assistant CRM Settings"}
+            error_msg = "SMS is disabled in Assistant CRM SMS Settings"
+            self.log_sms(to_number, message, "Failed", error=error_msg, survey_id=survey_id)
+            return {"success": False, "error": error_msg}
             
         result = {"success": False, "error": "Unknown Provider"}
         
@@ -217,8 +219,8 @@ def send_survey_sms_async(recipient: dict, campaign_name: str, response_id: str)
         # Load the campaign document
         campaign = frappe.get_doc("Survey Campaign", campaign_name)
         
-        # Check if campaign is still active
-        if campaign.status not in ["Active", "In Progress"]:
+        # Check if campaign is still active or submitted
+        if campaign.status not in ["Active", "In Progress", "Submitted"]:
             return
             
         # Re-send the invitation specifically for SMS
