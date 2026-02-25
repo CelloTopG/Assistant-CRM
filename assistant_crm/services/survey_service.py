@@ -826,7 +826,10 @@ WCFCB Team
                 result = whatsapp.send_message(recipient.get('mobile_no'), message)
                 if result and result.get("success"):
                     return {"success": True}
-                return {"success": False, "error": result.get("error") if result else "WhatsApp failed"}
+                
+                error_msg = result.get("error") if result else "WhatsApp failed"
+                frappe.log_error(title="Survey Service WhatsApp Error", message=f"WhatsApp survey invitation failed: {error_msg}")
+                return {"success": False, "error": error_msg}
 
             elif channel == 'SMS' and recipient.get('mobile_no'):
                 from assistant_crm.services.sms_service import SMSService
@@ -837,7 +840,7 @@ WCFCB Team
                     return {"success": True}
                 
                 error_msg = result.get("error") if result else "SMS Gateway failed"
-                frappe.log_error(f"SMS survey invitation failed: {error_msg}", "Survey Service SMS Error")
+                frappe.log_error(title="Survey Service SMS Error", message=f"SMS survey invitation failed: {error_msg}")
                 return {"success": False, "error": error_msg}
 
             return {"success": False, "error": "channel_not_supported_or_missing_data"}
