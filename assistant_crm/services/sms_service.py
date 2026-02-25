@@ -78,18 +78,27 @@ class SMSService:
                 "status": status,
                 "sent_at": now() if status == "Sent" else None,
                 "survey": survey_id,
-                "gateway_response": json.dumps(response) if response else None,
-                "response_code": response.get("responseCode") if response else None,
+                "gateway_response": json.dumps(response) if isinstance(response, dict) else str(response) if response else None,
+                "response_code": response.get("responseCode") if isinstance(response, dict) else None,
                 "error_message": error
             })
             log.insert(ignore_permissions=True)
-            frappe.db.commit() # Commit log immediately
+            frappe.db.commit() 
+            
+            if self.debug:
+                frappe.log_error(title="SMS Log Created", message=f"Log: {log.name} for {recipient}")
         except Exception as e:
-            frappe.log_error(title="SMS Logging Failed", message=frappe.get_traceback())
+            frappe.log_error(title="SMS Logging Failed", message=f"Error inserting SMS Log: {str(e)}\n\n{frappe.get_traceback()}")
 
     def send_message(self, to_number: str, message: str, survey_id: str = None) -> Dict[str, Any]:
         """Send single SMS message via configured provider and log the attempt."""
-        if not self.enabled:
+        # Ensure enabled is a clean boolean
+        is_enabled = bool(self.enabled)
+        
+        if self.debug:
+            frappe.log_error(title="SMSService.send_message Debug", message=f"Sending to: {to_number}\nEnabled: {is_enabled}\nProvider: {self.provider}")
+
+        if not is_enabled:
             error_msg = "SMS is disabled in Assistant CRM SMS Settings"
             self.log_sms(to_number, message, "Failed", error=error_msg, survey_id=survey_id)
             return {"success": False, "error": error_msg}

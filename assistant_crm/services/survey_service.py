@@ -451,18 +451,31 @@ class SurveyService:
                             channel_stats[ch_name]['reasons']['exception'] = channel_stats[ch_name]['reasons'].get('exception', 0) + 1
                         continue  # Conversational channel handled; move to next channel
 
-                    # Standard invite for non-conversational channels (Email, SMS, etc.)
                     if ch_name == 'SMS':
-                        # Production-ready: Use async queue for SMS distribution
-                        frappe.enqueue(
-                            "assistant_crm.services.sms_service.send_survey_sms_async",
-                            recipient=recipient,
-                            campaign_name=campaign.name,
-                            response_id=survey_response.name,
-                            queue="long"
-                        )
-                        channel_stats[ch_name]['success'] += 1 # Optimistically marked as queued
-                        recipient_delivered = True
+                        # DEBUG: Log that we reached the SMS block
+                        frappe.log_error(title="SMS Distribution Debug", message=f"Processing SMS for {recipient.get('mobile_no')} (Campaign: {campaign.name})")
+                        
+                        # If only one recipient, send synchronously to debug immediately
+                        if len(recipients) == 1:
+                            invitation_result = self.send_survey_invitation(recipient, campaign, ch_name, survey_response.name)
+                            if invitation_result.get('success'):
+                                channel_stats[ch_name]['success'] += 1
+                                recipient_delivered = True
+                            else:
+                                reason = invitation_result.get('error', 'send_failed')
+                                channel_stats[ch_name]['failures'] += 1
+                                channel_stats[ch_name]['reasons'][reason] = channel_stats[ch_name]['reasons'].get(reason, 0) + 1
+                        else:
+                            # Production-ready: Use async queue for bulk
+                            frappe.enqueue(
+                                "assistant_crm.services.sms_service.send_survey_sms_async",
+                                recipient=recipient,
+                                campaign_name=campaign.name,
+                                response_id=survey_response.name,
+                                queue="long"
+                            )
+                            channel_stats[ch_name]['success'] += 1
+                            recipient_delivered = True
                     else:
                         invitation_result = self.send_survey_invitation(recipient, campaign, ch_name, survey_response.name)
                         if invitation_result.get('success'):
