@@ -99,8 +99,9 @@ class SMSService:
                 }
                 
         except Exception as e:
-            frappe.log_error(f"Twilio SMS send error: {str(e)}")
-            return {"success": False, "error": str(e)}
+            error_msg = f"Twilio SMS send error: {str(e)}"
+            frappe.log_error(error_msg, "SMSService.send_via_twilio")
+            return {"success": False, "error": error_msg}
 
     def send_via_custom_gateway(self, to_number: str, message: str) -> Dict[str, Any]:
         """Send single SMS message via Custom Gateway endpoint"""
@@ -137,8 +138,9 @@ class SMSService:
                     "error": f"HTTP {response.status_code}: {response.text}"
                 }
         except Exception as e:
-            frappe.log_error(f"Custom SMS Gateway error: {str(e)}")
-            return {"success": False, "error": str(e)}
+            error_msg = f"Custom SMS Gateway error: {str(e)}"
+            frappe.log_error(error_msg, "SMSService.send_via_custom_gateway")
+            return {"success": False, "error": error_msg}
     
     def send_bulk_messages(self, recipients: list, message: str) -> Dict[str, Any]:
         """Send bulk SMS messages. Efficiently uses the bulk endpoint if provider is Custom."""

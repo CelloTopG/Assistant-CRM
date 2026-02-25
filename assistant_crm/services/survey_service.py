@@ -452,17 +452,21 @@ class SurveyService:
                         continue  # Conversational channel handled; move to next channel
 
                     # Standard invite for non-conversational channels (Email, SMS, etc.)
-                    success = self.send_survey_invitation(recipient, campaign, ch_name, survey_response.name)
-                    if success:
+                    invitation_result = self.send_survey_invitation(recipient, campaign, ch_name, survey_response.name)
+                    if invitation_result.get('success'):
                         channel_stats[ch_name]['success'] += 1
                         recipient_delivered = True
                     else:
-                        # Classify common failure reasons for non-conversational paths
-                        reason = 'not_supported'
-                        if ch_name == 'Email' and not recipient.get('email_id'):
-                            reason = 'no_email'
-                        elif ch_name in ('WhatsApp', 'SMS') and not recipient.get('mobile_no'):
-                            reason = 'no_mobile'
+                        # Extract precise failure reason
+                        reason = invitation_result.get('error', 'not_supported')
+                        
+                        # Fallback classification if error is generic
+                        if reason in ('not_supported', 'channel_not_supported_or_missing_data'):
+                            if ch_name == 'Email' and not recipient.get('email_id'):
+                                reason = 'no_email'
+                            elif ch_name in ('WhatsApp', 'SMS') and not recipient.get('mobile_no'):
+                                reason = 'no_mobile'
+                        
                         channel_stats[ch_name]['failures'] += 1
                         channel_stats[ch_name]['reasons'][reason] = channel_stats[ch_name]['reasons'].get(reason, 0) + 1
 
@@ -786,8 +790,8 @@ class SurveyService:
             "If the link doesn't open, reply 'HELP'."
         )
 
-    def send_survey_invitation(self, recipient, campaign, channel, response_id):
-        """Send survey invitation via specified channel"""
+    def send_survey_invitation(self, recipient: dict, campaign: object, channel: str, response_id: str) -> dict:
+        """Send survey invitation via specified channel. Returns {success: bool, error: str}"""
         try:
             message = self._format_invitation_message(campaign, recipient, response_id)
 
@@ -814,28 +818,34 @@ WCFCB Team
                     subject=f"Survey: {campaign.campaign_name}",
                     message=message
                 )
-                return True
+                return {"success": True}
 
             elif channel == 'WhatsApp' and recipient.get('mobile_no'):
-                # For WhatsApp, unified inbox conversational flow is preferred and handled upstream.
-                # This fallback sends a simple invite only when conversational start failed.
                 from assistant_crm.services.whatsapp_service import WhatsAppService
                 whatsapp = WhatsAppService()
                 result = whatsapp.send_message(recipient.get('mobile_no'), message)
-                return result is not None
+                if result and result.get("success"):
+                    return {"success": True}
+                return {"success": False, "error": result.get("error") if result else "WhatsApp failed"}
 
             elif channel == 'SMS' and recipient.get('mobile_no'):
-                # Implement SMS sending via SMSService
                 from assistant_crm.services.sms_service import SMSService
                 sms = SMSService()
                 result = sms.send_message(recipient.get('mobile_no'), message)
-                return result.get('success', False)
+                # Ensure we return a structured dict
+                if result and result.get("success"):
+                    return {"success": True}
+                
+                error_msg = result.get("error") if result else "SMS Gateway failed"
+                frappe.log_error(f"SMS survey invitation failed: {error_msg}", "Survey Service SMS Error")
+                return {"success": False, "error": error_msg}
 
-            return False
+            return {"success": False, "error": "channel_not_supported_or_missing_data"}
 
         except Exception as e:
-            frappe.log_error(f"Failed to send survey invitation: {str(e)}", "Survey Service Error")
-            return False
+            error_msg = f"Failed to send survey invitation: {str(e)}"
+            frappe.log_error(error_msg, "Survey Service Error")
+            return {"success": False, "error": error_msg}
 
     def start_conversational_survey_session(self, recipient, campaign, response_id: str, platform: str):
         """Send a survey invitation link via unified inbox.

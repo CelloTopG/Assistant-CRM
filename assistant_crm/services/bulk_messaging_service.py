@@ -206,7 +206,7 @@ class BulkMessagingService:
                 return False
 
             # Use real WhatsApp service
-            from assistant_crm.assistant_crm.services.whatsapp_service import WhatsAppService
+            from assistant_crm.services.whatsapp_service import WhatsAppService
             whatsapp_service = WhatsAppService()
             result = whatsapp_service.send_message(recipient['mobile_no'], message)
 
@@ -230,7 +230,7 @@ class BulkMessagingService:
                 return False
 
             # Use real SMS service
-            from assistant_crm.assistant_crm.services.sms_service import SMSService
+            from assistant_crm.services.sms_service import SMSService
             sms_service = SMSService()
             result = sms_service.send_message(recipient['mobile_no'], message)
 
@@ -281,7 +281,7 @@ class BulkMessagingService:
                 return False
 
             # Use real Facebook service
-            from assistant_crm.assistant_crm.services.social_media_integration_service import SocialMediaIntegrationService
+            from assistant_crm.services.social_media_integration_service import SocialMediaIntegrationService
             facebook_service = SocialMediaIntegrationService()
             result = facebook_service.send_facebook_message(facebook_id, message)
 
@@ -308,7 +308,7 @@ class BulkMessagingService:
                 return False
 
             # Use real Instagram service
-            from assistant_crm.assistant_crm.services.social_media_integration_service import SocialMediaIntegrationService
+            from assistant_crm.services.social_media_integration_service import SocialMediaIntegrationService
             instagram_service = SocialMediaIntegrationService()
             result = instagram_service.send_instagram_message(instagram_id, message)
 
@@ -335,7 +335,7 @@ class BulkMessagingService:
                 return False
 
             # Use real Telegram service
-            from assistant_crm.assistant_crm.services.telegram_service import TelegramService
+            from assistant_crm.services.telegram_service import TelegramService
             telegram_service = TelegramService()
             result = telegram_service.send_message(chat_id, message)
 
