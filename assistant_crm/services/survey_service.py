@@ -452,23 +452,35 @@ class SurveyService:
                         continue  # Conversational channel handled; move to next channel
 
                     # Standard invite for non-conversational channels (Email, SMS, etc.)
-                    invitation_result = self.send_survey_invitation(recipient, campaign, ch_name, survey_response.name)
-                    if invitation_result.get('success'):
-                        channel_stats[ch_name]['success'] += 1
+                    if ch_name == 'SMS':
+                        # Production-ready: Use async queue for SMS distribution
+                        frappe.enqueue(
+                            "assistant_crm.services.sms_service.send_survey_sms_async",
+                            recipient=recipient,
+                            campaign_name=campaign.name,
+                            response_id=survey_response.name,
+                            queue="long"
+                        )
+                        channel_stats[ch_name]['success'] += 1 # Optimistically marked as queued
                         recipient_delivered = True
                     else:
-                        # Extract precise failure reason
-                        reason = invitation_result.get('error', 'not_supported')
-                        
-                        # Fallback classification if error is generic
-                        if reason in ('not_supported', 'channel_not_supported_or_missing_data'):
-                            if ch_name == 'Email' and not recipient.get('email_id'):
-                                reason = 'no_email'
-                            elif ch_name in ('WhatsApp', 'SMS') and not recipient.get('mobile_no'):
-                                reason = 'no_mobile'
-                        
-                        channel_stats[ch_name]['failures'] += 1
-                        channel_stats[ch_name]['reasons'][reason] = channel_stats[ch_name]['reasons'].get(reason, 0) + 1
+                        invitation_result = self.send_survey_invitation(recipient, campaign, ch_name, survey_response.name)
+                        if invitation_result.get('success'):
+                            channel_stats[ch_name]['success'] += 1
+                            recipient_delivered = True
+                        else:
+                            # Extract precise failure reason
+                            reason = invitation_result.get('error', 'not_supported')
+                            
+                            # Fallback classification if error is generic
+                            if reason in ('not_supported', 'channel_not_supported_or_missing_data'):
+                                if ch_name == 'Email' and not recipient.get('email_id'):
+                                    reason = 'no_email'
+                                elif ch_name in ('WhatsApp', 'SMS') and not recipient.get('mobile_no'):
+                                    reason = 'no_mobile'
+                            
+                            channel_stats[ch_name]['failures'] += 1
+                            channel_stats[ch_name]['reasons'][reason] = channel_stats[ch_name]['reasons'].get(reason, 0) + 1
 
                 if recipient_delivered:
                     delivered_count += 1
@@ -834,20 +846,21 @@ WCFCB Team
             elif channel == 'SMS' and recipient.get('mobile_no'):
                 from assistant_crm.services.sms_service import SMSService
                 sms = SMSService()
-                result = sms.send_message(recipient.get('mobile_no'), message)
-                # Ensure we return a structured dict
+                # Pass campaign name for logging
+                result = sms.send_message(recipient.get('mobile_no'), message, survey_id=campaign.name)
+                
                 if result and result.get("success"):
                     return {"success": True}
                 
                 error_msg = result.get("error") if result else "SMS Gateway failed"
-                frappe.log_error(title="Survey Service SMS Error", message=f"SMS survey invitation failed: {error_msg}")
+                # Improved logging handled inside SMSService
                 return {"success": False, "error": error_msg}
 
             return {"success": False, "error": "channel_not_supported_or_missing_data"}
 
         except Exception as e:
             error_msg = f"Failed to send survey invitation: {str(e)}"
-            frappe.log_error(title="Survey Service SMS Error", message=f"{error_msg}\n\n{frappe.get_traceback()}")
+            frappe.log_error(title="Survey Service Error", message=f"{error_msg}\n\n{frappe.get_traceback()}")
             return {"success": False, "error": error_msg}
 
     def start_conversational_survey_session(self, recipient, campaign, response_id: str, platform: str):

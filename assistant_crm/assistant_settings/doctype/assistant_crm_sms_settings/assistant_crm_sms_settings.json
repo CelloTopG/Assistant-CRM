@@ -1,0 +1,102 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "creation": "2026-02-25 12:30:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "section_general",
+        "enabled",
+        "environment",
+        "timeout",
+        "enable_debug_logging",
+        "use_bulk_for_surveys",
+        "section_urls",
+        "production_base_url",
+        "development_base_url",
+        "api_key"
+    ],
+    "fields": [
+        {
+            "fieldname": "section_general",
+            "fieldtype": "Section Break",
+            "label": "General Settings"
+        },
+        {
+            "default": "0",
+            "fieldname": "enabled",
+            "fieldtype": "Check",
+            "label": "Enabled"
+        },
+        {
+            "default": "Development",
+            "fieldname": "environment",
+            "fieldtype": "Select",
+            "label": "Environment",
+            "options": "Development\nProduction"
+        },
+        {
+            "default": "30",
+            "fieldname": "timeout",
+            "fieldtype": "Int",
+            "label": "Timeout (seconds)"
+        },
+        {
+            "default": "0",
+            "fieldname": "enable_debug_logging",
+            "fieldtype": "Check",
+            "label": "Enable Debug Logging"
+        },
+        {
+            "default": "1",
+            "fieldname": "use_bulk_for_surveys",
+            "fieldtype": "Check",
+            "label": "Use Bulk for Surveys"
+        },
+        {
+            "fieldname": "section_urls",
+            "fieldtype": "Section Break",
+            "label": "API Configuration"
+        },
+        {
+            "default": "https://notify.workers.com.zm",
+            "fieldname": "production_base_url",
+            "fieldtype": "Data",
+            "label": "Production Base URL"
+        },
+        {
+            "default": "http://192.168.1.32:9002",
+            "fieldname": "development_base_url",
+            "fieldtype": "Data",
+            "label": "Development Base URL"
+        },
+        {
+            "fieldname": "api_key",
+            "fieldtype": "Password",
+            "label": "API Key"
+        }
+    ],
+    "issingle": 1,
+    "links": [],
+    "modified": "2026-02-25 12:30:00.000000",
+    "modified_by": "Administrator",
+    "module": "Assistant Settings",
+    "name": "Assistant CRM SMS Settings",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "print": 1,
+            "read": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": []
+}

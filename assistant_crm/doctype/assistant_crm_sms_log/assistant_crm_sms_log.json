@@ -1,0 +1,112 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "autoname": "hash",
+    "creation": "2026-02-25 12:35:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "recipient",
+        "status",
+        "sent_at",
+        "attempts",
+        "section_message",
+        "message",
+        "survey",
+        "section_response",
+        "response_code",
+        "gateway_response",
+        "error_message"
+    ],
+    "fields": [
+        {
+            "fieldname": "recipient",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Recipient",
+            "reqd": 1
+        },
+        {
+            "default": "Pending",
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Status",
+            "options": "Pending\nSent\nFailed"
+        },
+        {
+            "fieldname": "sent_at",
+            "fieldtype": "Datetime",
+            "in_list_view": 1,
+            "label": "Sent At"
+        },
+        {
+            "default": "0",
+            "fieldname": "attempts",
+            "fieldtype": "Int",
+            "label": "Attempts"
+        },
+        {
+            "fieldname": "section_message",
+            "fieldtype": "Section Break",
+            "label": "Message Details"
+        },
+        {
+            "fieldname": "message",
+            "fieldtype": "Long Text",
+            "label": "Message"
+        },
+        {
+            "fieldname": "survey",
+            "fieldtype": "Link",
+            "label": "Survey",
+            "options": "Survey Campaign"
+        },
+        {
+            "fieldname": "section_response",
+            "fieldtype": "Section Break",
+            "label": "Gateway Response"
+        },
+        {
+            "fieldname": "response_code",
+            "fieldtype": "Data",
+            "label": "Response Code"
+        },
+        {
+            "fieldname": "gateway_response",
+            "fieldtype": "Long Text",
+            "label": "Gateway Response"
+        },
+        {
+            "fieldname": "error_message",
+            "fieldtype": "Long Text",
+            "label": "Error Message"
+        }
+    ],
+    "links": [],
+    "modified": "2026-02-25 12:35:00.000000",
+    "modified_by": "Administrator",
+    "module": "Assistant CRM",
+    "name": "Assistant CRM SMS Log",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "print": 1,
+            "read": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "read": 1,
+            "role": "All"
+        }
+    ],
+    "sort_field": "creation",
+    "sort_order": "DESC",
+    "states": []
+}
