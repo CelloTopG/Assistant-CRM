@@ -1,0 +1,162 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "autoname": "UUID",
+    "creation": "2026-02-27 11:20:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "section_token",
+        "token",
+        "survey",
+        "survey_response",
+        "section_user",
+        "allowed_user",
+        "email",
+        "section_meta",
+        "expires_on",
+        "max_views",
+        "views_count",
+        "is_locked",
+        "suspicious_activity",
+        "watermark_id",
+        "section_logs",
+        "last_ip",
+        "user_agent",
+        "last_viewed_at"
+    ],
+    "fields": [
+        {
+            "fieldname": "section_token",
+            "fieldtype": "Section Break",
+            "label": "Token Details"
+        },
+        {
+            "fieldname": "token",
+            "fieldtype": "Data",
+            "label": "Token",
+            "read_only": 1,
+            "unique": 1
+        },
+        {
+            "fieldname": "survey",
+            "fieldtype": "Link",
+            "label": "Survey",
+            "options": "Survey Campaign",
+            "reqd": 1
+        },
+        {
+            "fieldname": "survey_response",
+            "fieldtype": "Link",
+            "label": "Survey Response",
+            "options": "Survey Response",
+            "reqd": 1
+        },
+        {
+            "fieldname": "section_user",
+            "fieldtype": "Section Break",
+            "label": "User Identification"
+        },
+        {
+            "fieldname": "allowed_user",
+            "fieldtype": "Link",
+            "label": "Allowed User",
+            "options": "User"
+        },
+        {
+            "fieldname": "email",
+            "fieldtype": "Data",
+            "label": "Email",
+            "options": "Email"
+        },
+        {
+            "fieldname": "section_meta",
+            "fieldtype": "Section Break",
+            "label": "Governance"
+        },
+        {
+            "fieldname": "expires_on",
+            "fieldtype": "Datetime",
+            "label": "Expires On"
+        },
+        {
+            "default": "0",
+            "fieldname": "max_views",
+            "fieldtype": "Int",
+            "label": "Max Views (0 = Unlimited)"
+        },
+        {
+            "default": "0",
+            "fieldname": "views_count",
+            "fieldtype": "Int",
+            "label": "Views Count",
+            "read_only": 1
+        },
+        {
+            "default": "0",
+            "fieldname": "is_locked",
+            "fieldtype": "Check",
+            "label": "Is Locked"
+        },
+        {
+            "default": "0",
+            "fieldname": "suspicious_activity",
+            "fieldtype": "Int",
+            "label": "Suspicious Activity Score"
+        },
+        {
+            "fieldname": "watermark_id",
+            "fieldtype": "Data",
+            "label": "Watermark ID",
+            "read_only": 1
+        },
+        {
+            "fieldname": "section_logs",
+            "fieldtype": "Section Break",
+            "label": "Access Logs"
+        },
+        {
+            "fieldname": "last_ip",
+            "fieldtype": "Data",
+            "label": "Last IP Address",
+            "read_only": 1
+        },
+        {
+            "fieldname": "user_agent",
+            "fieldtype": "Small Text",
+            "label": "User Agent",
+            "read_only": 1
+        },
+        {
+            "fieldname": "last_viewed_at",
+            "fieldtype": "Datetime",
+            "label": "Last Viewed At",
+            "read_only": 1
+        }
+    ],
+    "index_log_events": 1,
+    "links": [],
+    "modified": "2026-02-27 11:20:00.000000",
+    "modified_by": "Administrator",
+    "module": "Assistant CRM",
+    "name": "Survey Access Token",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "import": 1,
+            "print": 1,
+            "read": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": []
+}

@@ -143,20 +143,33 @@ def submit_survey_response(token=None, answers=None, response_id=None):
 	- answers: list/dict of answers
 	"""
 	try:
-		# Be tolerant to client variations: accept token from query/form and trim quotes/spaces
+		# Step 1: Force Survey Tokenization (CRITICAL)
 		if not token:
 			token = frappe.form_dict.get('token') or frappe.form_dict.get('t')
 		token = (token or '').strip().strip('"').strip("'")
+		
 		if not token:
-			return {'success': False, 'message': 'Missing token'}
-		row = frappe.db.get_value('Survey Response', {'response_token': token}, ['name', 'status'], as_dict=True)
-		if not row:
-			try:
-				frappe.log_error(f"submit_survey_response: token not found: {token}", "Survey Token Lookup")
-			except Exception:
-				pass
-			return {'success': False, 'message': 'Invalid or expired link'}
-		response = frappe.get_doc('Survey Response', row.name)
+			return {'success': False, 'message': 'Missing access token'}
+
+		# Validate Survey Access Token
+		access_token = frappe.db.get_value('Survey Access Token', {'token': token}, ['name', 'is_locked', 'expires_on', 'survey_response'], as_dict=True)
+		
+		if not access_token:
+			# Fallback to legacy response_token for existing links (temporary)
+			row = frappe.db.get_value('Survey Response', {'response_token': token}, ['name', 'status'], as_dict=True)
+			if not row:
+				return {'success': False, 'message': 'Invalid or expired link'}
+			response_name = row.name
+		else:
+			if access_token.is_locked:
+				return {'success': False, 'message': 'This link has been locked due to suspicious activity.'}
+			
+			if access_token.expires_on and frappe.utils.get_datetime(access_token.expires_on) < frappe.utils.now_datetime():
+				return {'success': False, 'message': 'This survey link has expired.'}
+			
+			response_name = access_token.survey_response
+
+		response = frappe.get_doc('Survey Response', response_name)
 		if response.status == 'Completed':
 			return {'success': False, 'message': 'This survey has been completed. Thank you for your interest.', 'survey_closed': True}
 		if response.status == 'Closed':
@@ -190,24 +203,58 @@ def submit_survey_response(token=None, answers=None, response_id=None):
 def get_survey_form(token: str = None):
 	"""Return survey metadata and questions for rendering a dynamic form (guest)."""
 	try:
-		# Accept token from 'token' or 't' and normalize
+		# Step 1 & 5: Force Tokenization and Prevent Pre-Login Viewing
 		if not token:
 			token = frappe.form_dict.get('token') or frappe.form_dict.get('t')
 		token = (token or '').strip().strip('"').strip("'")
+		
 		if not token:
-			return {'success': False, 'message': 'Missing token'}
-		row = frappe.db.get_value('Survey Response', {'response_token': token}, ['name', 'campaign', 'status'], as_dict=True)
-		if not row:
-			try:
-				frappe.log_error(f"get_survey_form: token not found: {token}", "Survey Token Lookup")
-			except Exception:
-				pass
-			return {'success': False, 'message': 'Invalid or expired link'}
-		if row.status == 'Completed':
-			return {'success': False, 'message': 'This survey has been completed. Thank you for your interest.', 'survey_closed': True}
-		if row.status == 'Closed':
-			return {'success': False, 'message': 'This survey has been closed and is no longer accepting responses.', 'survey_closed': True}
-		camp = frappe.get_doc('Survey Campaign', row.campaign)
+			return {'success': False, 'message': 'Access denied: Valid token required.'}
+
+		# Validate Survey Access Token
+		access_token_data = frappe.db.get_value('Survey Access Token', {'token': token}, '*', as_dict=True)
+		
+		if not access_token_data:
+			# Fallback to legacy response_token
+			row = frappe.db.get_value('Survey Response', {'response_token': token}, ['name', 'campaign', 'status'], as_dict=True)
+			if not row:
+				return {'success': False, 'message': 'Invalid survey token.'}
+			response_name = row.name
+			campaign_name = row.campaign
+			status = row.status
+			watermark_id = "LEGACY"
+			email = row.get('recipient_email')
+		else:
+			if access_token_data.is_locked:
+				return {'success': False, 'message': 'Access revoked: Token locked.'}
+			
+			if access_token_data.expires_on and frappe.utils.get_datetime(access_token_data.expires_on) < frappe.utils.now_datetime():
+				return {'success': False, 'message': 'Access expired: This link has timed out.'}
+			
+			if access_token_data.max_views > 0 and access_token_data.views_count >= access_token_data.max_views:
+				return {'success': False, 'message': 'Access limit reached: This survey can no longer be viewed.'}
+
+			response_name = access_token_data.survey_response
+			campaign_name = access_token_data.survey
+			status = frappe.db.get_value('Survey Response', response_name, 'status')
+			watermark_id = access_token_data.watermark_id
+			email = access_token_data.email
+			
+			# Step 1 & 7: Log Activity and Increment Views
+			frappe.db.set_value('Survey Access Token', access_token_data.name, {
+				'views_count': access_token_data.views_count + 1,
+				'last_ip': frappe.local.request_ip,
+				'user_agent': frappe.get_request_header('User-Agent'),
+				'last_viewed_at': frappe.utils.now()
+			}, update_modified=False)
+			frappe.db.commit()
+
+		if status == 'Completed':
+			return {'success': False, 'message': 'This survey has been completed. Thank you!', 'survey_closed': True}
+		if status == 'Closed':
+			return {'success': False, 'message': 'This survey is no longer accepting responses.', 'survey_closed': True}
+		
+		camp = frappe.get_doc('Survey Campaign', campaign_name)
 		# Gate access when campaign is not active or outside the date range
 		now_dt = frappe.utils.now_datetime()
 		try:
@@ -241,7 +288,15 @@ def get_survey_form(token: str = None):
 				'question_type': q.question_type,
 				'options': opts
 			})
-		return {'success': True, 'campaign_label': camp.campaign_name, 'questions': questions}
+		# Step 2: Build Watermark Data
+		watermark = {
+			"email": email or "Confidential",
+			"ip": frappe.local.request_ip,
+			"timestamp": frappe.utils.now(),
+			"token_id": watermark_id
+		}
+
+		return {'success': True, 'campaign_label': camp.campaign_name, 'questions': questions, 'watermark': watermark}
 	except Exception as e:
 		frappe.log_error(f"get_survey_form failed: {str(e)}")
 		return {'success': False, 'message': 'Failed to load survey.'}

@@ -781,7 +781,7 @@ class SurveyService:
         """Format the survey invitation message with placeholders and link."""
         first_name = recipient.get('first_name') or recipient.get('customer_name') or 'Valued Customer'
         campaign_name = campaign.campaign_name
-        survey_link = self.generate_survey_link(response_id)
+        survey_link = self.generate_survey_link(response_id, recipient)
 
         # Get custom message or use default
         custom_message = getattr(campaign, 'invitation_message', None)
@@ -810,7 +810,7 @@ class SurveyService:
                 # For email, we might want a slightly different format if it's the default
                 if not getattr(campaign, 'invitation_message', None):
                     first_name = recipient.get('first_name', 'Valued Customer')
-                    survey_link = self.generate_survey_link(response_id)
+                    survey_link = self.generate_survey_link(response_id, recipient)
                     message = f"""
 Dear {first_name},
 
@@ -1055,27 +1055,34 @@ WCFCB Team
                 'error': "We couldn't start the survey session. The system administrator has been logged of this issue."
             }
 
-    def generate_survey_link(self, response_id):
-        """Generate unique survey link using per-response token.
-        Build a robust URL that avoids double slashes and overly long/fragile paths.
+    def generate_survey_link(self, response_id, recipient=None):
+        """Generate unique survey link using a dedicated Access Token.
+        Follows Step 1 of the Security Protocol.
         """
         from assistant_crm.utils import get_public_url
         site_url = get_public_url()
-        try:
-            token = frappe.db.get_value('Survey Response', response_id, 'response_token')
-        except Exception:
-            token = None
-        if not token:
-            # fallback for legacy records; generate one
-            try:
-                token = frappe.generate_hash(24)
-                frappe.db.set_value('Survey Response', response_id, 'response_token', token)
-            except Exception:
-                pass
-        # Build URL; avoid depending on optional System Settings fields
+        
+        # Load survey response to get campaign context
+        resp = frappe.get_doc('Survey Response', response_id)
+        
+        # Create a new Survey Access Token (expires in 7 days by default)
+        from frappe.utils import add_days, now_datetime
+        
+        token_doc = frappe.get_doc({
+            "doctype": "Survey Access Token",
+            "survey": resp.campaign,
+            "survey_response": resp.name,
+            "email": (recipient or {}).get("email_id") or resp.recipient_email,
+            "expires_on": add_days(now_datetime(), 7),
+            "max_views": 5 # Allows some retries but prevents mass sharing
+        })
+        token_doc.insert(ignore_permissions=True)
+        token = token_doc.token
+
+        # Use the token in the URL
         if not site_url:
-            return f"/survey?t={token}"
-        return f"{site_url}/survey?t={token}"
+            return f"/survey?token={token}"
+        return f"{site_url}/survey?token={token}"
 
     def process_survey_response(self, response_id, answers):
         """Process submitted survey response"""

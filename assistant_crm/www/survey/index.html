@@ -2,21 +2,136 @@
 
 {% block page_content %}
 <style>
-  body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 24px; background: #f7f7fb; }
-  .card { max-width: 720px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.06); padding: 24px; }
-  h1 { font-size: 20px; margin: 0 0 12px; }
-  .muted { color: #666; font-size: 13px; margin-bottom: 20px; }
-  .q { margin-bottom: 18px; }
-  .q label { display: block; font-weight: 600; margin-bottom: 8px; }
-  input[type="number"], select, textarea { width: 100%; padding: 10px 12px; border: 1px solid #dcdce4; border-radius: 8px; font-size: 14px; }
-  textarea { min-height: 100px; resize: vertical; }
-  .actions { margin-top: 16px; }
-  button { background: #3b82f6; border: none; color: white; padding: 10px 16px; border-radius: 8px; font-size: 14px; cursor: pointer; }
-  button[disabled] { background: #9bbcf8; cursor: not-allowed; }
-  .msg { padding: 12px 14px; border-radius: 8px; margin-bottom: 16px; display: none; }
-  .msg.error { background: #fee2e2; color: #7f1d1d; border: 1px solid #fecaca; }
-  .msg.success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+  body {
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    margin: 0;
+    padding: 24px;
+    background: #f7f7fb;
+    position: relative;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .card {
+    position: relative;
+    z-index: 10;
+    max-width: 720px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    padding: 24px;
+  }
+
+  h1 {
+    font-size: 20px;
+    margin: 0 0 12px;
+  }
+
+  .muted {
+    color: #666;
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  .q {
+    margin-bottom: 18px;
+  }
+
+  .q label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  input[type="number"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #dcdce4;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+
+  .actions {
+    margin-top: 16px;
+  }
+
+  button {
+    background: #3b82f6;
+    border: none;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  button[disabled] {
+    background: #9bbcf8;
+    cursor: not-allowed;
+  }
+
+  .msg {
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  .msg.error {
+    background: #fee2e2;
+    color: #7f1d1d;
+    border: 1px solid #fecaca;
+  }
+
+  .msg.success {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+  }
+
+  /* Security Watermark CSS */
+  #watermark-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.08;
+    user-select: none;
+    overflow: hidden;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+  }
+
+  .wm-text {
+    transform: rotate(-30deg);
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 100px;
+    color: #000;
+    text-align: center;
+  }
+
+  /* Prevent Selection */
+  .no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
 </style>
+<div id="watermark-layer"></div>
 
 <div class="card">
   <h1 id="title">Survey</h1>
@@ -32,12 +147,46 @@
 </div>
 
 <script>
-  (function() {
+  (function () {
     const $msg = document.getElementById('message');
     const $form = document.getElementById('survey-form');
-    const $btn  = document.getElementById('submit-btn');
+    const $btn = document.getElementById('submit-btn');
     const params = new URLSearchParams(window.location.search);
-    const token = params.get('t');
+    const token = params.get('token') || params.get('t');
+
+    // Step 3: Block Casual Copying
+    function blockCopy() {
+      document.body.classList.add('no-select');
+      document.addEventListener('contextmenu', (e) => e.preventDefault());
+      document.addEventListener('copy', (e) => e.preventDefault());
+      document.addEventListener('cut', (e) => e.preventDefault());
+
+      document.addEventListener('keydown', (e) => {
+        // Block Ctrl+C, Ctrl+P, PrintScreen
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'p' || e.key === 's')) {
+          e.preventDefault();
+        }
+        if (e.key === 'PrintScreen') {
+          e.preventDefault();
+          alert('Screenshots of this confidential material are prohibited.');
+        }
+      });
+    }
+    blockCopy();
+
+    function injectWatermark(data) {
+      if (!data) return;
+      const layer = document.getElementById('watermark-layer');
+      const text = `Confidential - ${data.email}\nIP: ${data.ip}\n${data.timestamp}\nID: ${data.token_id}`;
+
+      // Fill the screen with rotated watermark tags
+      for (let i = 0; i < 50; i++) {
+        const el = document.createElement('div');
+        el.className = 'wm-text';
+        el.innerText = text;
+        layer.appendChild(el);
+      }
+    }
 
     function showMessage(text, type) {
       $msg.textContent = text;
@@ -83,7 +232,7 @@
 
     // Load survey questions
     callMethod('assistant_crm.assistant_crm.doctype.survey_response.survey_response.get_survey_form', { token }, { httpMethod: 'GET' })
-      .then(function(r) {
+      .then(function (r) {
         if (!r || !r.message) {
           showMessage('Failed to load survey. Please try again later.', 'error');
           $btn.style.display = 'none';
@@ -98,10 +247,14 @@
           document.getElementById('desc').style.display = 'none';
           return;
         }
+
+        // Step 2: Inject Dynamic Watermark
+        injectWatermark(res.watermark);
+
         document.getElementById('title').textContent = res.campaign_label || 'Survey';
         $form.innerHTML = '';
 
-        (res.questions || []).forEach(function(q) {
+        (res.questions || []).forEach(function (q) {
           const wrap = document.createElement('div');
           wrap.className = 'q';
 
@@ -119,13 +272,13 @@
             input.placeholder = '1-5';
           } else if (q.question_type === 'Multiple Choice') {
             input = document.createElement('select');
-            (q.options || []).forEach(function(opt) {
+            (q.options || []).forEach(function (opt) {
               const o = document.createElement('option');
               o.value = opt; o.textContent = opt; input.appendChild(o);
             });
           } else if (q.question_type === 'Yes/No' || q.question_type === 'Yes-No' || q.question_type === 'Boolean') {
             input = document.createElement('select');
-            ['Yes', 'No'].forEach(function(v) {
+            ['Yes', 'No'].forEach(function (v) {
               const o = document.createElement('option'); o.value = v; o.textContent = v; input.appendChild(o);
             });
           } else {
@@ -140,16 +293,16 @@
         $form.style.display = 'block';
         $btn.disabled = false;
       })
-      .catch(function() {
+      .catch(function () {
         showMessage('Failed to load survey. Please try again later.', 'error');
         $btn.style.display = 'none';
       });
 
-    $btn.addEventListener('click', function() {
+    $btn.addEventListener('click', function () {
       if ($btn.disabled) return;
       const fields = Array.from($form.querySelectorAll('[id^=\'q-\']'));
       if (!fields.length) return;
-      const answers = fields.map(function(el) {
+      const answers = fields.map(function (el) {
         const idx = parseInt(el.id.split('-')[1], 10);
         let type = 'text';
         if (el.tagName === 'INPUT' && el.type === 'number') type = 'rating';
@@ -165,7 +318,7 @@
       showMessage('', ''); $msg.style.display = 'none';
 
       callMethod('assistant_crm.assistant_crm.doctype.survey_response.survey_response.submit_survey_response', { token: token, answers: answers }, { httpMethod: 'POST' })
-        .then(function(r){
+        .then(function (r) {
           $btn.disabled = false;
           if (r && r.message && r.message.success) {
             showMessage(r.message.message || 'Thank you for your response!', 'success');
@@ -175,7 +328,7 @@
             showMessage(m, 'error');
           }
         })
-        .catch(function(){
+        .catch(function () {
           $btn.disabled = false;
           showMessage('Submission failed. Please try again.', 'error');
         });
@@ -183,4 +336,3 @@
   })();
 </script>
 {% endblock %}
-
