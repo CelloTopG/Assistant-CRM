@@ -179,6 +179,9 @@ doc_events = {
             "assistant_crm.issue_hooks.validate_issue_closure"
         ],
         "after_insert": "assistant_crm.issue_hooks.enqueue_branch_assignment"
+    },
+    "Notification Log": {
+        "after_insert": "assistant_crm.notification_hooks.handle_notification_log_after_insert"
     }
 }
 
