@@ -88,6 +88,17 @@ frappe.query_reports["Claims Status Analysis"] = {
         report.page.add_inner_button(__("Trend"), function () {
             show_trend_chart(report);
         }, __("Charts"));
+
+        // Add Custom PDF Export Button
+        report.page.add_inner_button(__("PDF (Professional)"), function () {
+            let filters = report.get_filter_values();
+            let report_name = "Claims Status Analysis";
+            let print_format = "Assistant CRM - Claims Status Analysis";
+
+            // Standard Frappe way to open report in print view with specific format
+            let url = frappe.utils.get_url_to_report(report_name, "Print", print_format);
+            window.open(url, "_blank");
+        }, __("Export"));
     },
 
     formatter: function (value, row, column, data, default_formatter) {

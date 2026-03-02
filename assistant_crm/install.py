@@ -28,9 +28,9 @@ def after_install():
 
 		# Setup Conversation Export Print Format
 		try:
-			ensure_conversation_export_print_format()
+			ensure_report_print_formats()
 		except Exception as e:
-			frappe.log_error(f"Error setting up conversation export print format: {str(e)}", "Assistant CRM Install")
+			frappe.log_error(f"Error setting up report print formats: {str(e)}", "Assistant CRM Install")
 
 		# Ensure Issue has Employer link field for per-employer case linking
 		try:
@@ -1072,9 +1072,9 @@ def after_migrate():
 
         # Setup Conversation Export Print Format after migrations
         try:
-            ensure_conversation_export_print_format()
+            ensure_report_print_formats()
         except Exception as e:
-            frappe.log_error(f"after_migrate conversation export print format error: {str(e)}", "Assistant CRM Install")
+            frappe.log_error(f"after_migrate report print formats error: {str(e)}", "Assistant CRM Install")
 
     finally:
         try:
@@ -1084,4 +1084,36 @@ def after_migrate():
             pass
 
 
+def ensure_report_print_formats():
+	\"\"\"Ensure custom Jinja Print Formats exist for the 3 main reports (idempotent).\"\"\"
+	try:
+		try:
+			from assistant_crm.setup_report_print_formats import ensure_report_print_formats as setup_pf
+			setup_pf()
+		except Exception:
+			ensure_standard_report_print_formats_logic()
+	except Exception as e:
+		frappe.log_error(f"Error in ensure_report_print_formats: {str(e)}", "Assistant CRM Install")
+
+
+def ensure_standard_report_print_formats_logic():
+	\"\"\"Fallback logic to create basic report print formats if external script fails.\"\"\"
+	reports = ["Claims Status Analysis", "Beneficiary Status Analysis", "Complaints Status Analysis"]
+	for r in reports:
+		name = f"Assistant CRM - {r}"
+		if not frappe.db.exists("Print Format", name):
+			try:
+				frappe.get_doc({
+					"doctype": "Print Format",
+					"name": name,
+					"doc_type": r,
+					"module": "Assistant Crm",
+					"print_format_type": "Jinja",
+					"standard": "No",
+					"custom_format": 1,
+					"html": "<h3>" + r + "</h3><p>Professional PDF format is available.</p>"
+				}).insert(ignore_permissions=True)
+			except Exception:
+				pass
+	frappe.db.commit()
 

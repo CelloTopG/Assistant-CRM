@@ -78,6 +78,14 @@ frappe.query_reports["Complaints Status Analysis"] = {
         report.page.add_inner_button(__("Trend"), function () {
             show_trend_chart(report);
         }, __("Charts"));
+
+        // Add Custom PDF Export Button
+        report.page.add_inner_button(__("PDF (Professional)"), function () {
+            let report_name = "Complaints Status Analysis";
+            let print_format = "Assistant CRM - Complaints Status Analysis";
+            let url = frappe.utils.get_url_to_report(report_name, "Print", print_format);
+            window.open(url, "_blank");
+        }, __("Export"));
     },
 
     formatter: function (value, row, column, data, default_formatter) {
