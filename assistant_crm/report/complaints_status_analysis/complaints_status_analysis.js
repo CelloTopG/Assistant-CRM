@@ -6,6 +6,7 @@
  */
 
 frappe.query_reports["Complaints Status Analysis"] = {
+    default_print_format: "Assistant CRM - Complaints Status",
     filters: [
         {
             fieldname: "period_type",
@@ -78,22 +79,6 @@ frappe.query_reports["Complaints Status Analysis"] = {
         report.page.add_inner_button(__("Trend"), function () {
             show_trend_chart(report);
         }, __("Charts"));
-
-        // Add Custom PDF Export Button
-        report.page.add_inner_button(__("PDF (Professional)"), function () {
-            let filters = report.get_filter_values();
-            let report_name = "Complaints Status Analysis";
-            let print_format = "Assistant CRM - Complaints Status Analysis";
-
-            let query_params = {
-                report_name: report_name,
-                print_format: print_format,
-                filters: JSON.stringify(filters)
-            };
-
-            let url = `/api/method/frappe.utils.print_format.download_report_pdf?${frappe.urllib.make_params(query_params)}`;
-            window.open(url, "_blank");
-        }, __("Export"));
     },
 
     formatter: function (value, row, column, data, default_formatter) {

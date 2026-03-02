@@ -1,0 +1,68 @@
+<div class="report-header">
+    <div style="text-align: center; margin-bottom: 25px;">
+        <h2 style="margin: 0; color: #1a202c; letter-spacing: 1px;">WORKERS' COMPENSATION FUND CONTROL BOARD</h2>
+        <h3 style="margin: 5px 0; color: #4a5568;">Claims Status Analysis Report</h3>
+        <p style="font-size: 13px; color: #718096;">
+            Period: {{ filters.get("period_type") }} ({{ frappe.format(filters.get("date_from"), "Date") }} to {{
+            frappe.format(filters.get("date_to"), "Date") }})
+        </p>
+    </div>
+</div>
+
+<div
+    style="display: flex; flex-wrap: wrap; justify-content: space-around; margin-bottom: 25px; border-bottom: 2px solid #edf2f7; padding-bottom: 15px;">
+    {% for item in report_summary %}
+    <div style="text-align: center; padding: 10px; min-width: 120px;">
+        <div style="font-size: 10px; color: #718096; text-transform: uppercase;">{{ item.label }}</div>
+        <div style="font-size: 18px; font-weight: 700; color: {{ item.indicator or '#2d3748' }}">{{ item.value }}</div>
+    </div>
+    {% endfor %}
+</div>
+
+<table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+    <thead>
+        <tr style="background-color: #f7fafc;">
+            <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left;">Claim ID</th>
+            <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left;">Claimant</th>
+            <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left;">Branch</th>
+            <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left;">Status</th>
+            <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left;">Type</th>
+            <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: right;">Amount</th>
+            <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left;">Submitted</th>
+            <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: center;">Esc.</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            <td style="border: 1px solid #e2e8f0; padding: 8px;">{{ row.claim_number or row.name }}</td>
+            <td style="border: 1px solid #e2e8f0; padding: 8px; font-weight: 600;">{{ row.claimant_name or row.claimant
+                }}</td>
+            <td style="border: 1px solid #e2e8f0; padding: 8px;">{{ row.branch or "-" }}</td>
+            <td style="border: 1px solid #e2e8f0; padding: 8px;">
+                {% set st = (row.status or "").lower() %}
+                {% set color = "#718096" %}
+                {% if st in ["approved", "settled"] %}{% set color = "#38a169" %}
+                {% elif st == "rejected" %}{% set color = "#e53e3e" %}
+                {% elif st == "escalated" %}{% set color = "#dd6b20" %}
+                {% elif st == "validated" %}{% set color = "#3182ce" %}
+                {% endif %}
+                <span style="color: {{ color }}; font-weight: 700;">{{ row.status }}</span>
+            </td>
+            <td style="border: 1px solid #e2e8f0; padding: 8px;">{{ row.claim_type }}</td>
+            <td style="border: 1px solid #e2e8f0; padding: 8px; text-align: right;">{{ frappe.format(row.amount,
+                "Currency") }}</td>
+            <td style="border: 1px solid #e2e8f0; padding: 8px;">{{ frappe.format(row.submitted_date or row.creation,
+                "Date") }}</td>
+            <td style="border: 1px solid #e2e8f0; padding: 8px; text-align: center;">{% if row.is_escalated %}⚠️{% else
+                %}-{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div
+    style="margin-top: 30px; text-align: center; font-size: 10px; color: #a0aec0; border-top: 1px solid #edf2f7; padding-top: 10px;">
+    System Generated Official Report | Workers' Compensation Fund Control Board | {{ frappe.format(frappe.utils.now(),
+    "Datetime") }}
+</div>

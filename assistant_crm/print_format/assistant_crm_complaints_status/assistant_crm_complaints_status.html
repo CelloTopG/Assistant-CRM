@@ -1,0 +1,61 @@
+<div style="text-align: center; margin-bottom: 25px;">
+    <h2 style="margin: 0; color: #2d3748;">WORKERS' COMPENSATION FUND CONTROL BOARD</h2>
+    <h3 style="margin: 5px 0; color: #3182ce;">Enterprise Complaints Status Report</h3>
+    <p style="font-size: 13px; color: #4a5568;">Report Period: {{ frappe.format(filters.get("date_from"), "Date") }} to
+        {{ frappe.format(filters.get("date_to"), "Date") }}</p>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; justify-content: center; margin-bottom: 20px;">
+    {% for item in report_summary %}
+    <div
+        style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin: 5px; min-width: 110px; text-align: center; background: #fff;">
+        <div style="font-size: 10px; color: #718096; text-transform: uppercase;">{{ item.label }}</div>
+        <div style="font-size: 18px; font-weight: 700; color: {{ item.indicator or '#2d3748' }}">{{ item.value }}</div>
+    </div>
+    {% endfor %}
+</div>
+
+<table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+    <thead>
+        <tr style="background: #f7fafc;">
+            <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left;">Complaint ID</th>
+            <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left;">Beneficiary & NRC</th>
+            <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left;">Category</th>
+            <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left;">Branch</th>
+            <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left;">Status</th>
+            <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left;">Officer</th>
+            <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: center;">SLA</th>
+            <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: center;">Esc.</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            <td style="border: 1px solid #e2e8f0; padding: 8px;">{{ row.name }}</td>
+            <td style="border: 1px solid #e2e8f0; padding: 8px; font-weight: 600;">{{ row.complaint_name }}</td>
+            <td style="border: 1px solid #e2e8f0; padding: 8px;">{{ row.final_category }}</td>
+            <td style="border: 1px solid #e2e8f0; padding: 8px;">{{ row.branch }}</td>
+            <td style="border: 1px solid #e2e8f0; padding: 8px;">
+                {% set st = (row.status or "").lower() %}
+                {% set color = "#718096" %}
+                {% if st in ["resolved", "closed"] %}{% set color = "#38a169" %}{% elif st in ["open", "replied"] %}{%
+                set color = "#3182ce" %}{% endif %}
+                <span style="color: {{ color }}; font-weight: 700;">{{ row.status }}</span>
+            </td>
+            <td style="border: 1px solid #e2e8f0; padding: 8px;">{{ row.assigned_officer or "-" }}</td>
+            <td style="border: 1px solid #e2e8f0; padding: 8px; text-align: center;">
+                {% if row.sla_status == "Breached" %}<span style="color: #e53e3e; font-weight: 700;">⚠</span>
+                {% elif row.sla_status == "Met" %}<span style="color: #38a169;">✅</span>
+                {% else %}-{% endif %}
+            </td>
+            <td style="border: 1px solid #e2e8f0; padding: 8px; text-align: center;">{% if row.escalated %}<span
+                    style="color: #e53e3e; font-weight: 800;">YES</span>{% else %}-{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div
+    style="margin-top: 40px; text-align: center; font-size: 10px; color: #a0aec0; border-top: 1px solid #eee; padding-top: 10px;">
+    Complaints & Customer Service Department | WCFCB Enterprise | {{ frappe.format(frappe.utils.now(), "Datetime") }}
+</div>
