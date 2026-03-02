@@ -399,13 +399,32 @@ class WhatsAppIntegration(SocialMediaPlatform):
         super().__init__("WhatsApp")
 
     def get_platform_credentials(self) -> Dict[str, str]:
-        """Get WhatsApp credentials from settings."""
-        return {
-            "access_token": "EAAbmlrtdJlUBPZAM086pmTmr2mVB00sESyfdTPYxyZBYsdQxaVQx5sZAfZAdNP7jhQuAWulBWUvygF7MbdkWV8wbZAyyW6ZAIZAsYFxKMeeYAASzftA1h9bFurnI8OA8aTmlQeBZC4IjcEOZBsqb8KRjNIzddSrrZAo6w8ify2HF4D0QUvkErHNSTEYP7pLQZBKfr2HaE4P7PvzZCXXXhjio551YHOtZA4XnZAjMytqbeVq0xyc0kZB",  # Your provided access token
-            "phone_number_id": "+264 81 419 3615",  # Your provided phone number
-            "webhook_verify_token": "wcfcb_instagram_webhook_verify_token_2025",  # Your provided verify token
-            "app_secret": ""  # To be configured if needed
-        }
+        """Get WhatsApp credentials from Social Media Settings."""
+        try:
+            settings = frappe.get_single("Social Media Settings")
+            def get_pwd(field: str) -> str:
+                try:
+                    return settings.get_password(field) or ""
+                except Exception:
+                    return settings.get(field) or ""
+
+            return {
+                "access_token": get_pwd("whatsapp_access_token"),
+                "phone_number_id": (settings.get("whatsapp_phone_number_id") or "").strip(),
+                "business_account_id": (settings.get("whatsapp_business_account_id") or "").strip(),
+                "webhook_verify_token": (settings.get("whatsapp_webhook_verify_token") or "wcfcb_webhook_verify_token").strip(),
+                "app_secret": get_pwd("whatsapp_app_secret"),
+                "enabled": bool(settings.get("whatsapp_enabled"))
+            }
+        except Exception:
+            return {
+                "access_token": "",
+                "phone_number_id": "",
+                "business_account_id": "",
+                "webhook_verify_token": "wcfcb_webhook_verify_token",
+                "app_secret": "",
+                "enabled": False
+            }
 
     def check_configuration(self) -> bool:
         """Check if WhatsApp is properly configured."""

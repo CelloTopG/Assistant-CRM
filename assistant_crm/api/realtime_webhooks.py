@@ -989,8 +989,8 @@ def verify_whatsapp_signature():
             return False
 
         # Get webhook secret from settings
-        settings = frappe.get_single("Assistant CRM Settings")
-        webhook_secret = settings.get_password("whatsapp_webhook_secret")
+        settings = frappe.get_single("Social Media Settings")
+        webhook_secret = (settings.get_password("whatsapp_app_secret") or settings.get("whatsapp_app_secret") or "").strip()
 
         if not webhook_secret:
             return True  # Skip verification if no secret configured
@@ -1066,8 +1066,8 @@ def handle_whatsapp_verification():
     verify_token = frappe.request.args.get("hub.verify_token")
     challenge = frappe.request.args.get("hub.challenge")
 
-    settings = frappe.get_single("Assistant CRM Settings")
-    expected_token = settings.get("whatsapp_verify_token")
+    settings = frappe.get_single("Social Media Settings")
+    expected_token = (settings.get("whatsapp_webhook_verify_token") or "wcfcb_webhook_verify_token").strip()
 
     if verify_token == expected_token:
         return challenge

@@ -22,16 +22,22 @@ class WhatsAppService:
         self.last_request_time = 0
         
     def get_whatsapp_settings(self) -> Dict[str, Any]:
-        """Get WhatsApp configuration from Assistant CRM Settings"""
+        """Get WhatsApp configuration from Social Media Settings"""
         try:
-            settings = frappe.get_single("Assistant CRM Settings")
+            settings = frappe.get_single("Social Media Settings")
+            def get_pwd(field: str) -> str:
+                try:
+                    return settings.get_password(field) or ""
+                except Exception:
+                    return settings.get(field) or ""
+
             return {
-                "access_token": settings.get("whatsapp_access_token"),
+                "access_token": get_pwd("whatsapp_access_token"),
                 "phone_number_id": settings.get("whatsapp_phone_number_id"),
                 "business_account_id": settings.get("whatsapp_business_account_id"),
-                "webhook_verify_token": settings.get("whatsapp_webhook_verify_token"),
-                "rate_limit": settings.get("whatsapp_rate_limit", 1000),
-                "enabled": settings.get("whatsapp_enabled", 1)
+                "webhook_verify_token": settings.get("whatsapp_webhook_verify_token") or "wcfcb_webhook_verify_token",
+                "rate_limit": 1000,
+                "enabled": settings.get("whatsapp_enabled")
             }
         except Exception as e:
             frappe.log_error(f"Error getting WhatsApp settings: {str(e)}")
