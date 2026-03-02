@@ -1,0 +1,122 @@
+<div class="report-header">
+    <div class="text-center">
+        <h2 style="margin: 0;">WORKERS' COMPENSATION FUND CONTROL BOARD</h2>
+        <h3 style="margin: 0; color: #555;">Complaints Analysis Report</h3>
+        <p style="margin: 5px 0; font-size: 14px; color: #666;">
+            {%= frappe.datetime.global_date_format(filters.date_from) %} to {%=
+            frappe.datetime.global_date_format(filters.date_to) %}
+        </p>
+    </div>
+</div>
+
+<hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+<div class="summary-cards" style="display: flex; flex-wrap: wrap; justify-content: center; margin-bottom: 30px;">
+    {% for (let i=0, l=report_summary.length; i<l; i++) { %} <div class="summary-card"
+        style="min-width: 140px; padding: 12px; margin: 10px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff;">
+        <div class="summary-label" style="font-size: 11px; color: #777; text-transform: uppercase;">{%=
+            report_summary[i].label %}</div>
+        <div class="summary-value"
+            style="font-size: 18px; font-weight: 700; color: {%= report_summary[i].indicator || '#333' %};">
+            {%= report_summary[i].value %}
+        </div>
+</div>
+{% } %}
+</div>
+
+<table class="table table-bordered" style="width: 100%; border-collapse: collapse; font-size: 12px;">
+    <thead>
+        <tr style="background-color: #f1f3f5;">
+            <th style="width: 15%;">{%= __("Complaint ID") %}</th>
+            <th style="width: 20%;">{%= __("Name & NRC") %}</th>
+            <th style="width: 10%;">{%= __("Type") %}</th>
+            <th style="width: 10%;">{%= __("Branch") %}</th>
+            <th style="width: 10%;">{%= __("Status") %}</th>
+            <th style="width: 15%;">{%= __("Assigned Officer") %}</th>
+            <th style="width: 10%;">{%= __("SLA") %}</th>
+            <th style="width: 10%; text-align: center;">{%= __("Escalated") %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for (let i=0, l=data.length; i<l; i++) { %} <tr>
+            <td>{%= data[i].name %}</td>
+            <td style="font-weight: 600;">{%= data[i].complaint_name %}</td>
+            <td>{%= data[i].final_category %}</td>
+            <td>{%= data[i].branch %}</td>
+            <td>
+                {% let status_cls = "gray";
+                let status = (data[i].status || "").toLowerCase();
+                if (status === "resolved" || status === "closed") status_cls = "green";
+                else if (status === "open" || status === "replied") status_cls = "blue";
+                else if (status === "hold") status_cls = "orange";
+                %}
+                <span class="indicator-pill {%= status_cls %}">{%= data[i].status %}</span>
+            </td>
+            <td>{%= data[i].assigned_officer || "-" %}</td>
+            <td>
+                {% if (data[i].sla_status === "Breached") { %}
+                <span style="color: #dc3545; font-weight: 700;">⚠ {%= data[i].sla_status %}</span>
+                {% } else if (data[i].sla_status === "Met") { %}
+                <span style="color: #28a745;">{%= data[i].sla_status %}</span>
+                {% } else { %}
+                <span style="color: #6c757d;">{%= data[i].sla_status %}</span>
+                {% } %}
+            </td>
+            <td style="text-align: center;">
+                {% if (data[i].escalated) { %}
+                <div
+                    style="background: #fff5f5; border: 1px solid #feb2b2; color: #c53030; padding: 2px 5px; border-radius: 4px; font-weight: 700; font-size: 10px;">
+                    ESCALATED
+                </div>
+                {% } else { %}
+                -
+                {% } %}
+            </td>
+            </tr>
+            {% } %}
+    </tbody>
+</table>
+
+<div class="report-footer"
+    style="margin-top: 40px; font-size: 11px; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 20px;">
+    <p>Workers' Compensation Fund Control Board - Complaints Management Division</p>
+    <p>Confidential System Report | Generated on {%= frappe.datetime.now_datetime() %}</p>
+</div>
+
+<style>
+    .indicator-pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+        color: #fff;
+    }
+
+    .indicator-pill.green {
+        background-color: #28a745;
+    }
+
+    .indicator-pill.red {
+        background-color: #dc3545;
+    }
+
+    .indicator-pill.orange {
+        background-color: #ffa00a;
+    }
+
+    .indicator-pill.blue {
+        background-color: #007bff;
+    }
+
+    .indicator-pill.gray {
+        background-color: #6c757d;
+    }
+
+    table.table th,
+    table.table td {
+        border: 1px solid #dee2e6;
+        padding: 8px;
+        vertical-align: middle;
+    }
+</style>

@@ -42,15 +42,13 @@ def execute(filters: Optional[Dict[str, Any]] = None) -> Tuple:
 def get_columns() -> List[Dict[str, Any]]:
     """Define report columns for complaint data."""
     return [
-        {"fieldname": "source_type", "label": "Source", "fieldtype": "Data", "width": 120},
-        {"fieldname": "name", "label": "ID", "fieldtype": "Dynamic Link", "options": "source_doctype", "width": 160},
-        {"fieldname": "source_doctype", "label": "Doctype", "fieldtype": "Data", "hidden": 1},
-        {"fieldname": "platform", "label": "Platform", "fieldtype": "Data", "width": 110},
-        {"fieldname": "subject", "label": "Subject", "fieldtype": "Data", "width": 220},
+        {"fieldname": "name", "label": "Complaint ID", "fieldtype": "Dynamic Link", "options": "source_doctype", "width": 140},
+        {"fieldname": "complaint_name", "label": "Name & NRC", "fieldtype": "Data", "width": 180},
+        {"fieldname": "final_category", "label": "Type", "fieldtype": "Data", "width": 110},
+        {"fieldname": "branch", "label": "Branch ID", "fieldtype": "Select", "width": 110},
         {"fieldname": "status", "label": "Status", "fieldtype": "Data", "width": 100},
-        {"fieldname": "auto_category", "label": "Auto Category", "fieldtype": "Data", "width": 110},
-        {"fieldname": "override_category", "label": "Override", "fieldtype": "Data", "width": 100},
-        {"fieldname": "final_category", "label": "Category", "fieldtype": "Data", "width": 100},
+        {"fieldname": "assigned_officer", "label": "Assigned Officer", "fieldtype": "Link", "options": "User", "width": 130},
+        {"fieldname": "sla_status", "label": "SLA", "fieldtype": "Data", "width": 110},
         {"fieldname": "escalated", "label": "Escalated", "fieldtype": "Check", "width": 80},
         {"fieldname": "creation", "label": "Created", "fieldtype": "Datetime", "width": 150},
     ]
@@ -155,7 +153,7 @@ def _get_issues(df: date, dt: date, filters: frappe._dict) -> List[Dict[str, Any
     meta = frappe.get_meta("Issue")
 
     # Add optional custom fields if present
-    for field in ["custom_conversation_id", "custom_platform_source", "complaint_category_override"]:
+    for field in ["custom_conversation_id", "custom_platform_source", "complaint_category_override", "custom_branch", "custom_assigned_agent", "custom_customer_nrc", "customer_name", "agreement_fulfilled"]:
         if meta.has_field(field):
             fields.append(field)
 
@@ -237,6 +235,7 @@ def _process_issue(
         return None
 
     platform = issue.get("custom_platform_source") or "Unknown"
+    sla = "Met" if issue.get("agreement_fulfilled") else "Breached" if issue.get("status") != "Closed" else "-"
 
     return {
         "source_type": "Issue",
@@ -248,8 +247,12 @@ def _process_issue(
         "auto_category": auto_category,
         "override_category": override,
         "final_category": final_category,
-        "escalated": 1 if esc else 0,
+        "escalated": 1 if (esc or issue.get("status") == "Escalated") else 0,
         "creation": issue.get("creation"),
+        "branch": issue.get("custom_branch") or "Head Office",
+        "assigned_officer": issue.get("custom_assigned_agent"),
+        "complaint_name": f"{issue.get('customer_name') or 'User'} - {issue.get('custom_customer_nrc') or '-'}",
+        "sla_status": sla
     }
 
 
@@ -280,6 +283,10 @@ def _process_conversation(
         "final_category": final_category,
         "escalated": 1 if (conv.get("escalated_at") or esc) else 0,
         "creation": conv.get("creation"),
+        "branch": "Omnichannel",
+        "assigned_officer": conv.get("assigned_agent"),
+        "complaint_name": f"User: {conv.get('conversation_id') or conv.get('name')}",
+        "sla_status": "N/A"
     }
 
 

@@ -49,6 +49,12 @@ frappe.query_reports["Claims Status Analysis"] = {
             label: __("Employer"),
             fieldtype: "Link",
             options: "Employee"
+        },
+        {
+            fieldname: "branch",
+            label: __("Branch"),
+            fieldtype: "Select",
+            options: "\nHead Office\nLusaka\nKitwe\nNdola\nLivingstone\nChipata\nKasama\nSolwezi\nKabwe\nChingola\nMufulira"
         }
     ],
 

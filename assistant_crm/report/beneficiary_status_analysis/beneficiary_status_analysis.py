@@ -31,89 +31,118 @@ def execute(filters: Optional[Dict[str, Any]] = None) -> Tuple:
 
 
 def get_columns() -> List[Dict[str, Any]]:
-    """Define report columns."""
+    """Define report columns for beneficiary financial summary."""
     return [
-        {"fieldname": "name", "label": "ID", "fieldtype": "Link", "options": "Customer", "width": 180},
-        {"fieldname": "customer_name", "label": "Full Name", "fieldtype": "Data", "width": 200},
-        {"fieldname": "status", "label": "Status", "fieldtype": "Data", "width": 100},
-        {"fieldname": "gender", "label": "Gender", "fieldtype": "Data", "width": 80},
-        {"fieldname": "pas_number", "label": "PAS Number", "fieldtype": "Data", "width": 120},
+        {"fieldname": "period", "label": "Period", "fieldtype": "Data", "width": 100},
+        {"fieldname": "beneficiary_id", "label": "Beneficiary ID", "fieldtype": "Link", "options": "Customer", "width": 120},
+        {"fieldname": "beneficiary_name", "label": "Beneficiary Name", "fieldtype": "Data", "width": 180},
         {"fieldname": "nrc_number", "label": "NRC Number", "fieldtype": "Data", "width": 130},
-        {"fieldname": "dependant_code", "label": "Dependant Code", "fieldtype": "Data", "width": 120},
-        {"fieldname": "creation", "label": "Created On", "fieldtype": "Date", "width": 110},
-        {"fieldname": "modified", "label": "Last Modified", "fieldtype": "Date", "width": 110},
+        {"fieldname": "pas_number", "label": "Pension No.", "fieldtype": "Data", "width": 120},
+        {"fieldname": "amount_paid", "label": "Amount Paid", "fieldtype": "Currency", "width": 120},
+        {"fieldname": "unpaid_compensation", "label": "Unpaid Compensation", "fieldtype": "Currency", "width": 150},
+        {"fieldname": "conditions_met", "label": "Conditions Met", "fieldtype": "Check", "width": 110},
+        {"fieldname": "paid_period", "label": "Paid Period", "fieldtype": "Data", "width": 120},
+        {"fieldname": "unpaid_period", "label": "Unpaid Period", "fieldtype": "Data", "width": 120},
+        {"fieldname": "remaining_balance", "label": "Remaining Balance", "fieldtype": "Currency", "width": 140},
     ]
 
 
 def get_data(filters: frappe._dict) -> Tuple[List[Dict[str, Any]], Dict[str, int]]:
-    """Fetch and aggregate beneficiary data from Customer doctype (Pensioners)."""
+    """Fetch financial beneficiary data joined with Payment Status."""
     df = getdate(filters.date_from)
     dt = getdate(filters.date_to)
 
-    # Build SQL conditions
-    conditions = ["customer_type = 'Pensioner'"]
-    values = {"df": df, "dt": dt}
+    # Fetch Pensioners from Customer
+    pensioners = frappe.get_all(
+        "Customer",
+        filters={"customer_type": "Pensioner"},
+        fields=["name", "customer_name", "custom_nrc_number", "custom_pas_number", "disabled"]
+    )
 
-    # Date range filter on creation (only if explicitly filtering by date)
-    if filters.get("filter_by_date"):
-        conditions.append("DATE(creation) BETWEEN %(df)s AND %(dt)s")
+    # Fetch all Payment Status records for the period
+    payments = frappe.get_all(
+        "Payment Status",
+        filters={"payment_date": [">=", df], "payment_date": ["<=", dt]},
+        fields=["beneficiary", "amount", "status", "payment_date", "payment_type"]
+    )
 
-    # Status filter (Active = not disabled, Disabled = disabled)
-    if filters.get("status"):
-        if filters.status == "Active":
-            conditions.append("disabled = 0")
-        elif filters.status == "Disabled":
-            conditions.append("disabled = 1")
+    # Aggregate financial data by (Period, Beneficiary)
+    financial_data = {}
+    
+    for p in payments:
+        if not p.payment_date:
+            continue
+            
+        period_key = p.payment_date.strftime("%b %Y")
+        beneficiary_key = p.beneficiary # Usually NRC or Name
+        key = (period_key, beneficiary_key)
+        
+        if key not in financial_data:
+            financial_data[key] = {
+                "period": period_key,
+                "amount_paid": 0.0,
+                "unpaid_compensation": 0.0,
+                "paid_periods": set(),
+                "unpaid_periods": set(),
+            }
+            
+        if p.status == "Paid":
+            financial_data[key]["amount_paid"] += float(p.amount or 0)
+            financial_data[key]["paid_periods"].add(period_key)
+        else:
+            financial_data[key]["unpaid_compensation"] += float(p.amount or 0)
+            financial_data[key]["unpaid_periods"].add(period_key)
 
-    # Gender filter
-    if filters.get("gender"):
-        conditions.append("gender = %(gender)s")
-        values["gender"] = filters.gender
-
-    where_clause = " AND ".join(conditions)
-
-    # Fetch beneficiaries from Customer table
-    rows = frappe.db.sql(f"""
-        SELECT
-            name, customer_name, gender, disabled,
-            custom_pas_number, custom_nrc_number, custom_dependant_code,
-            creation, modified
-        FROM `tabCustomer`
-        WHERE {where_clause}
-        ORDER BY modified DESC
-        LIMIT 5000
-    """, values, as_dict=True)
-
-    # Build data rows and count statuses
     data = []
     counts = {"total": 0, "active": 0, "disabled": 0, "male": 0, "female": 0}
 
-    for r in rows:
+    # Match pensioners with financial data
+    for p in pensioners:
+        # For each period in financial data
+        for (p_period, b_key), fin in financial_data.items():
+            # Check if b_key matches either ID or NRC or PAS
+            if b_key in {p.name, p.custom_nrc_number, p.custom_pas_number}:
+                # Create row for this pensioner in this period
+                row = {
+                    "period": p_period,
+                    "beneficiary_id": p.name,
+                    "beneficiary_name": p.customer_name,
+                    "nrc_number": p.custom_nrc_number,
+                    "pas_number": p.custom_pas_number,
+                    "amount_paid": fin["amount_paid"],
+                    "unpaid_compensation": fin["unpaid_compensation"],
+                    "conditions_met": 1 if not p.disabled else 0, # Placeholder logic
+                    "paid_period": ", ".join(fin["paid_periods"]),
+                    "unpaid_period": ", ".join(fin["unpaid_periods"]),
+                    "remaining_balance": fin["unpaid_compensation"] # Placeholder
+                }
+                data.append(row)
+
+    # Fallback to pensioners without financial data if data is empty
+    if not data:
+        for p in pensioners:
+            data.append({
+                "period": df.strftime("%b %Y"),
+                "beneficiary_id": p.name,
+                "beneficiary_name": p.customer_name,
+                "nrc_number": p.custom_nrc_number,
+                "pas_number": p.custom_pas_number,
+                "amount_paid": 0.0,
+                "unpaid_compensation": 0.0,
+                "conditions_met": 1 if not p.disabled else 0,
+                "paid_period": "-",
+                "unpaid_period": "-",
+                "remaining_balance": 0.0
+            })
+
+    # Update counts based on pensioners (not periods)
+    for p in pensioners:
         counts["total"] += 1
-        is_disabled = r.get("disabled") == 1
-        gender = (r.get("gender") or "").strip()
+        if p.disabled: counts["disabled"] += 1
+        else: counts["active"] += 1
 
-        if is_disabled:
-            counts["disabled"] += 1
-        else:
-            counts["active"] += 1
-
-        if gender == "Male":
-            counts["male"] += 1
-        elif gender == "Female":
-            counts["female"] += 1
-
-        data.append({
-            "name": r.get("name"),
-            "customer_name": r.get("customer_name"),
-            "status": "Disabled" if is_disabled else "Active",
-            "gender": gender or "Unknown",
-            "pas_number": r.get("custom_pas_number") or "",
-            "nrc_number": r.get("custom_nrc_number") or "",
-            "dependant_code": r.get("custom_dependant_code") or "",
-            "creation": r.get("creation"),
-            "modified": r.get("modified"),
-        })
+    # Sort data by Period then Beneficiary Name
+    data.sort(key=lambda x: (x["period"], x["beneficiary_name"]))
 
     return data, counts
 

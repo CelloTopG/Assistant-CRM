@@ -69,8 +69,10 @@ def get_columns() -> List[Dict[str, Any]]:
         {"fieldname": "claim_type", "label": "Type", "fieldtype": "Data", "width": 110},
         {"fieldname": "claimant", "label": "Claimant", "fieldtype": "Link", "options": "Customer", "width": 150},
         {"fieldname": "employer", "label": "Employer", "fieldtype": "Link", "options": "Employee", "width": 150},
+        {"fieldname": "branch", "label": "Branch", "fieldtype": "Select", "width": 120},
         {"fieldname": "amount", "label": "Amount", "fieldtype": "Currency", "width": 120},
         {"fieldname": "incident_date", "label": "Incident Date", "fieldtype": "Date", "width": 110},
+        {"fieldname": "submitted_date", "label": "Submission Date", "fieldtype": "Date", "width": 110},
         {"fieldname": "is_escalated", "label": "Escalated", "fieldtype": "Check", "width": 80},
     ]
 
@@ -102,17 +104,28 @@ def aggregate_claims(
     if filters.get("employer"):
         filter_conditions.append(["employer", "=", filters.employer])
 
+    if filters.get("branch"):
+        filter_conditions.append(["branch", "=", filters.branch])
+
     # Fetch claims
     claims = frappe.get_all(
         "Claim",
         filters=filter_conditions,
         fields=[
             "name", "claim_number", "status", "claim_type",
-            "claimant", "employer", "amount", "incident_date", "creation"
+            "claimant", "employer", "amount", "incident_date", "creation",
+            "branch", "submitted_date"
         ],
         limit=5000,
         order_by="creation desc",
     )
+
+    # Pre-fetch claimant names for performance
+    claimant_names = {}
+    claimant_ids = list(set([c.get("claimant") for c in claims if c.get("claimant")]))
+    if claimant_ids:
+        customers = frappe.get_all("Customer", filters={"name": ["in", claimant_ids]}, fields=["name", "customer_name"])
+        claimant_names = {cust.name: cust.customer_name for cust in customers}
 
     # Initialize summary
     summary = {
@@ -174,9 +187,12 @@ def aggregate_claims(
             "status": status,
             "claim_type": claim_type,
             "claimant": claim.get("claimant"),
+            "claimant_name": claimant_names.get(claim.get("claimant")),
             "employer": claim.get("employer"),
+            "branch": claim.get("branch"),
             "amount": amount,
             "incident_date": claim.get("incident_date"),
+            "submitted_date": claim.get("submitted_date"),
             "is_escalated": is_escalated,
         })
 
