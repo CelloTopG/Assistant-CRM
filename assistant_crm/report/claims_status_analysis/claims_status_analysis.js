@@ -95,8 +95,15 @@ frappe.query_reports["Claims Status Analysis"] = {
             let report_name = "Claims Status Analysis";
             let print_format = "Assistant CRM - Claims Status Analysis";
 
-            // Standard Frappe way to open report in print view with specific format
-            let url = frappe.utils.get_url_to_report(report_name, "Print", print_format);
+            // Construct the standard URL for report PDF download
+            let query_params = {
+                report_name: report_name,
+                print_format: print_format,
+                filters: JSON.stringify(filters)
+            };
+
+            // This is the direct API call that PDF export uses in modern Frappe versions
+            let url = `/api/method/frappe.utils.print_format.download_report_pdf?${frappe.urllib.make_params(query_params)}`;
             window.open(url, "_blank");
         }, __("Export"));
     },

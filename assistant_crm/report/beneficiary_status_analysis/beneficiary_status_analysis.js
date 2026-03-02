@@ -67,9 +67,17 @@ frappe.query_reports["Beneficiary Status Analysis"] = {
 
         // Add Custom PDF Export Button
         report.page.add_inner_button(__("PDF (Professional)"), function () {
+            let filters = report.get_filter_values();
             let report_name = "Beneficiary Status Analysis";
             let print_format = "Assistant CRM - Beneficiary Status Analysis";
-            let url = frappe.utils.get_url_to_report(report_name, "Print", print_format);
+
+            let query_params = {
+                report_name: report_name,
+                print_format: print_format,
+                filters: JSON.stringify(filters)
+            };
+
+            let url = `/api/method/frappe.utils.print_format.download_report_pdf?${frappe.urllib.make_params(query_params)}`;
             window.open(url, "_blank");
         }, __("Export"));
     },
