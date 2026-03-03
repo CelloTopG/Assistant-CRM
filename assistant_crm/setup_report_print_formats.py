@@ -73,6 +73,7 @@ def get_claims_html():
     </div>
 </div>
 
+{% if report_summary %}
 <div style="display: flex; flex-wrap: wrap; justify-content: space-around; margin-bottom: 25px; border-bottom: 2px solid #edf2f7; padding-bottom: 15px;">
     {% for item in report_summary %}
         <div style="text-align: center; padding: 10px; min-width: 120px;">
@@ -81,6 +82,7 @@ def get_claims_html():
         </div>
     {% endfor %}
 </div>
+{% endif %}
 
 <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
     <thead>
@@ -197,6 +199,7 @@ def get_complaints_html():
     <p style="font-size: 13px; color: #4a5568;">Report Period: {{ frappe.format(filters.get("date_from"), "Date") }} to {{ frappe.format(filters.get("date_to"), "Date") }}</p>
 </div>
 
+{% if report_summary %}
 <div style="display: flex; flex-wrap: wrap; justify-content: center; margin-bottom: 20px;">
     {% for item in report_summary %}
         <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin: 5px; min-width: 110px; text-align: center; background: #fff;">
@@ -205,6 +208,7 @@ def get_complaints_html():
         </div>
     {% endfor %}
 </div>
+{% endif %}
 
 <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
     <thead>

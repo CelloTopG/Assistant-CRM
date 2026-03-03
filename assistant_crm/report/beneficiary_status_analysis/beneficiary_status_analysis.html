@@ -1,3 +1,4 @@
+{% if (typeof filters !== 'undefined' && filters) { %}
 <div class="report-header">
     <div class="text-center">
         <h2 style="margin: 0;">WORKERS' COMPENSATION FUND CONTROL BOARD</h2>
@@ -7,9 +8,11 @@
         </p>
     </div>
 </div>
+{% } %}
 
 <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
 
+{% if (typeof report_summary !== 'undefined' && report_summary && report_summary.length) { %}
 <div class="summary-cards" style="display: flex; flex-wrap: wrap; justify-content: center; margin-bottom: 30px;">
     {% for (let i=0, l=report_summary.length; i<l; i++) { %} <div class="summary-card"
         style="min-width: 140px; padding: 12px; margin: 10px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff;">
@@ -22,8 +25,10 @@
 </div>
 {% } %}
 </div>
+{% } %}
 
 {%
+if (typeof data !== 'undefined' && data) {
 let grouped_data = {};
 data.forEach(row => {
 if (!grouped_data[row.period]) grouped_data[row.period] = [];
@@ -91,6 +96,7 @@ let periods = Object.keys(grouped_data).sort((a,b) => new Date(a) - new Date(b))
         </tfoot>
     </table>
     </div>
+    {% } %}
     {% } %}
 
     <div class="report-footer"
