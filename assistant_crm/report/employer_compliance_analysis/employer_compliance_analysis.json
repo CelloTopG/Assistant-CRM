@@ -1,0 +1,22 @@
+{
+    "add_total_row": 0,
+    "columns": [],
+    "creation": "2026-03-03 09:00:00.000000",
+    "disabled": 0,
+    "doctype": "Report",
+    "filters": [],
+    "is_standard": "Yes",
+    "module": "Assistant CRM",
+    "name": "Employer Compliance Analysis",
+    "ref_doctype": "Employer",
+    "report_name": "Employer Compliance Analysis",
+    "report_type": "Script Report",
+    "roles": [
+        {
+            "role": "System Manager"
+        },
+        {
+            "role": "WCFCB Staff"
+        }
+    ]
+}

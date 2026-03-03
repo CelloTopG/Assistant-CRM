@@ -1,0 +1,91 @@
+<div class="report-header">
+    <div class="text-center">
+        <h2 style="margin: 0;">WORKERS' COMPENSATION FUND CONTROL BOARD</h2>
+        <h3 style="margin: 0; color: #555;">Employer Compliance Report</h3>
+        <p style="margin: 5px 0; font-size: 14px; color: #666;">
+            Generated on {%= frappe.datetime.now_date() %}
+        </p>
+    </div>
+</div>
+
+<hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+{% if (typeof report_summary !== 'undefined' && report_summary && report_summary.length) { %}
+<div class="summary-cards" style="display: flex; flex-wrap: wrap; justify-content: center; margin-bottom: 30px;">
+    {% for (let i=0, l=report_summary.length; i<l; i++) { %} <div class="summary-card"
+        style="min-width: 150px; padding: 15px; margin: 10px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff;">
+        <div class="summary-label" style="font-size: 12px; color: #777; margin-bottom: 5px;">{%= report_summary[i].label
+            %}</div>
+        <div class="summary-value"
+            style="font-size: 18px; font-weight: 700; color: {%= report_summary[i].indicator || '#333' %};">
+            {%= report_summary[i].value %}
+        </div>
+</div>
+{% } %}
+</div>
+{% } %}
+
+{% if (typeof data !== 'undefined' && data) { %}
+<table class="table table-bordered" style="width: 100%; border-collapse: collapse; font-size: 12px;">
+    <thead>
+        <tr style="background-color: #f8f9fa;">
+            <th>{%= __("Employer Name") %}</th>
+            <th>{%= __("Employer No.") %}</th>
+            <th>{%= __("ZRA TPIN") %}</th>
+            <th>{%= __("Compliance Status") %}</th>
+            <th>{%= __("Assessment") %}</th>
+            <th>{%= __("Payment") %}</th>
+            <th style="text-align: right;">{%= __("Outstanding") %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for (let i=0, l=data.length; i<l; i++) { %} <tr>
+            <td style="font-weight: 600;">{%= data[i].employer_name %}</td>
+            <td>{%= data[i].employer_no %}</td>
+            <td>{%= data[i].zra_tpin %}</td>
+            <td>
+                {% let status_cls = "gray";
+                let status = (data[i].compliance_status || "").toLowerCase();
+                if (status === "compliant") status_cls = "green";
+                else if (status === "non-compliant") status_cls = "red";
+                else if (status === "under review") status_cls = "yellow";
+                %}
+                <span class="indicator-pill {%= status_cls %}">{%= data[i].compliance_status %}</span>
+            </td>
+            <td>{%= data[i].assessment_status %}</td>
+            <td>{%= data[i].payment_status %}</td>
+            <td style="text-align: right;">{%= frappe.format(data[i].outstanding_amount, {fieldtype: 'Currency'}) %}
+            </td>
+            </tr>
+            {% } %}
+    </tbody>
+</table>
+{% } %}
+
+<style>
+    .indicator-pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+        color: #fff;
+    }
+
+    .indicator-pill.green {
+        background-color: #28a745;
+    }
+
+    .indicator-pill.red {
+        background-color: #dc3545;
+    }
+
+    .indicator-pill.yellow {
+        background-color: #ffc107;
+        color: #333;
+    }
+
+    .indicator-pill.gray {
+        background-color: #6c757d;
+    }
+</style>

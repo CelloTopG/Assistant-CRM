@@ -1,0 +1,78 @@
+<div class="report-header">
+    <div class="text-center">
+        <h2 style="margin: 0;">WORKERS' COMPENSATION FUND CONTROL BOARD</h2>
+        <h3 style="margin: 0; color: #555;">Agent Performance Report</h3>
+        <p style="margin: 5px 0; font-size: 14px; color: #666;">
+            KPI Overview: {%= frappe.datetime.global_date_format(filters.date_from) %} to {%=
+            frappe.datetime.global_date_format(filters.date_to) %}
+        </p>
+    </div>
+</div>
+
+<hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+{% if (typeof report_summary !== 'undefined' && report_summary && report_summary.length) { %}
+<div class="summary-cards" style="display: flex; flex-wrap: wrap; justify-content: center; margin-bottom: 30px;">
+    {% for (let i=0, l=report_summary.length; i<l; i++) { %} <div class="summary-card"
+        style="min-width: 160px; padding: 15px; margin: 10px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <div class="summary-label" style="font-size: 11px; color: #777; text-transform: uppercase;">{%=
+            report_summary[i].label %}</div>
+        <div class="summary-value"
+            style="font-size: 20px; font-weight: 700; color: {%= report_summary[i].indicator || '#333' %};">
+            {%= report_summary[i].value %}
+        </div>
+</div>
+{% } %}
+</div>
+{% } %}
+
+{% if (typeof data !== 'undefined' && data) { %}
+<table class="table table-bordered" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+    <thead>
+        <tr style="background-color: #f1f3f5;">
+            <th style="width: 30%;">{%= __("Agent Name") %}</th>
+            <th style="width: 15%; text-align: center;">{%= __("Tickets Handled") %}</th>
+            <th style="width: 20%; text-align: center;">{%= __("Avg Resolution (Hrs)") %}</th>
+            <th style="width: 20%; text-align: center;">{%= __("SLA Compliance %") %}</th>
+            <th style="width: 15%; text-align: center;">{%= __("Breached") %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for (let i=0, l=data.length; i<l; i++) { %} <tr>
+            <td>{%= data[i].agent %}</td>
+            <td style="text-align: center; font-weight: 600;">{%= data[i].tickets_handled %}</td>
+            <td style="text-align: center;">{%= data[i].avg_resolution_time %} h</td>
+            <td style="text-align: center;">
+                {% let color = "#dc3545";
+                if (data[i].sla_compliance >= 90) color = "#28a745";
+                else if (data[i].sla_compliance >= 75) color = "#ffa00a";
+                %}
+                <span style="color: {%= color %}; font-weight: 700;">{%= data[i].sla_compliance %}%</span>
+            </td>
+            <td style="text-align: center;">
+                {% if (data[i].breached_tickets > 0) { %}
+                <span class="indicator-pill red">{%= data[i].breached_tickets %}</span>
+                {% } else { %}
+                <span style="color: #999;">-</span>
+                {% } %}
+            </td>
+            </tr>
+            {% } %}
+    </tbody>
+</table>
+{% } %}
+
+<style>
+    .indicator-pill {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .indicator-pill.red {
+        background-color: #dc3545;
+    }
+</style>

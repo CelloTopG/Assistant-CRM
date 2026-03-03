@@ -1,0 +1,85 @@
+<div class="report-header">
+    <div class="text-center">
+        <h2 style="margin: 0;">WORKERS' COMPENSATION FUND CONTROL BOARD</h2>
+        <h3 style="margin: 0; color: #555;">Omnichannel Interaction Report</h3>
+        <p style="margin: 5px 0; font-size: 14px; color: #666;">
+            Channel-wise Engagement: {%= frappe.datetime.global_date_format(filters.date_from) %} to {%=
+            frappe.datetime.global_date_format(filters.date_to) %}
+        </p>
+    </div>
+</div>
+
+<hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+{% if (typeof report_summary !== 'undefined' && report_summary && report_summary.length) { %}
+<div class="summary-cards" style="display: flex; flex-wrap: wrap; justify-content: center; margin-bottom: 30px;">
+    {% for (let i=0, l=report_summary.length; i<l; i++) { %} <div class="summary-card"
+        style="min-width: 140px; padding: 12px; margin: 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;">
+        <div class="summary-label"
+            style="font-size: 10px; color: #718096; text-transform: uppercase; letter-spacing: 1px;">{%=
+            report_summary[i].label %}</div>
+        <div class="summary-value"
+            style="font-size: 18px; font-weight: 700; color: {%= report_summary[i].indicator || '#2d3748' %};">
+            {%= report_summary[i].value %}
+        </div>
+</div>
+{% } %}
+</div>
+{% } %}
+
+{% if (typeof data !== 'undefined' && data) { %}
+<table class="table table-bordered" style="width: 100%; border-collapse: collapse; font-size: 12px;">
+    <thead>
+        <tr style="background-color: #f7fafc;">
+            <th style="width: 15%;">{%= __("Channel") %}</th>
+            <th style="width: 25%;">{%= __("Interaction ID") %}</th>
+            <th style="width: 15%; text-align: center;">{%= __("Resp. Time (Min)") %}</th>
+            <th style="width: 20%;">{%= __("Agent Assigned") %}</th>
+            <th style="width: 15%;">{%= __("Status") %}</th>
+            <th style="width: 10%;">{%= __("SLA") %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for (let i=0, l=data.length; i<l; i++) { %} <tr>
+            <td>
+                {% let channel = (data[i].channel || "").toLowerCase();
+                let icon = "fa-comment";
+                if (channel === "whatsapp") icon = "fa-whatsapp";
+                else if (channel === "facebook") icon = "fa-facebook";
+                else if (channel === "telegram") icon = "fa-paper-plane";
+                else if (channel === "email") icon = "fa-envelope";
+                %}
+                <i class="fa {%= icon %}"></i> {%= data[i].channel %}
+            </td>
+            <td>{%= data[i].interaction_id %}</td>
+            <td style="text-align: center;">{%= data[i].response_time %} min</td>
+            <td>{%= data[i].agent %}</td>
+            <td>
+                {% let cls = "gray"; if (data[i].status === "Resolved") cls = "green"; %}
+                <span class="indicator-pill {%= cls %}">{%= data[i].status %}</span>
+            </td>
+            <td>{%= data[i].sla_status %}</td>
+            </tr>
+            {% } %}
+    </tbody>
+</table>
+{% } %}
+
+<style>
+    .indicator-pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+        color: #fff;
+    }
+
+    .indicator-pill.green {
+        background-color: #28a745;
+    }
+
+    .indicator-pill.gray {
+        background-color: #a0aec0;
+    }
+</style>

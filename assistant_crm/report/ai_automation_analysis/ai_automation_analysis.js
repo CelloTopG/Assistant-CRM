@@ -6,6 +6,7 @@
  */
 
 frappe.query_reports["AI Automation Analysis"] = {
+    default_print_format: "Assistant CRM - AI Automation",
     filters: [
         {
             fieldname: "period_type",

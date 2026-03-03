@@ -6,6 +6,7 @@
  */
 
 frappe.query_reports["Survey Feedback Analysis"] = {
+    default_print_format: "Assistant CRM - Survey Feedback",
     filters: [
         {
             fieldname: "period_type",

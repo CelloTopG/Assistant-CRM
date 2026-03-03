@@ -1,0 +1,89 @@
+<div class="report-header">
+    <div class="text-center">
+        <h2 style="margin: 0;">WORKERS' COMPENSATION FUND CONTROL BOARD</h2>
+        <h3 style="margin: 0; color: #555;">Survey Feedback Analysis Report</h3>
+        <p style="margin: 5px 0; font-size: 14px; color: #666;">
+            Campaign Insights: {%= frappe.datetime.global_date_format(filters.date_from) %} to {%=
+            frappe.datetime.global_date_format(filters.date_to) %}
+        </p>
+    </div>
+</div>
+
+<hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+{% if (typeof report_summary !== 'undefined' && report_summary && report_summary.length) { %}
+<div class="summary-cards" style="display: flex; flex-wrap: wrap; justify-content: center; margin-bottom: 30px;">
+    {% for (let i=0, l=report_summary.length; i<l; i++) { %} <div class="summary-card"
+        style="min-width: 120px; padding: 12px; margin: 8px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <div class="summary-label" style="font-size: 10px; color: #718096; text-transform: uppercase;">{%=
+            report_summary[i].label %}</div>
+        <div class="summary-value"
+            style="font-size: 16px; font-weight: 700; color: {%= report_summary[i].indicator || '#2d3748' %};">
+            {%= report_summary[i].value %}
+        </div>
+</div>
+{% } %}
+</div>
+{% } %}
+
+{% if (typeof data !== 'undefined' && data) { %}
+<table class="table table-bordered" style="width: 100%; border-collapse: collapse; font-size: 12px;">
+    <thead>
+        <tr style="background-color: #f7fafc;">
+            <th>{%= __("Response ID") %}</th>
+            <th>{%= __("Campaign") %}</th>
+            <th style="text-align: center;">{%= __("Sentiment") %}</th>
+            <th>{%= __("Label") %}</th>
+            <th>{%= __("Recipient") %}</th>
+            <th>{%= __("Response Time") %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for (let i=0, l=data.length; i<l; i++) { %} <tr>
+            <td>{%= data[i].name %}</td>
+            <td>{%= data[i].campaign %}</td>
+            <td style="text-align: center; font-weight: 700;">{%= data[i].sentiment_score %}</td>
+            <td>
+                {% let label = data[i].sentiment_label;
+                let cls = "gray";
+                if (label.indexOf("Positive") !== -1) cls = "green";
+                else if (label.indexOf("Negative") !== -1) cls = "red";
+                else if (label === "Neutral") cls = "yellow";
+                %}
+                <span class="indicator-pill {%= cls %}">{%= label %}</span>
+            </td>
+            <td>{%= data[i].recipient_phone %}</td>
+            <td>{%= frappe.datetime.global_date_format(data[i].response_time) %}</td>
+            </tr>
+            {% } %}
+    </tbody>
+</table>
+{% } %}
+
+<style>
+    .indicator-pill {
+        display: inline-block;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 600;
+        color: #fff;
+    }
+
+    .indicator-pill.green {
+        background-color: #28a745;
+    }
+
+    .indicator-pill.red {
+        background-color: #dc3545;
+    }
+
+    .indicator-pill.yellow {
+        background-color: #ffc107;
+        color: #333;
+    }
+
+    .indicator-pill.gray {
+        background-color: #6c757d;
+    }
+</style>

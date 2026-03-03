@@ -1,0 +1,94 @@
+<div class="report-header">
+    <div class="text-center">
+        <h2 style="margin: 0;">WORKERS' COMPENSATION FUND CONTROL BOARD</h2>
+        <h3 style="margin: 0; color: #555;">AI Automation Exception Report</h3>
+        <p style="margin: 5px 0; font-size: 14px; color: #666;">
+            Automation Health: {%= frappe.datetime.global_date_format(filters.date_from) %} to {%=
+            frappe.datetime.global_date_format(filters.date_to) %}
+        </p>
+    </div>
+</div>
+
+<hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+{% if (typeof report_summary !== 'undefined' && report_summary && report_summary.length) { %}
+<div class="summary-cards" style="display: flex; flex-wrap: wrap; justify-content: center; margin-bottom: 25px;">
+    {% for (let i=0, l=report_summary.length; i<l; i++) { %} <div class="summary-card"
+        style="min-width: 130px; padding: 10px; margin: 8px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <div class="summary-label" style="font-size: 10px; color: #718096; text-transform: uppercase;">{%=
+            report_summary[i].label %}</div>
+        <div class="summary-value"
+            style="font-size: 16px; font-weight: 700; color: {%= report_summary[i].indicator || '#2d3748' %};">
+            {%= report_summary[i].value %}
+        </div>
+</div>
+{% } %}
+</div>
+{% } %}
+
+{% if (typeof data !== 'undefined' && data) { %}
+<table class="table table-bordered" style="width: 100%; border-collapse: collapse; font-size: 11px;">
+    <thead>
+        <tr style="background-color: #f8f9fa;">
+            <th>{%= __("Ticket/Log ID") %}</th>
+            <th>{%= __("Timestamp") %}</th>
+            <th>{%= __("AI Flag Type") %}</th>
+            <th>{%= __("Validation Status") %}</th>
+            <th style="text-align: center;">{%= __("Status") %}</th>
+            <th>{%= __("Details") %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for (let i=0, l=data.length; i<l; i++) { %} <tr>
+            <td style="font-weight: 600;">{%= data[i].name %}</td>
+            <td style="font-size: 10px;">{%= frappe.datetime.global_date_format(data[i].creation) %} {%=
+                frappe.datetime.get_time(data[i].creation) %}</td>
+            <td>{%= data[i].scheduled_job_type %}</td>
+            <td>
+                {% if (data[i].is_after_hours) { %}
+                <span class="indicator-pill blue">After Hours</span>
+                {% } else { %}
+                <span style="color: #999;">Standard</span>
+                {% } %}
+            </td>
+            <td style="text-align: center;">
+                {% let st = (data[i].status || "").toLowerCase();
+                let cls = "gray";
+                if (st === "complete") cls = "green";
+                else if (st === "failed") cls = "red";
+                %}
+                <span class="indicator-pill {%= cls %}">{%= data[i].status %}</span>
+            </td>
+            <td style="font-size: 10px;">{%= data[i].details %}</td>
+            </tr>
+            {% } %}
+    </tbody>
+</table>
+{% } %}
+
+<style>
+    .indicator-pill {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 9px;
+        font-weight: 600;
+        color: #fff;
+    }
+
+    .indicator-pill.green {
+        background-color: #28a745;
+    }
+
+    .indicator-pill.red {
+        background-color: #dc3545;
+    }
+
+    .indicator-pill.blue {
+        background-color: #3182ce;
+    }
+
+    .indicator-pill.gray {
+        background-color: #6c757d;
+    }
+</style>
