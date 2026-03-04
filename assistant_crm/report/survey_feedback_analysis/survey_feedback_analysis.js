@@ -73,6 +73,11 @@ frappe.query_reports["Survey Feedback Analysis"] = {
         report.page.add_inner_button(__("Platform Response Rates"), function () {
             show_platform_rr_chart(report);
         }, __("Charts"));
+
+        // Add Export Word button
+        report.page.add_inner_button(__("Word"), function () {
+            assistant_crm.report_utils.download_as_word(report, "Survey Feedback Analysis");
+        }, __("Export"));
     },
 
     formatter: function (value, row, column, data, default_formatter) {

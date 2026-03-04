@@ -79,6 +79,11 @@ frappe.query_reports["Complaints Status Analysis"] = {
         report.page.add_inner_button(__("Trend"), function () {
             show_trend_chart(report);
         }, __("Charts"));
+
+        // Add Export Word button
+        report.page.add_inner_button(__("Word"), function () {
+            assistant_crm.report_utils.download_as_word(report, "Complaints Status Analysis");
+        }, __("Export"));
     },
 
     formatter: function (value, row, column, data, default_formatter) {
