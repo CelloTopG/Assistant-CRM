@@ -79,29 +79,27 @@ def get_data(filters: frappe._dict) -> Tuple[List[Dict[str, Any]], Dict[str, Any
     """Fetch survey responses and compute summary metrics."""
     df = getdate(filters.date_from)
     dt = getdate(filters.date_to)
-
-    # Build conditions - use sent_time for date filtering (more reliable than response_time)
-    conditions = ["DATE(sr.sent_time) BETWEEN %(df)s AND %(dt)s"]
     values = {"df": df, "dt": dt}
 
+    # Fetch responses - fallback to creation date if sent_time is null for some reason
+    where_clause = "((DATE(sr.sent_time) BETWEEN %(df)s AND %(dt)s) OR (sr.sent_time IS NULL AND DATE(sr.creation) BETWEEN %(df)s AND %(dt)s))"
+    
     if filters.get("campaign"):
-        conditions.append("sr.campaign = %(campaign)s")
+        where_clause += " AND sr.campaign = %(campaign)s"
         values["campaign"] = filters.campaign
 
     if filters.get("status"):
-        conditions.append("sr.status = %(status)s")
+        where_clause += " AND sr.status = %(status)s"
         values["status"] = filters.status
-
-    where_clause = " AND ".join(conditions)
 
     # Fetch responses
     responses = frappe.db.sql(f"""
         SELECT
             sr.name, sr.campaign, sr.status, sr.sentiment_score,
-            sr.recipient_phone, sr.sent_time, sr.response_time
+            sr.recipient_phone, sr.sent_time, sr.response_time, sr.creation
         FROM `tabSurvey Response` sr
         WHERE {where_clause}
-        ORDER BY sr.sent_time DESC
+        ORDER BY sr.creation DESC
         LIMIT 5000
     """, values, as_dict=True)
 
@@ -162,43 +160,31 @@ def get_data(filters: frappe._dict) -> Tuple[List[Dict[str, Any]], Dict[str, Any
     summary["avg_sentiment"] = round(sum(summary["sentiment_scores"]) / len(summary["sentiment_scores"]), 3) if summary["sentiment_scores"] else 0
     summary["avg_response_duration"] = round(sum(summary["response_durations"]) / len(summary["response_durations"]), 2) if summary["response_durations"] else 0
 
-    # Get campaign-level aggregates - use DATE() for consistent filtering
-    campaigns = frappe.db.sql("""
-        SELECT name, campaign_name, total_sent, total_responses, response_rate
-        FROM `tabSurvey Campaign`
-        WHERE DATE(creation) BETWEEN %(df)s AND %(dt)s
-        ORDER BY total_sent DESC
-        LIMIT 1000
-    """, {"df": df, "dt": dt}, as_dict=True)
+    # Get totals directly from responses found in the period
+    summary["total_surveys_sent"] = len(responses)
+    
+    # Get campaigns that were active (had responses) in the period
+    active_campaigns = list(set([r.get("campaign") for r in responses if r.get("campaign")]))
+    summary["total_campaigns"] = len(active_campaigns)
+    
+    # Calculate response rate based on completions vs total found
+    completed_statuses = ["Completed", "Partial"]
+    received_responses = sum(1 for r in responses if r.get("status") in completed_statuses)
+    summary["response_rate"] = round((received_responses / summary["total_surveys_sent"] * 100.0), 2) if summary["total_surveys_sent"] else 0
 
-    summary["total_campaigns"] = len(campaigns)
-    summary["total_surveys_sent"] = sum((c.get("total_sent") or 0) for c in campaigns)
-    summary["response_rate"] = round((summary["total_responses"] / summary["total_surveys_sent"] * 100.0), 2) if summary["total_surveys_sent"] else 0
+    # Get delivery metrics from status counts
+    status_counts = {}
+    for r in responses:
+        st = r.get("status", "Unknown")
+        status_counts[st] = status_counts.get(st, 0) + 1
 
-    # Get delivery metrics from Survey Response doctype (aligned with Campaign Analytics)
-    # Count surveys by status to get delivery metrics
-    status_counts = frappe.db.sql("""
-        SELECT status, COUNT(*) as cnt
-        FROM `tabSurvey Response` sr
-        WHERE DATE(sr.sent_time) BETWEEN %(df)s AND %(dt)s
-        GROUP BY status
-    """, {"df": df, "dt": dt}, as_dict=True)
-
-    status_map = {s["status"]: s["cnt"] for s in status_counts}
-    total_sent = sum(status_map.values())
-    bounced = status_map.get("Bounced", 0)
-    delivered = total_sent - bounced
-    completed = status_map.get("Completed", 0)
-    partial = status_map.get("Partial", 0)
-    closed = status_map.get("Closed", 0)
-
-    summary["surveys_delivered"] = delivered
-    summary["surveys_bounced"] = bounced
-    summary["delivery_rate"] = round((delivered / total_sent * 100.0), 2) if total_sent else 0
-    summary["completion_rate"] = round((completed / total_sent * 100.0), 2) if total_sent else 0
-    summary["surveys_completed"] = completed
-    summary["surveys_partial"] = partial
-    summary["surveys_closed"] = closed
+    summary["surveys_delivered"] = summary["total_surveys_sent"] - status_counts.get("Bounced", 0)
+    summary["surveys_bounced"] = status_counts.get("Bounced", 0)
+    summary["delivery_rate"] = round((summary["surveys_delivered"] / summary["total_surveys_sent"] * 100.0), 2) if summary["total_surveys_sent"] else 0
+    summary["completion_rate"] = round((status_counts.get("Completed", 0) / summary["total_surveys_sent"] * 100.0), 2) if summary["total_surveys_sent"] else 0
+    summary["surveys_completed"] = status_counts.get("Completed", 0)
+    summary["surveys_partial"] = status_counts.get("Partial", 0)
+    summary["surveys_closed"] = status_counts.get("Closed", 0)
 
     # Get channel metrics from Survey Distribution Channel (NOT Unified Inbox)
     channel_data = _get_survey_channel_metrics(df, dt)

@@ -45,11 +45,15 @@ def get_data(filters: frappe._dict) -> Tuple[List[Dict[str, Any]], Dict[str, Any
     dt = getdate(filters.date_to)
 
     # Fetch from Employer Contributions as it has compliance data
-    contributions = frappe.get_all(
-        "Employer Contributions",
-        filters={"creation": [">=", df], "creation": ["<=", dt]},
-        fields=["employer_id", "employer_name", "status", "compliance_status", "outstanding_amount", "creation"]
-    )
+    contributions = frappe.db.sql("""
+        SELECT 
+            ec.employer_id, ec.employer_name, ec.status, 
+            ec.compliance_status, ec.outstanding_amount, ec.creation,
+            e.zra_tpin, e.employer_number as employer_no
+        FROM `tabEmployer Contributions` ec
+        LEFT JOIN `tabEmployer` e ON ec.employer_id = e.name
+        WHERE DATE(ec.creation) BETWEEN %(df)s AND %(dt)s
+    """, {"df": df, "dt": dt}, as_dict=True)
 
     data = []
     metrics = {"compliant": 0, "non_compliant": 0, "under_review": 0, "total_outstanding": 0.0}
@@ -68,8 +72,8 @@ def get_data(filters: frappe._dict) -> Tuple[List[Dict[str, Any]], Dict[str, Any
         data.append({
             "employer_id": c.employer_id,
             "employer_name": c.employer_name,
-            "employer_no": c.employer_id, # Fallback
-            "zra_tpin": "N/A", # Needs field mapping
+            "employer_no": c.employer_no or c.employer_id,
+            "zra_tpin": c.zra_tpin or "N/A",
             "compliance_status": status,
             "assessment_status": "Assessed" if flt(c.outstanding_amount) >= 0 else "Not Assessed",
             "payment_status": c.status or "Pending",
