@@ -14,6 +14,7 @@ This manual explains how to use **WCFCB Assistant CRM** in day-to-day operations
 
 ### Supervisors & management
 - Monitor performance and service levels using Assistant CRM dashboards and reports.
+- **Advanced Analytics**: Access specialized dashboards for AI Automation, Agent Performance, Employer Compliance, and Issue Turnaround.
 - Review satisfaction, response times, volumes and branch performance.
 
 ### IT & integration teams
@@ -55,8 +56,6 @@ Typical flow:
 5. **Follow-up or escalate**
    - Ask a follow-up question, or request to speak to a human agent for complex cases.
 
-## Using Antoine (reports & analytics)
-
 Antoine focuses on reporting, analytics and more formal outputs.
 
 Typical usage patterns:
@@ -65,7 +64,15 @@ Typical usage patterns:
 - Produce professional, WCFCB-branded explanations for management or external stakeholders.
 - Support decision making with consolidated information from multiple systems.
 
-Reports and analytics are accessible through standard Frappe report views under the **Assistant CRM** module (for example: inbox status, claims status, employer status, payout summaries and survey feedback analysis).
+### Advanced Analytical Reports
+Supervisors can access several high-impact analytical dashboards:
+- **AI Automation Analysis**: Track how many conversations are handled fully by AI vs human agents.
+- **Agent Performance Analysis**: Compare response times, closure rates, and satisfaction scores across agents.
+- **Employer Compliance Analysis**: Monitor contribution trends and identifying overdue payment patterns.
+- **Issue Turnaround Analysis**: Measure the time taken to resolve citizen complaints from first contact to closure.
+- **Survey Feedback Analysis**: Visualize sentiment and NPS scores from citizen surveys.
+
+Reports and analytics are accessible through standard Frappe report views under the **Assistant CRM** module.
 
 ## Typical workflows
 
@@ -85,6 +92,14 @@ Reports and analytics are accessible through standard Frappe report views under 
 2. An agent picks up the conversation in the unified inbox.
 3. The agent has access to conversation history, intent, and relevant data.
 4. After resolving, the conversation is logged for analytics and continuous improvement.
+
+### High-Security Citizen Surveys
+When sending surveys to citizens (e.g., via SMS or WhatsApp):
+1. Citizens receive a **unique, tokenized link**.
+2. The link is tied specifically to their **Identity** and is single-use/limited-use.
+3. Upon opening, the page contains a **Dynamic Watermark** (showing their Email and IP) to deter unauthorized screenshots.
+4. Data extraction is prevented via **Copy/Print/Right-click blocking**.
+5. If the link expires or is viewed too many times, it will automatically lock.
 
 ## Best practices for queries
 

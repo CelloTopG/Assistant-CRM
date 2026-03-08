@@ -11,7 +11,9 @@ WCFCB Assistant CRM is a production-ready Frappe app that:
 - Provides AI assistants **Anna** (customer support) and **Antoine** (reports & analytics)
 - Connects web chat, WhatsApp, Telegram, Facebook, Instagram, email, USSD and other channels into a **single unified inbox**
 - Integrates with WCFCB CoreBusiness systems for **live claims, payments, employer and beneficiary data**
-- Offers dashboards, reports and monitoring tailored to WCFCB operations
+- Offers **High-Security Surveys** with tokenization, dynamic watermarking, and deterrents against screenshots and copying
+- Provides **Advanced Analytical Reports** with interactive dashboards for AI and Agent Performance tracking
+- Delivers **Automated SMS Alerts** for critical business activities like overdue contributions
 
 ## What's Included
 

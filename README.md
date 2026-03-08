@@ -6,7 +6,10 @@ Omnichannel AI Assistant for the Workers' Compensation Fund Control Board (WCFCB
 
 - **AI Assistants**: Anna (chat support) and Antoine (reports/analytics)
 - **Omnichannel Support**: WhatsApp, Facebook, Instagram, Telegram, Twitter, LinkedIn, USSD, Email
+- **High-Security Survey Protocol**: Tokenized access, dynamic watermarking (IP/Email/Timestamp), and anti-screenshot deterrents
 - **Unified Inbox**: Centralized message management across all platforms
+- **Advanced Analytics**: Interactive dashboards for AI performance, Agent productivity, and Employer compliance
+- **SMS Alerts**: Automated high-priority SMS notifications for contribution overdue alerts
 - **Live Data Integration**: Real-time claim status, payment info, and account details
 - **Multi-language Support**: English, Bemba, Nyanja, Tonga
 
@@ -76,8 +79,13 @@ INSTAGRAM_ACCESS_TOKEN=your-instagram-token
    - Model selection (gpt-4, etc.)
 
 3. **Social Media Settings**: `/app/social-media-settings`
-   - Facebook, Instagram, Twitter, LinkedIn tokens
+   - WhatsApp, Facebook, Instagram, Twitter, LinkedIn tokens
    - USSD configuration
+
+4. **Assistant CRM SMS Settings**: `/app/assistant-crm-sms-settings`
+   - Production Gateway (Workers Notify)
+   - Environment selection (Development vs Production)
+   - SMS Audit Logging configuration
 
 ### Webhook Configuration
 

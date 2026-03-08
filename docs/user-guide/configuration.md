@@ -162,11 +162,15 @@ I can help you with:
 ```json
 {
   "phone_number_id": "your_phone_number_id",
-  "access_token": "your_whatsapp_access_token",
-  "webhook_verify_token": "your_webhook_verify_token",
+  "business_account_id": "your_business_account_id",
+  "access_token": "your_whatsapp_access_token (System User Token)",
+  "webhook_verify_token": "wcfcb_webhook_verify_token",
   "webhook_url": "https://your-domain.com/api/omnichannel/webhook/whatsapp"
 }
 ```
+
+> [!NOTE]
+> All WhatsApp credentials are now managed in **Social Media Settings**. The system uses the **Permanent Access Token** from your Meta Developer App.
 
 #### Webhook Setup
 1. In Meta Business Manager, set webhook URL:
@@ -216,6 +220,25 @@ I can help you with:
   "webhook_url": "https://your-domain.com/api/omnichannel/webhook/facebook"
 }
 ```
+
+### 4. SMS Gateway Integration (Enterprise)
+
+Assistant CRM uses a dedicated production-grade gateway for high-priority alerts and survey distribution.
+
+#### Configure Assistant CRM SMS Settings
+Navigate to: `/app/assistant-crm-sms-settings`
+
+1. **Enable SMS**: Global toggle for all SMS outgoing traffic.
+2. **Environment**: 
+   - `Development`: Connects to local LAN gateway (192.168.1.32).
+   - `Production`: Connects to `notify.workers.com.zm` via HTTPS.
+3. **API Key**: Required for the Workers Notify Production API.
+4. **Audit Logging**: Check **"Enable Debug Logging"** to store detailed gateway responses in **Assistant CRM SMS Log**.
+
+#### Automated SMS Notifications
+The system is pre-configured to send SMS for high-priority system events:
+1. **Contribution Overdue Alert**: Automatically triggers an SMS to the Employer's primary contact when the background task detects an overdue payroll contribution.
+2. **Setup**: Ensure the Employer (Customer) has a linked **Contact** with **"Is Primary"** checked and a valid **Mobile No**.
 
 ## Knowledge Base Configuration
 
@@ -317,6 +340,22 @@ Configure the authentication process:
 - **Session Timeout**: 30 minutes of inactivity
 - **Intent Locking**: Maintain context during authentication
 - **Multi-session Support**: Allow multiple concurrent sessions
+
+### 3. High-Security Survey Protocol
+The system enforces a strict "No Anonymous Access" policy for surveys to prevent data breaches and unauthorized viewing.
+
+#### Survey Access Tokens
+Every survey link is unique and tokenized:
+- **Max Views**: Configure in `Survey Access Token` (Default: 5). Prevents link sharing.
+- **Expiry**: Tokens expire after a set time (Default: 7 days).
+- **Locking**: Suspicious activity (e.g., bot behavior) will automatically toggle **`is_locked`**.
+
+#### Watermarking Settings
+No configuration is required for watermarking; it is injected automatically based on the user's session:
+- **Email**: The recipient's email is overlaid.
+- **IP Address**: The current viewer's IP is overlaid.
+- **Timestamp**: The server-time of access is overlaid.
+- **Deterrents**: Right-click, Copy/Paste, and PrintScreen are programmatically disabled on the survey page.
 
 ## Security Configuration
 

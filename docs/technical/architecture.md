@@ -43,7 +43,7 @@ graph TB
         WHATSAPP[WhatsApp Business]
         TELEGRAM[Telegram Bot]
         FACEBOOK[Facebook Messenger]
-        SMS[SMS Gateway]
+        SMS_GW[Workers Notify Production API]
         GEMINI_API[Google Gemini API]
     end
     
@@ -68,7 +68,13 @@ graph TB
 	    SOCIAL --> WHATSAPP
 	    SOCIAL --> TELEGRAM
 	    SOCIAL --> FACEBOOK
-	    SOCIAL --> SMS
+	    SOCIAL --> SMS_GW
+    
+    subgraph "Secure Survey Flow"
+        SURVEY[Survey Logic] --> TOKEN[Survey Access Token Gen]
+        TOKEN --> WM[Dynamic Watermarking]
+        WM --> DET[Copy/Screenshot Deterrents]
+    end
 ```
 
 ## Core Components
@@ -165,10 +171,10 @@ graph TB
 - **Purpose**: Routes messages between different communication channels
 - **Supported Channels**:
   - Web chat
-  - WhatsApp Business API
+  - WhatsApp Business API (via Social Media Settings)
   - Telegram Bot API
   - Facebook Messenger
-  - SMS Gateway
+  - SMS Gateway (Enterprise Workers Notify Gateway)
 
 #### Aggregator Integration (legacy, not used)
 - **File**: `(legacy module, no longer present)`
@@ -232,6 +238,22 @@ graph TB
 - **Webhook Validation**: Signature verification for external webhooks
 - **Rate Limiting**: Protection against abuse and DoS attacks
 - **IP Whitelisting**: Configurable access restrictions
+
+### High-Security Survey Protocol (NEW)
+Following Step 1-7 of the security enhancement protocol:
+1. **Tokenized Access**: Surveys require a **`Survey Access Token`**. Links use UUIDs, not numerical IDs.
+2. **Dynamic Watermarking**: The page background is dynamically injected with:
+   - **User Identity** (Email)
+   - **Request Origin** (IP Address)
+   - **Access Timestamp**
+   - **Token ID**
+3. **Capture Prevention**:
+   - Disabled Context Menu (Right-click)
+   - Disabled Text Selection
+   - **Screenshot Warning**: Key listeners monitor the `PrintScreen` key.
+   - **Copy/Cut Blocked**: System events are intercepted to prevent data extraction.
+4. **Auto-Expiry**: Tokens automatically lock after reaching `max_views` or `expires_on` TTL.
+5. **Anti-Scraping**: Questions are only fetched via API *after* the token is validated; no questions exist in the raw HTML source.
 
 ## Performance Architecture
 
