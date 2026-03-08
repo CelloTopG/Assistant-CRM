@@ -43,6 +43,7 @@ The documentation is organized into four main sections:
    - [FAQ](user-guide/faq.md)
 4. **Technical Reference**
    - [System Architecture](technical/architecture.md)
+   - [Escalation Rules & Logic](technical/escalation-rules.md)
    - In-app DocTypes, reports and services within the Frappe Desk
 
 Use the **Getting Started** section if you are installing the app for the first time. Use the **Configuration & Operations** and **Troubleshooting & FAQ** sections for day-to-day administration and support.
