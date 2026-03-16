@@ -11,7 +11,78 @@ class SocialMediaSettings(Document):
     Adds support for exchanging short-lived Facebook/Instagram tokens for long-lived tokens
     via the Graph API and storing them in this settings DocType.
     """
-    pass
+    
+    def before_save(self):
+        """Actions to perform before saving the settings."""
+        self.generate_webhook_urls()
+    
+    def generate_webhook_urls(self):
+        """Generate webhook URLs for platforms."""
+        from assistant_crm.utils import get_public_url
+        base_url = get_public_url()
+
+        # General social media webhook URL (for WhatsApp, FB, IG, etc.)
+        self.webhook_url = f"{base_url}/api/method/assistant_crm.api.social_media_ports.social_media_webhook"
+        
+        # Tawk.to webhook URL
+        self.tawk_to_webhook_url = f"{base_url}/api/method/assistant_crm.api.tawk_to_integration.tawk_to_webhook"
+    
+    def get_platform_credentials(self, platform: str) -> dict:
+        """Get credentials for a specific platform."""
+        credentials = {}
+        
+        if platform == "WhatsApp" and self.whatsapp_enabled:
+            credentials = {
+                "access_token": self.get_password("whatsapp_access_token"),
+                "phone_number_id": self.whatsapp_phone_number_id,
+                "webhook_verify_token": self.whatsapp_webhook_verify_token,
+                "app_secret": self.get_password("whatsapp_app_secret")
+            }
+        
+        elif platform == "Facebook" and self.facebook_enabled:
+            credentials = {
+                "page_access_token": self.get_password("facebook_page_access_token"),
+                "app_secret": self.get_password("facebook_app_secret"),
+                "verify_token": self.webhook_verify_token
+            }
+        
+        elif platform == "Instagram" and self.instagram_enabled:
+            credentials = {
+                "access_token": self.get_password("instagram_access_token"),
+                "instagram_business_account_id": self.instagram_business_account_id,
+                "app_secret": self.facebook_app_secret # Usually shared with FB app secret
+            }
+        
+        elif platform == "Telegram" and self.telegram_enabled:
+            credentials = {
+                "bot_token": self.get_password("telegram_bot_token"),
+                "webhook_secret": self.get_password("telegram_webhook_secret")
+            }
+            
+        elif platform == "Tawk.to" and self.tawk_to_enabled:
+            credentials = {
+                "api_key": self.get_password("tawk_to_api_key"),
+                "property_id": self.tawk_to_property_id
+            }
+        
+        return credentials
+    
+    def is_platform_enabled(self, platform: str) -> bool:
+        """Check if a platform is enabled."""
+        platform_flags = {
+            "WhatsApp": self.whatsapp_enabled,
+            "Facebook": self.facebook_enabled,
+            "Instagram": self.instagram_enabled,
+            "Telegram": self.telegram_enabled,
+            "Tawk.to": self.tawk_to_enabled,
+            "Twitter": self.twitter_enabled,
+            "LinkedIn": self.linkedin_enabled,
+            "YouTube": self.youtube_enabled,
+            "USSD": self.ussd_enabled
+        }
+        
+        return platform_flags.get(platform, False)
+
 
 
 @frappe.whitelist()

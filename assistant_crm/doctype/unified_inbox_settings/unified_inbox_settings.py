@@ -13,18 +13,10 @@ class UnifiedInboxSettings(Document):
     
     def before_save(self):
         """Actions to perform before saving the settings."""
-        # Generate webhook URLs
-        self.generate_webhook_urls()
-        
         # Validate settings
         self.validate_settings()
     
-    def generate_webhook_urls(self):
-        """Generate webhook URLs for platforms."""
-        base_url = get_public_url()
 
-        # Tawk.to webhook URL
-        self.tawk_to_webhook_url = f"{base_url}/api/method/assistant_crm.api.tawk_to_integration.tawk_to_webhook"
     
     def validate_settings(self):
         """Validate configuration settings."""
@@ -41,50 +33,20 @@ class UnifiedInboxSettings(Document):
             frappe.throw("Max Conversations per Agent must be at least 1")
     
     def get_platform_credentials(self, platform: str) -> dict:
-        """Get credentials for a specific platform."""
-        credentials = {}
-        
-        if platform == "WhatsApp" and self.enable_whatsapp:
-            credentials = {
-                "access_token": self.whatsapp_access_token,
-                "phone_number_id": self.whatsapp_phone_number_id,
-                "webhook_verify_token": self.whatsapp_webhook_verify_token,
-                "app_secret": self.whatsapp_app_secret
-            }
-        
-        elif platform == "Facebook" and self.enable_facebook:
-            credentials = {
-                "page_access_token": self.facebook_page_access_token,
-                "app_secret": self.facebook_app_secret,
-                "verify_token": self.facebook_verify_token
-            }
-        
-        elif platform == "Instagram" and self.enable_instagram:
-            credentials = {
-                "access_token": self.instagram_access_token,
-                "instagram_business_account_id": self.instagram_business_account_id,
-                "app_secret": self.instagram_app_secret
-            }
-        
-        elif platform == "Telegram" and self.enable_telegram:
-            credentials = {
-                "bot_token": self.telegram_bot_token,
-                "webhook_secret": self.telegram_webhook_secret
-            }
-        
-        return credentials
+        """Get credentials for a specific platform from Social Media Settings."""
+        try:
+            settings = frappe.get_single("Social Media Settings")
+            return settings.get_platform_credentials(platform)
+        except Exception:
+            return {}
     
     def is_platform_enabled(self, platform: str) -> bool:
-        """Check if a platform is enabled."""
-        platform_flags = {
-            "WhatsApp": self.enable_whatsapp,
-            "Facebook": self.enable_facebook,
-            "Instagram": self.enable_instagram,
-            "Telegram": self.enable_telegram,
-            "Tawk.to": self.enable_tawk_to_sync
-        }
-        
-        return platform_flags.get(platform, False)
+        """Check if a platform is enabled in Social Media Settings."""
+        try:
+            settings = frappe.get_single("Social Media Settings")
+            return settings.is_platform_enabled(platform)
+        except Exception:
+            return False
     
     def get_escalation_rules(self) -> dict:
         """Get escalation rules configuration."""
@@ -124,6 +86,7 @@ class UnifiedInboxSettings(Document):
     
     def get_ai_settings(self) -> dict:
         """Get AI settings configuration."""
+        sm_settings = frappe.get_single("Social Media Settings")
         return {
             "enable_ai_first_response": self.enable_ai_first_response,
             "ai_confidence_threshold": self.ai_confidence_threshold or 0.7,
@@ -131,7 +94,7 @@ class UnifiedInboxSettings(Document):
             "ai_response_delay_seconds": self.ai_response_delay_seconds or 2,
             "enable_ai_learning": self.enable_ai_learning,
             "ai_model_preference": self.ai_model_preference or "WorkCom",
-            "bypass_ai_for_tawk_to": self.bypass_ai_for_tawk_to
+            "bypass_ai_for_tawk_to": sm_settings.bypass_ai_for_tawk_to
         }
 
 
@@ -214,7 +177,7 @@ def sync_platform_webhooks():
             if settings.is_platform_enabled(platform):
                 results["enabled_platforms"].append(platform)
         
-        if settings.enable_tawk_to_sync:
+        if settings.is_platform_enabled("Tawk.to"):
             results["enabled_platforms"].append("Tawk.to")
         
         return {

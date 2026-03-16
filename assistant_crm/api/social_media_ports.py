@@ -906,11 +906,23 @@ class TelegramIntegration(SocialMediaPlatform):
         super().__init__("Telegram")
 
     def get_platform_credentials(self) -> Dict[str, str]:
-        """Get Telegram credentials from settings."""
-        return {
-            "bot_token": "8329706646:AAFv4K1b2BCF5EYeKhQ144Cvkr5xgbb8-lM",  # WCFCB Assistant Bot
-            "webhook_secret": "wcfcb_telegram_webhook_secret_2025"
-        }
+        """Get Telegram credentials from Social Media Settings."""
+        try:
+            settings = frappe.get_single("Social Media Settings")
+            def gp(field):
+                try:
+                    return settings.get_password(field)
+                except Exception:
+                    return settings.get(field)
+            return {
+                "bot_token": gp("telegram_bot_token") or "",
+                "webhook_secret": gp("telegram_webhook_secret") or ""
+            }
+        except Exception:
+            return {
+                "bot_token": "",
+                "webhook_secret": ""
+            }
 
     def check_configuration(self) -> bool:
         """Check if Telegram is properly configured."""
@@ -4650,4 +4662,67 @@ class USSDIntegration(SocialMediaPlatform):
     def process_webhook(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
         # USSD webhooks are handled by assistant_crm.api.ussd_integration.ussd_webhook
         return {"status": "unsupported", "message": "Use ussd_webhook endpoint"}
+
+@frappe.whitelist(allow_guest=True)
+def google_oauth_callback():
+    """
+    Dedicated callback endpoint for Google OAuth integration (YouTube).
+    """
+    # 1. Get the authorization code from Google
+    code = frappe.request.args.get("code")
+    
+    if not code:
+        return "No authorization code provided by Google."
+
+    token_url = "https://oauth2.googleapis.com/token"
+
+    # 2. Retrieve your stored credentials from Social Media Settings
+    settings = frappe.get_single("Social Media Settings")
+    client_id = settings.get("youtube_client_id")
+    try:
+        client_secret = settings.get_password("youtube_client_secret")
+    except Exception:
+        client_secret = settings.get("youtube_client_secret")
+
+    # Check if settings are missing
+    if not client_id or not client_secret:
+        return "<script>alert('YouTube API Credentials missing in settings'); window.close();</script>"
+
+    payload = {
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "code": code,
+        "grant_type": "authorization_code",
+        # Make sure this matches exactly what is in your Google Cloud Console
+        "redirect_uri": "https://clone.exn1.uk/api/method/assistant_crm.api.social_media_ports.google_oauth_callback"
+    }
+
+    # 3. Exchange the code for the tokens
+    try:
+        import requests
+        response = requests.post(token_url, data=payload)
+        tokens = response.json()
+
+        # 4. Save the tokens to the database
+        if "access_token" in tokens:
+            frappe.db.set_value("Social Media Settings", "Social Media Settings", "youtube_access_token", tokens.get("access_token"))
+            
+            # Google only sends a refresh token on the first connection or if access_type=offline
+            if "refresh_token" in tokens:
+                frappe.db.set_value("Social Media Settings", "Social Media Settings", "youtube_refresh_token", tokens.get("refresh_token"))
+            
+            frappe.db.commit()
+            
+            frappe.log_error("YouTube Authentication Successful", "Google OAuth")
+            message = "Authentication successful! Tokens have been saved. You can close this window."
+            return f"<html><body><h3>{message}</h3></body></html>"
+        else:
+            # Log the exact error if authentication fails
+            frappe.log_error(str(tokens), "Google OAuth Error")
+            message = f"Authentication failed: {tokens.get('error_description', 'Unknown error')}"
+            return f"<html><body><h3>{message}</h3></body></html>"
+    except Exception as e:
+        frappe.log_error(str(e), "Google OAuth Callback Exception")
+        message = f"Authentication process failed with an internal error: {str(e)}"
+        return f"<html><body><h3>{message}</h3></body></html>"
 

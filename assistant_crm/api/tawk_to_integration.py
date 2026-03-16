@@ -42,8 +42,9 @@ class TawkToIntegration:
     """
     
     def __init__(self):
-        self.api_key = TAWK_TO_API_KEY
-        self.property_id = TAWK_TO_PROPERTY_ID
+        settings = frappe.get_single("Social Media Settings")
+        self.api_key = settings.get_password("tawk_to_api_key")
+        self.property_id = settings.tawk_to_property_id
         self.base_url = TAWK_TO_BASE_URL
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",

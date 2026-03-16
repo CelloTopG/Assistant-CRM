@@ -91,7 +91,20 @@
         "youtube_access_token",
         "youtube_refresh_token",
         "youtube_webhook_secret",
-        "youtube_api_version"
+        "youtube_api_version",
+        "telegram_section",
+        "telegram_enabled",
+        "telegram_bot_token",
+        "column_break_telegram",
+        "telegram_webhook_secret",
+        "tawk_to_section",
+        "tawk_to_enabled",
+        "tawk_to_api_key",
+        "tawk_to_property_id",
+        "column_break_tawk_to",
+        "tawk_to_sync_interval_minutes",
+        "tawk_to_webhook_url",
+        "bypass_ai_for_tawk_to"
     ],
     "fields": [
         {
@@ -555,6 +568,74 @@
             "fieldname": "youtube_api_version",
             "fieldtype": "Data",
             "label": "YouTube API Version"
+        },
+        {
+            "fieldname": "telegram_section",
+            "fieldtype": "Section Break",
+            "label": "Telegram Integration"
+        },
+        {
+            "default": "0",
+            "fieldname": "telegram_enabled",
+            "fieldtype": "Check",
+            "label": "Enable Telegram"
+        },
+        {
+            "fieldname": "telegram_bot_token",
+            "fieldtype": "Password",
+            "label": "Telegram Bot Token"
+        },
+        {
+            "fieldname": "column_break_telegram",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "telegram_webhook_secret",
+            "fieldtype": "Password",
+            "label": "Telegram Webhook Secret"
+        },
+        {
+            "fieldname": "tawk_to_section",
+            "fieldtype": "Section Break",
+            "label": "Tawk.to Integration"
+        },
+        {
+            "default": "0",
+            "fieldname": "tawk_to_enabled",
+            "fieldtype": "Check",
+            "label": "Enable Tawk.to"
+        },
+        {
+            "fieldname": "tawk_to_api_key",
+            "fieldtype": "Password",
+            "label": "Tawk.to API Key"
+        },
+        {
+            "fieldname": "tawk_to_property_id",
+            "fieldtype": "Data",
+            "label": "Tawk.to Property ID"
+        },
+        {
+            "fieldname": "column_break_tawk_to",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "5",
+            "fieldname": "tawk_to_sync_interval_minutes",
+            "fieldtype": "Int",
+            "label": "Tawk.to Sync Interval (minutes)"
+        },
+        {
+            "fieldname": "tawk_to_webhook_url",
+            "fieldtype": "Data",
+            "label": "Tawk.to Webhook URL",
+            "read_only": 1
+        },
+        {
+            "default": "1",
+            "fieldname": "bypass_ai_for_tawk_to",
+            "fieldtype": "Check",
+            "label": "Bypass AI for Tawk.to (Direct to Agents)"
         }
     ],
     "index_web_pages_for_search": 1,

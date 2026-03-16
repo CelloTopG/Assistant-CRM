@@ -62,6 +62,17 @@ def create_default_settings():
                 "name": "Unified Inbox Settings"
             })
         
+        # Social Media Settings
+        if frappe.db.exists("Social Media Settings", "Social Media Settings"):
+            print("📋 Social Media Settings already exist, updating...")
+            sm_settings = frappe.get_single("Social Media Settings")
+        else:
+            print("📋 Creating default Social Media Settings...")
+            sm_settings = frappe.get_doc({
+                "doctype": "Social Media Settings",
+                "name": "Social Media Settings"
+            })
+        
         # Set default values
         settings.enable_unified_inbox = 1
         settings.auto_assign_agents = 1
@@ -78,12 +89,21 @@ def create_default_settings():
         settings.enable_ai_learning = 1
         settings.ai_model_preference = "WorkCom"
         
-        # Tawk.to Settings (using provided credentials)
-        settings.tawk_to_api_key = "47585bce62f84437dace4a6ed63ee14b1ce2a6dd"
-        settings.tawk_to_property_id = "68ac3c63fda87419226520f9"
-        settings.enable_tawk_to_sync = 1
-        settings.tawk_to_sync_interval_minutes = 5
-        settings.bypass_ai_for_tawk_to = 1
+        # Tawk.to Settings in Social Media Settings
+        sm_settings.tawk_to_api_key = "47585bce62f84437dace4a6ed63ee14b1ce2a6dd"
+        sm_settings.tawk_to_property_id = "68ac3c63fda87419226520f9"
+        sm_settings.tawk_to_enabled = 1
+        sm_settings.tawk_to_sync_interval_minutes = 5
+        sm_settings.bypass_ai_for_tawk_to = 1
+        
+        # Other platform defaults in Social Media Settings
+        sm_settings.whatsapp_enabled = 0
+        sm_settings.facebook_enabled = 0
+        sm_settings.instagram_enabled = 0
+        sm_settings.telegram_enabled = 0
+        
+        sm_settings.save(ignore_permissions=True)
+        print("✅ Social Media settings created/updated successfully")
         
         # Escalation Settings
         settings.auto_escalate_after_minutes = 30
@@ -274,16 +294,15 @@ def get_setup_status():
             "social_media_configured": False
         }
         
-        # Check Tawk.to configuration
-        if status["settings_created"]:
-            settings = frappe.get_single("Unified Inbox Settings")
-            status["tawk_to_configured"] = bool(settings.tawk_to_api_key and settings.tawk_to_property_id)
-            status["social_media_configured"] = any([
-                settings.enable_whatsapp and settings.whatsapp_access_token,
-                settings.enable_facebook and settings.facebook_page_access_token,
-                settings.enable_instagram and settings.instagram_access_token,
-                settings.enable_telegram and settings.telegram_bot_token
-            ])
+        # Check Tawk.to and Social Media configuration
+        sm_settings = frappe.get_single("Social Media Settings")
+        status["tawk_to_configured"] = bool(sm_settings.get_password("tawk_to_api_key") and sm_settings.tawk_to_property_id)
+        status["social_media_configured"] = any([
+            sm_settings.whatsapp_enabled and sm_settings.get_password("whatsapp_access_token"),
+            sm_settings.facebook_enabled and sm_settings.get_password("facebook_page_access_token"),
+            sm_settings.instagram_enabled and sm_settings.get_password("instagram_access_token"),
+            sm_settings.telegram_enabled and sm_settings.get_password("telegram_bot_token")
+        ])
         
         status["setup_complete"] = all([
             status["settings_created"],
