@@ -4684,6 +4684,12 @@ def google_oauth_callback():
     except Exception:
         client_secret = settings.get("youtube_client_secret")
 
+    # Clean up whitespace if fetched from database
+    if client_id:
+        client_id = str(client_id).strip()
+    if client_secret:
+        client_secret = str(client_secret).strip()
+
     # Check if settings are missing
     if not client_id or not client_secret:
         return "<script>alert('YouTube API Credentials missing in settings'); window.close();</script>"
@@ -4718,8 +4724,8 @@ def google_oauth_callback():
             return f"<html><body><h3>{message}</h3></body></html>"
         else:
             # Log the exact error if authentication fails
-            frappe.log_error(str(tokens), "Google OAuth Error")
-            message = f"Authentication failed: {tokens.get('error_description', 'Unknown error')}"
+            frappe.log_error(f"Failed with Client ID: '{client_id}'\nResponse: {str(tokens)}", "Google OAuth Error")
+            message = f"Authentication failed: {tokens.get('error_description', 'Unknown error')} (Check Frappe Error Log for details)"
             return f"<html><body><h3>{message}</h3></body></html>"
     except Exception as e:
         frappe.log_error(str(e), "Google OAuth Callback Exception")
