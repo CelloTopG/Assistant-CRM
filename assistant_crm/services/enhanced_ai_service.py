@@ -1009,10 +1009,10 @@ USER QUESTION:
         - history: list of previous Inbox Status Reports with comparable fields
         """
         try:
-            if not self.openai_client:
+            if not self.antoine_client:
                 return (
-                    "AI insights are not available because OpenAI is not configured. "
-                    "Please configure Enhanced AI Settings with a valid OpenAI API key."
+                    "AI insights are not available because Antoine AI is not configured. "
+                    "Please configure Enhanced AI Settings with a valid Antoine API key."
                 )
 
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
@@ -1051,8 +1051,8 @@ USER QUESTION:
 {query}
 """
 
-            response = self.openai_client.chat.completions.create(
-                model=self.config.get("openai_model", "gpt-4"),
+            response = self.antoine_client.chat.completions.create(
+                model=self.config.get("antoine_model_id", "gpt-4"),
                 messages=[
                     {
                         "role": "system",
@@ -1071,7 +1071,7 @@ USER QUESTION:
             return text or "No insights generated."
 
         except Exception as e:
-            key = (self.config.get("openai_api_key") or "")
+            key = (self.config.get("antoine_api_key") or "")
             key_len = len(key)
             frappe.log_error(
                 f"Error generating inbox status report insights (key_len={key_len}): {str(e)}",
@@ -1090,10 +1090,10 @@ USER QUESTION:
         - history: list of previous Survey Feedback Reports with comparable fields
         """
         try:
-            if not self.openai_client:
+            if not self.antoine_client:
                 return (
-                    "AI insights are not available because OpenAI is not configured. "
-                    "Please configure Enhanced AI Settings with a valid OpenAI API key."
+                    "AI insights are not available because Antoine AI is not configured. "
+                    "Please configure Enhanced AI Settings with a valid Antoine API key."
                 )
 
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
@@ -1135,8 +1135,8 @@ USER QUESTION:
 {query}
 """
 
-            response = self.openai_client.chat.completions.create(
-                model=self.config.get("openai_model", "gpt-4"),
+            response = self.antoine_client.chat.completions.create(
+                model=self.config.get("antoine_model_id", "gpt-4"),
                 messages=[
                     {
                         "role": "system",
@@ -1155,7 +1155,7 @@ USER QUESTION:
             return text or "No insights generated."
 
         except Exception as e:
-            key = (self.config.get("openai_api_key") or "")
+            key = (self.config.get("antoine_api_key") or "")
             key_len = len(key)
             frappe.log_error(
                 f"Error generating survey feedback report insights (key_len={key_len}): {str(e)}",
@@ -1176,10 +1176,10 @@ USER QUESTION:
         - history: list of previous AI Automation Reports with comparable fields
         """
         try:
-            if not self.openai_client:
+            if not self.antoine_client:
                 return (
-                    "AI insights are not available because OpenAI is not configured. "
-                    "Please configure Enhanced AI Settings with a valid OpenAI API key."
+                    "AI insights are not available because Antoine AI is not configured. "
+                    "Please configure Enhanced AI Settings with a valid Antoine API key."
                 )
 
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
@@ -1215,8 +1215,8 @@ USER QUESTION:
 {query}
 """
 
-            response = self.openai_client.chat.completions.create(
-                model=self.config.get("openai_model", "gpt-4"),
+            response = self.antoine_client.chat.completions.create(
+                model=self.config.get("antoine_model_id", "gpt-4"),
                 messages=[
                     {
                         "role": "system",
@@ -1235,7 +1235,7 @@ USER QUESTION:
             return text or "No insights generated."
 
         except Exception as e:
-            key = (self.config.get("openai_api_key") or "")
+            key = (self.config.get("antoine_api_key") or "")
             key_len = len(key)
             frappe.log_error(
                 f"Error generating AI automation report insights (key_len={key_len}): {str(e)}",
@@ -1259,10 +1259,10 @@ USER QUESTION:
         - history: previous windows with comparable aggregated metrics
         """
         try:
-            if not self.openai_client:
+            if not self.antoine_client:
                 return (
-                    "AI insights are not available because OpenAI is not configured. "
-                    "Please configure Enhanced AI Settings with a valid OpenAI API key."
+                    "AI insights are not available because Antoine AI is not configured. "
+                    "Please configure Enhanced AI Settings with a valid Antoine API key."
                 )
 
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
@@ -1293,8 +1293,8 @@ USER QUESTION:
 {query}
 """
 
-            response = self.openai_client.chat.completions.create(
-                model=self.config.get("openai_model", "gpt-4"),
+            response = self.antoine_client.chat.completions.create(
+                model=self.config.get("antoine_model_id", "gpt-4"),
                 messages=[
                     {
                         "role": "system",
@@ -1312,7 +1312,7 @@ USER QUESTION:
             text = response.choices[0].message.content.strip()
             return text or "No insights generated."
         except Exception as e:
-            key = (self.config.get("openai_api_key") or "")
+            key = (self.config.get("antoine_api_key") or "")
             key_len = len(key)
             frappe.log_error(
                 f"Error generating branch performance report insights (key_len={key_len}): {str(e)}",
@@ -1335,10 +1335,10 @@ USER QUESTION:
         - history: previous windows with comparable aggregated metrics
         """
         try:
-            if not self.openai_client:
+            if not self.antoine_client:
                 return (
-                    "AI insights are not available because OpenAI is not configured. "
-                    "Please configure Enhanced AI Settings with a valid OpenAI API key."
+                    "AI insights are not available because Antoine AI is not configured. "
+                    "Please configure Enhanced AI Settings with a valid Antoine API key."
                 )
 
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
@@ -1371,8 +1371,8 @@ USER QUESTION:
 {query}
 """
 
-            response = self.openai_client.chat.completions.create(
-                model=self.config.get("openai_model", "gpt-4"),
+            response = self.antoine_client.chat.completions.create(
+                model=self.config.get("antoine_model_id", "gpt-4"),
                 messages=[
                     {
                         "role": "system",
@@ -1390,7 +1390,7 @@ USER QUESTION:
             text = response.choices[0].message.content.strip()
             return text or "No insights generated."
         except Exception as e:
-            key = (self.config.get("openai_api_key") or "")
+            key = (self.config.get("antoine_api_key") or "")
             key_len = len(key)
             frappe.log_error(
                 f"Error generating complaints status report insights (key_len={key_len}): {str(e)}",
@@ -1411,10 +1411,10 @@ USER QUESTION:
         - history: previous windows with comparable aggregated metrics
         """
         try:
-            if not self.openai_client:
+            if not self.antoine_client:
                 return (
-                    "AI insights are not available because OpenAI is not configured. "
-                    "Please configure Enhanced AI Settings with a valid OpenAI API key."
+                    "AI insights are not available because Antoine AI is not configured. "
+                    "Please configure Enhanced AI Settings with a valid Antoine API key."
                 )
 
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
@@ -1444,8 +1444,8 @@ USER QUESTION:
 {query}
 """
 
-            response = self.openai_client.chat.completions.create(
-                model=self.config.get("openai_model", "gpt-4"),
+            response = self.antoine_client.chat.completions.create(
+                model=self.config.get("antoine_model_id", "gpt-4"),
                 messages=[
                     {
                         "role": "system",
@@ -1463,7 +1463,7 @@ USER QUESTION:
             text = response.choices[0].message.content.strip()
             return text or "No insights generated."
         except Exception as e:
-            key = (self.config.get("openai_api_key") or "")
+            key = (self.config.get("antoine_api_key") or "")
             key_len = len(key)
             frappe.log_error(
                 f"Error generating SLA compliance report insights (key_len={key_len}): {str(e)}",
@@ -1485,10 +1485,10 @@ USER QUESTION:
         - history: previous windows with comparable aggregated metrics
         """
         try:
-            if not self.openai_client:
+            if not self.antoine_client:
                 return (
-                    "AI insights are not available because OpenAI is not configured. "
-                    "Please configure Enhanced AI Settings with a valid OpenAI API key."
+                    "AI insights are not available because Antoine AI is not configured. "
+                    "Please configure Enhanced AI Settings with a valid Antoine API key."
                 )
 
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
@@ -1519,8 +1519,8 @@ USER QUESTION:
 {query}
 """
 
-            response = self.openai_client.chat.completions.create(
-                model=self.config.get("openai_model", "gpt-4"),
+            response = self.antoine_client.chat.completions.create(
+                model=self.config.get("antoine_model_id", "gpt-4"),
                 messages=[
                     {
                         "role": "system",
@@ -1538,7 +1538,7 @@ USER QUESTION:
             text = response.choices[0].message.content.strip()
             return text or "No insights generated."
         except Exception as e:
-            key = (self.config.get("openai_api_key") or "")
+            key = (self.config.get("antoine_api_key") or "")
             key_len = len(key)
             frappe.log_error(
                 f"Error generating beneficiary status report insights (key_len={key_len}): {str(e)}",
@@ -1558,10 +1558,10 @@ USER QUESTION:
         - distributions: status/gender/department breakdowns
         """
         try:
-            if not self.openai_client:
+            if not self.antoine_client:
                 return (
-                    "AI insights are not available because OpenAI is not configured. "
-                    "Please configure Enhanced AI Settings with a valid OpenAI API key."
+                    "AI insights are not available because Antoine AI is not configured. "
+                    "Please configure Enhanced AI Settings with a valid Antoine API key."
                 )
 
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
@@ -1593,8 +1593,8 @@ USER QUESTION:
 {query}
 """
 
-            response = self.openai_client.chat.completions.create(
-                model=self.config.get("openai_model", "gpt-4"),
+            response = self.antoine_client.chat.completions.create(
+                model=self.config.get("antoine_model_id", "gpt-4"),
                 messages=[
                     {
                         "role": "system",
@@ -1612,7 +1612,7 @@ USER QUESTION:
             text = response.choices[0].message.content.strip()
             return text or "No insights generated."
         except Exception as e:
-            key = (self.config.get("openai_api_key") or "")
+            key = (self.config.get("antoine_api_key") or "")
             key_len = len(key)
             frappe.log_error(
                 f"Error generating employee status report insights (key_len={key_len}): {str(e)}",
@@ -1634,10 +1634,10 @@ USER QUESTION:
         - history: previous payout windows with comparable aggregated metrics
         """
         try:
-            if not self.openai_client:
+            if not self.antoine_client:
                 return (
-                    "AI insights are not available because OpenAI is not configured. "
-                    "Please configure Enhanced AI Settings with a valid OpenAI API key."
+                    "AI insights are not available because Antoine AI is not configured. "
+                    "Please configure Enhanced AI Settings with a valid Antoine API key."
                 )
 
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
@@ -1669,8 +1669,8 @@ USER QUESTION:
 {query}
 """
 
-            response = self.openai_client.chat.completions.create(
-                model=self.config.get("openai_model", "gpt-4"),
+            response = self.antoine_client.chat.completions.create(
+                model=self.config.get("antoine_model_id", "gpt-4"),
                 messages=[
                     {
                         "role": "system",
@@ -1688,7 +1688,7 @@ USER QUESTION:
             text = response.choices[0].message.content.strip()
             return text or "No insights generated."
         except Exception as e:
-            key = (self.config.get("openai_api_key") or "")
+            key = (self.config.get("antoine_api_key") or "")
             key_len = len(key)
             frappe.log_error(
                 f"Error generating payout summary report insights (key_len={key_len}): {str(e)}",
