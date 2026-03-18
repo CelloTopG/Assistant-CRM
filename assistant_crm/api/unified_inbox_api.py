@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 WCFCB Assistant CRM - Unified Inbox API
 =======================================
@@ -836,14 +836,42 @@ def close_conversation(conversation_name: str, resolution_notes: str = None):
 			except Exception as sync_err:
 				frappe.log_error(f"Failed to sync agent load after close: {sync_err}", "Unified Inbox Agent Load Sync")
 
-		return {
-			"status": "success",
-			"message": "Conversation closed successfully",
-		}
-	except Exception as e:
-		frappe.log_error(f"Error closing conversation: {str(e)}", "Unified Inbox API Error")
-		return {"status": "error", "message": "Failed to close conversation"}
+        return {
+            "status": "success",
+            "message": "Conversation closed successfully",
+        }
+    except Exception as e:
+        frappe.log_error(f"Error closing conversation: {str(e)}", "Unified Inbox API Error")
+        return {"status": "error", "message": "Failed to close conversation"}
 
+@frappe.whitelist()
+def get_supervisors():
+    """Get list of users eligible for escalation (Supervisors/Managers)."""
+    try:
+        # Fetch active users (excluding System Users/Administrator to keep the list clean)
+        supervisors = frappe.get_all(
+            "User",
+            filters={"enabled": 1, "user_type": "System User", "name": ["!=", "Administrator"]},
+            fields=["name", "full_name"]
+        )
+        return {"status": "success", "data": supervisors}
+    except Exception as e:
+        frappe.log_error(f"Error fetching supervisors: {str(e)}", "Unified Inbox API Error")
+        return {"status": "error", "message": "Failed to fetch supervisors"}
+
+@frappe.whitelist()
+def get_available_agents():
+    """Get list of active support agents."""
+    try:
+        agents = frappe.get_all(
+            "User",
+            filters={"enabled": 1, "user_type": "System User", "name": ["!=", "Administrator"]},
+            fields=["name", "full_name"]
+        )
+        return {"status": "success", "data": agents}
+    except Exception as e:
+        frappe.log_error(f"Error fetching agents: {str(e)}", "Unified Inbox API Error")
+        return {"status": "error", "message": "Failed to fetch agents"}
 
 @frappe.whitelist()
 def get_agent_dashboard_data(agent: str = None):

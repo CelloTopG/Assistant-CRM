@@ -17,26 +17,42 @@ class EnhancedAIService:
 
     def __init__(self):
         self.config = self.get_ai_configuration()
-        self.openai_client = self.initialize_openai_client()
+        self.anna_client = self.get_client("anna")
+        self.antoine_client = self.get_client("antoine")
+        self.enhancement_client = self.get_client("enhancement")
+        
+        # Keep old reference for backwards compatibility just in case other modules import it
+        self.openai_client = self.anna_client
+        
         self.tone_profiles = self.load_tone_profiles()
         self.grammar_rules = self.load_grammar_rules()
 
     def get_ai_configuration(self) -> Dict[str, Any]:
         """Get AI service configuration from Enhanced AI Settings.
-
-        We support two logical models sharing the same API key:
-        - openai_model: primary model used for analytical/report-style WorkCom flows
-        - chat_model: optional model used for WorkCom / Unified Inbox chat. If not set,
-          we fall back to openai_model.
+        Supports 3 distinct AI Agent APIs:
+        - Anna (Unified Inbox / Customer Support)
+        - Antoine (Reporting & Analytics)
+        - Enhancement (Tone & Grammar adjustments)
         """
         try:
             settings = frappe.get_single("Enhanced AI Settings")
-            # Use get_password to retrieve the decrypted OpenAI key from the Password field
-            api_key = (settings.get_password("openai_api_key") or "").strip()
             return {
-                "openai_api_key": api_key,
-                "openai_model": settings.get("openai_model", "gpt-4"),
-                "chat_model": (settings.get("chat_model") or ""),
+                # Anna Configs
+                "anna_api_key": (settings.get_password("anna_api_key") or "").strip(),
+                "anna_endpoint_url": settings.get("anna_endpoint_url", "https://api.openai.com/v1/chat/completions"),
+                "anna_model_id": settings.get("anna_model_id", "gpt-4"),
+                
+                # Antoine Configs
+                "antoine_api_key": (settings.get_password("antoine_api_key") or "").strip(),
+                "antoine_endpoint_url": settings.get("antoine_endpoint_url", "https://api.openai.com/v1/chat/completions"),
+                "antoine_model_id": settings.get("antoine_model_id", "gpt-4"),
+                
+                # Enhancement Configs
+                "enhancement_api_key": (settings.get_password("enhancement_api_key") or "").strip(),
+                "enhancement_endpoint_url": settings.get("enhancement_endpoint_url", "https://api.openai.com/v1/chat/completions"),
+                "enhancement_model_id": settings.get("enhancement_model_id", "gpt-4"),
+                
+                # Global Tools
                 "tone_adjustment_enabled": settings.get("tone_adjustment_enabled", 1),
                 "grammar_correction_enabled": settings.get("grammar_correction_enabled", 1),
                 "style_optimization_enabled": settings.get("style_optimization_enabled", 1),
@@ -46,34 +62,36 @@ class EnhancedAIService:
                 "temperature": settings.get("temperature", 0.7),
             }
         except Exception:
+            # Fallbacks
             return {
-                "openai_api_key": "",
-                "openai_model": "gpt-4",
-                "chat_model": "",
-                "tone_adjustment_enabled": 1,
-                "grammar_correction_enabled": 1,
-                "style_optimization_enabled": 1,
-                "auto_translate_enabled": 0,
-                "readability_target": "professional",
-                "max_tokens": 1000,
-                "temperature": 0.7,
+                "anna_api_key": "", "anna_endpoint_url": "", "anna_model_id": "gpt-4",
+                "antoine_api_key": "", "antoine_endpoint_url": "", "antoine_model_id": "gpt-4",
+                "enhancement_api_key": "", "enhancement_endpoint_url": "", "enhancement_model_id": "gpt-4",
+                "tone_adjustment_enabled": 1, "grammar_correction_enabled": 1, "style_optimization_enabled": 1,
+                "auto_translate_enabled": 0, "readability_target": "professional",
+                "max_tokens": 1000, "temperature": 0.7,
             }
 
-    def initialize_openai_client(self):
-        """Initialize OpenAI client using the new OpenAI Python SDK (>=1.0)."""
+    def get_client(self, agent: str):
+        """Dynamically generate an OpenAI client specifically for Anna, Antoine, or Enhancement"""
         try:
-            api_key = (self.config.get("openai_api_key") or "").strip()
-            # Debug log without exposing the full secret
-            masked = f"***{api_key[-4:]}" if api_key else "None"
-            frappe.log_error(
-                f"Initializing OpenAI client (len={len(api_key)}, key={masked})",
-                "Key Debug",
-            )
+            api_key = self.config.get(f"{agent}_api_key", "").strip()
+            # If the user put the exact endpoint instead of the base, OpenAI SDK expects a base_url
+            # but usually it's best to pass the base_url dynamically if provided
+            base_url = self.config.get(f"{agent}_endpoint_url", "").strip()
+            
+            # OpenAI default base is https://api.openai.com/v1
+            # If they entered chat/completions, strip it for the SDK
+            if base_url and base_url.endswith("/chat/completions"):
+                base_url = base_url.replace("/chat/completions", "")
+                
             if api_key:
+                if base_url and "api.openai.com/v1" not in base_url:
+                    return OpenAI(api_key=api_key, base_url=base_url)
                 return OpenAI(api_key=api_key)
             return None
         except Exception as e:
-            frappe.log_error(f"Error initializing OpenAI client: {str(e)}")
+            frappe.log_error(f"Error initializing custom client for {agent}: {str(e)}")
             return None
 
     def load_tone_profiles(self) -> Dict[str, Dict[str, Any]]:
@@ -257,7 +275,7 @@ class EnhancedAIService:
                 corrected_text = re.sub(rule["pattern"], rule["correction"], corrected_text, flags=re.IGNORECASE)
 
             # Use AI for advanced grammar correction if OpenAI is available
-            if self.openai_client:
+            if self.enhancement_client:
                 corrected_text = self.ai_grammar_correction(corrected_text)
 
             return corrected_text
@@ -282,8 +300,8 @@ class EnhancedAIService:
             Return only the corrected text without explanations.
             """
 
-            response = self.openai_client.chat.completions.create(
-                model=self.config["openai_model"],
+            response = self.enhancement_client.chat.completions.create(
+                model=self.config["enhancement_model_id"],
                 messages=[
                     {"role": "system", "content": "You are a professional editor specializing in business communications for a workers' compensation fund."},
                     {"role": "user", "content": prompt}
@@ -307,7 +325,7 @@ class EnhancedAIService:
 
             tone_profile = self.tone_profiles[target_tone]
 
-            if self.openai_client:
+            if self.enhancement_client:
                 prompt = f"""
                 Please adjust the tone of the following message to be {target_tone}.
 
@@ -323,8 +341,8 @@ class EnhancedAIService:
                 Return the message with adjusted tone while maintaining the core information and meaning.
                 """
 
-                response = self.openai_client.chat.completions.create(
-                    model=self.config["openai_model"],
+                response = self.enhancement_client.chat.completions.create(
+                    model=self.config["enhancement_model_id"],
                     messages=[
                         {"role": "system", "content": f"You are a communication specialist for WCFCB, expert in adjusting tone for {platform} communications."},
                         {"role": "user", "content": prompt}
@@ -396,7 +414,7 @@ class EnhancedAIService:
                 text = text[:max_length-3] + "..."
 
             # Platform-specific optimizations using AI
-            if self.openai_client and platform in platform_rules:
+            if self.enhancement_client and platform in platform_rules:
                 optimized_text = self.ai_platform_optimization(text, platform, rules)
                 return optimized_text
 
@@ -423,8 +441,8 @@ class EnhancedAIService:
             Return the optimized message that follows {platform} best practices.
             """
 
-            response = self.openai_client.chat.completions.create(
-                model=self.config["openai_model"],
+            response = self.enhancement_client.chat.completions.create(
+                model=self.config["enhancement_model_id"],
                 messages=[
                     {"role": "system", "content": f"You are a social media specialist optimizing content for {platform}."},
                     {"role": "user", "content": prompt}
@@ -463,7 +481,7 @@ class EnhancedAIService:
                     personalized_text = f"Dear {customer_name},\n\n{text}"
 
             # Use AI for advanced personalization if available
-            if self.openai_client and customer_context:
+            if self.enhancement_client and customer_context:
                 personalized_text = self.ai_personalization(text, customer_context)
 
             return personalized_text
@@ -495,8 +513,8 @@ class EnhancedAIService:
             Return the personalized message.
             """
 
-            response = self.openai_client.chat.completions.create(
-                model=self.config["openai_model"],
+            response = self.enhancement_client.chat.completions.create(
+                model=self.config["enhancement_model_id"],
                 messages=[
                     {"role": "system", "content": "You are a customer service specialist for WCFCB, expert in personalizing communications."},
                     {"role": "user", "content": prompt}
@@ -534,7 +552,7 @@ class EnhancedAIService:
                 return text
 
             # Use AI to improve readability if needed
-            if self.openai_client:
+            if self.enhancement_client:
                 return self.ai_readability_optimization(text, target_readability, flesch_score, grade_level)
 
             return text
@@ -581,8 +599,8 @@ class EnhancedAIService:
             Return the improved text with better readability.
             """
 
-            response = self.openai_client.chat.completions.create(
-                model=self.config["openai_model"],
+            response = self.enhancement_client.chat.completions.create(
+                model=self.config["enhancement_model_id"],
                 messages=[
                     {"role": "system", "content": "You are a writing specialist focused on improving readability while maintaining professional standards."},
                     {"role": "user", "content": prompt}
@@ -722,10 +740,10 @@ class EnhancedAIService:
         - optionally status_breakdown: per-status counts for the lifecycle
         """
         try:
-            if not self.openai_client:
+            if not self.antoine_client:
                 return (
-                    "AI insights are not available because OpenAI is not configured. "
-                    "Please configure Enhanced AI Settings with a valid OpenAI API key."
+                    "AI insights are not available because Antoine AI is not configured. "
+                    "Please configure Enhanced AI Settings with a valid Antoine API key."
                 )
 
             # Serialize context so WorkCom can see the exact numbers
@@ -757,9 +775,9 @@ USER QUESTION:
 {query}
 """
 
-            response = self.openai_client.chat.completions.create(
-                # WorkCom / report model
-                model=self.config.get("openai_model", "gpt-4"),
+            response = self.antoine_client.chat.completions.create(
+                # Antoine / report model
+                model=self.config.get("antoine_model_id", "gpt-4"),
                 messages=[
                     {
                         "role": "system",
@@ -844,22 +862,42 @@ USER MESSAGE:
 {message}
 """
 
-            # Choose chat model (WorkCom) if configured, otherwise fall back to the
-            # primary WorkCom/report model for backwards compatibility.
-            chat_model = (self.config.get("chat_model") or "").strip() or self.config.get("openai_model", "gpt-4")
+            # 1. Determine which model/client to strictly lock into for this conversation
+            # ALL unified inbox chats (including survey responses) are strictly handled by Anna
+            client = self.anna_client
+            active_model = self.config.get("anna_model_id", "gpt-4")
+            
+            system_identity = (
+                "You are Anna, the AI engine behind WCFCB's WorkCom chatbot. "
+                "Respond as 'Anna' in a warm, professional tone, using only the provided context. "
+                "Maintain this persona tightly and do not switch roles."
+            )
 
-            response = self.openai_client.chat.completions.create(
-                model=chat_model,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are WorkCom, the AI engine behind WCFCB's WorkCom chatbot. "
-                            "Respond as 'WorkCom' in a warm, professional tone, using only the provided context."
-                        ),
-                    },
-                    {"role": "user", "content": prompt},
-                ],
+            if not client:
+                return (
+                    "Our AI assistant is temporarily unavailable. "
+                    "Please try again later or ask to speak with a human agent."
+                )
+
+            # 2. Reconstruct the message array with strict conversation history
+            messages_payload = [{"role": "system", "content": system_identity}]
+
+            history = context.get("conversation_history", [])
+            for turn in history:
+                direction = turn.get("direction", "Inbound")
+                role = "assistant" if direction == "Outbound" else "user"
+                content = turn.get("message_content") or turn.get("content") or ""
+                if content:
+                    # Ignore system/invisible logs
+                    if not content.startswith("==="):
+                        messages_payload.append({"role": role, "content": content})
+
+            # Append the current prompt containing the latest instructions/message
+            messages_payload.append({"role": "user", "content": prompt})
+
+            response = client.chat.completions.create(
+                model=active_model,
+                messages=messages_payload,
                 max_tokens=int(self.config.get("max_tokens", 800) or 800),
                 temperature=float(self.config.get("temperature", 0.7) or 0.7),
             )

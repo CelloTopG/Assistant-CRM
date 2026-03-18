@@ -57,27 +57,69 @@
  ],
  "fields": [
   {
-   "fieldname": "ai_configuration_section",
+   "fieldname": "anna_agent_section",
    "fieldtype": "Section Break",
-   "label": "AI Configuration"
+   "label": "Anna (Unified Inbox Chat Agent Configuration)"
   },
   {
-   "fieldname": "openai_api_key",
+   "fieldname": "anna_api_key",
    "fieldtype": "Password",
-   "label": "OpenAI API Key"
+   "label": "Anna API Key / Bearer Token"
   },
   {
-   "default": "gpt-4",
-   "fieldname": "openai_model",
-   "fieldtype": "Select",
-   "label": "OpenAI Model (WorkCom / Reports)",
-   "options": "gpt-4\ngpt-4-turbo\ngpt-3.5-turbo\ngpt-3.5-turbo-16k"
-  },
-  {
-   "fieldname": "chat_model",
+   "fieldname": "anna_endpoint_url",
    "fieldtype": "Data",
-   "label": "Chat Model (WorkCom / Unified Inbox)",
-   "description": "Optional custom GPT model ID for WorkCom chat. If empty, the OpenAI Model above will be used."
+   "label": "Anna Endpoint URL",
+   "description": "Full URL to Anna's specific API endpoint (e.g., https://api.openai.com/v1/chat/completions or your custom webhook)",
+   "default": "https://api.openai.com/v1/chat/completions"
+  },
+  {
+   "fieldname": "anna_model_id",
+   "fieldtype": "Data",
+   "label": "Anna Model ID / Assistant ID",
+   "description": "The specific Assistant ID (asst_xyz) or Model ID"
+  },
+  {
+   "fieldname": "antoine_agent_section",
+   "fieldtype": "Section Break",
+   "label": "Antoine (Reporting & Analytics Agent Configuration)"
+  },
+  {
+   "fieldname": "antoine_api_key",
+   "fieldtype": "Password",
+   "label": "Antoine API Key / Bearer Token"
+  },
+  {
+   "fieldname": "antoine_endpoint_url",
+   "fieldtype": "Data",
+   "label": "Antoine Endpoint URL",
+   "default": "https://api.openai.com/v1/chat/completions"
+  },
+  {
+   "fieldname": "antoine_model_id",
+   "fieldtype": "Data",
+   "label": "Antoine Model ID / Assistant ID"
+  },
+  {
+   "fieldname": "enhancement_agent_section",
+   "fieldtype": "Section Break",
+   "label": "Enhancement Agent (Tone & Grammar Adjustments)"
+  },
+  {
+   "fieldname": "enhancement_api_key",
+   "fieldtype": "Password",
+   "label": "Enhancement Agent API Key"
+  },
+  {
+   "fieldname": "enhancement_endpoint_url",
+   "fieldtype": "Data",
+   "label": "Enhancement Agent Endpoint URL",
+   "default": "https://api.openai.com/v1/chat/completions"
+  },
+  {
+   "fieldname": "enhancement_model_id",
+   "fieldtype": "Data",
+   "label": "Enhancement Agent Model ID"
   },
   {
    "default": "1000",

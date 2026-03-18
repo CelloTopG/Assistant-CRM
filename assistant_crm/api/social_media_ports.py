@@ -4694,7 +4694,13 @@ def google_oauth_callback():
     if not client_id or not client_secret:
         return "<script>alert('YouTube API Credentials missing in settings'); window.close();</script>"
 
-    redirect_uri = f"{frappe.utils.get_url()}/api/method/assistant_crm.api.social_media_ports.google_oauth_callback"
+    # Force HTTPS for the production domain to prevent 'redirect_uri_mismatch' 
+    # when Frappe runs behind a reverse proxy that masks the HTTPS protocol.
+    base_url = str(frappe.utils.get_url())
+    if "clone.exn1.uk" in base_url:
+        base_url = "https://clone.exn1.uk"
+        
+    redirect_uri = f"{base_url}/api/method/assistant_crm.api.social_media_ports.google_oauth_callback"
 
     payload = {
         "client_id": client_id,

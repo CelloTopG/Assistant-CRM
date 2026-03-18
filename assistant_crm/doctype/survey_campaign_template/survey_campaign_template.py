@@ -5,33 +5,8 @@ import frappe
 from frappe.model.document import Document
 import json
 
-# OpenAI API configuration
+# OpenAI API config defaults (will be overwritten by Enhanced AI Settings)
 OPENAI_API_URL = "https://api.openai.com/v1/chat/completions"
-
-
-def get_openai_api_key():
-    """Get OpenAI API key from Assistant CRM Settings.
-
-    The API key should be configured in:
-    Setup > Assistant CRM Settings > OpenAI Configuration
-    """
-    try:
-        settings = frappe.get_single("Assistant CRM Settings")
-        api_key = settings.get_password("openai_api_key") if settings else None
-    except Exception:
-        api_key = None
-
-    # Fallback to site_config for backward compatibility
-    if not api_key:
-        api_key = frappe.conf.get("openai_api_key")
-
-    if not api_key:
-        frappe.throw(
-            "OpenAI API key not configured. Please set it in Setup > Assistant CRM Settings > OpenAI Configuration"
-        )
-    return api_key
-
-
 class SurveyCampaignTemplate(Document):
     """Survey Campaign Template for auto-populating survey campaigns with predefined questions and settings"""
 
@@ -141,14 +116,21 @@ def _call_openai(prompt, max_tokens=500):
     import requests
 
     try:
-        api_key = get_openai_api_key()
+        settings = frappe.get_single("Enhanced AI Settings")
+        api_key = (settings.get_password("enhancement_api_key") or "").strip()
+        endpoint_url = (settings.get("enhancement_endpoint_url") or OPENAI_API_URL).strip()
+        model_id = (settings.get("enhancement_model_id") or "gpt-4").strip()
+
+        if not api_key:
+            frappe.throw("Enhancement Agent API key not configured in Enhanced AI Settings.")
+            
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
 
         payload = {
-            "model": "gpt-4o-mini",
+            "model": model_id,
             "messages": [
                 {
                     "role": "system",
@@ -163,7 +145,7 @@ def _call_openai(prompt, max_tokens=500):
             "temperature": 0.7
         }
 
-        response = requests.post(OPENAI_API_URL, headers=headers, json=payload, timeout=30)
+        response = requests.post(endpoint_url, headers=headers, json=payload, timeout=30)
         response.raise_for_status()
 
         result = response.json()
