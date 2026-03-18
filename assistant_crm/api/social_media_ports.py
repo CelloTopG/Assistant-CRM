@@ -4694,13 +4694,15 @@ def google_oauth_callback():
     if not client_id or not client_secret:
         return "<script>alert('YouTube API Credentials missing in settings'); window.close();</script>"
 
+    redirect_uri = f"{frappe.utils.get_url()}/api/method/assistant_crm.api.social_media_ports.google_oauth_callback"
+
     payload = {
         "client_id": client_id,
         "client_secret": client_secret,
         "code": code,
         "grant_type": "authorization_code",
         # Make sure this matches exactly what is in your Google Cloud Console
-        "redirect_uri": "https://clone.exn1.uk/api/method/assistant_crm.api.social_media_ports.google_oauth_callback"
+        "redirect_uri": redirect_uri
     }
 
     # 3. Exchange the code for the tokens
@@ -4709,18 +4711,20 @@ def google_oauth_callback():
         response = requests.post(token_url, data=payload)
         tokens = response.json()
 
-        # 4. Save the tokens to the database
+        # 4. Save the tokens to the database securely
         if "access_token" in tokens:
-            frappe.db.set_value("Social Media Settings", "Social Media Settings", "youtube_access_token", tokens.get("access_token"))
+            doc = frappe.get_doc("Social Media Settings", "Social Media Settings")
+            doc.youtube_access_token = tokens.get("access_token")
             
             # Google only sends a refresh token on the first connection or if access_type=offline
             if "refresh_token" in tokens:
-                frappe.db.set_value("Social Media Settings", "Social Media Settings", "youtube_refresh_token", tokens.get("refresh_token"))
+                doc.youtube_refresh_token = tokens.get("refresh_token")
             
+            doc.save(ignore_permissions=True)
             frappe.db.commit()
             
-            frappe.log_error("YouTube Authentication Successful", "Google OAuth")
-            message = "Authentication successful! Tokens have been saved. You can close this window."
+            frappe.log_error(f"YouTube Authentication Successful via {redirect_uri}", "Google OAuth")
+            message = "Authentication successful! Tokens have been saved securely. You can close this window."
             return f"<html><body><h3>{message}</h3></body></html>"
         else:
             # Log the exact error if authentication fails
