@@ -59,67 +59,67 @@
   {
    "fieldname": "anna_agent_section",
    "fieldtype": "Section Break",
-   "label": "Anna (Unified Inbox Chat Agent Configuration)"
+   "label": "WorkCom Connect (Unified Inbox Chat Agent Configuration)"
   },
   {
    "fieldname": "anna_api_key",
    "fieldtype": "Password",
-   "label": "Anna API Key / Bearer Token"
+   "label": "WorkCom Connect Inbox API Key / Bearer Token"
   },
   {
    "fieldname": "anna_endpoint_url",
    "fieldtype": "Data",
-   "label": "Anna Endpoint URL",
-   "description": "Full URL to Anna's specific API endpoint (e.g., https://api.openai.com/v1/chat/completions or your custom webhook)",
+   "label": "WorkCom Connect Inbox Endpoint URL",
+   "description": "Full URL to the WorkCom Connect inbox specific API endpoint (e.g., https://api.openai.com/v1/chat/completions or your custom webhook)",
    "default": "https://api.openai.com/v1/chat/completions"
   },
   {
    "fieldname": "anna_model_id",
    "fieldtype": "Data",
-   "label": "Anna Model ID / Assistant ID",
+   "label": "WorkCom Connect Inbox Model ID / Assistant ID",
    "description": "The specific Assistant ID (asst_xyz) or Model ID"
   },
   {
    "fieldname": "antoine_agent_section",
    "fieldtype": "Section Break",
-   "label": "Antoine (Reporting & Analytics Agent Configuration)"
+   "label": "WorkCom Connect (Reporting & Analytics Agent Configuration)"
   },
   {
    "fieldname": "antoine_api_key",
    "fieldtype": "Password",
-   "label": "Antoine API Key / Bearer Token"
+   "label": "WorkCom Connect Reports API Key / Bearer Token"
   },
   {
    "fieldname": "antoine_endpoint_url",
    "fieldtype": "Data",
-   "label": "Antoine Endpoint URL",
+   "label": "WorkCom Connect Reports Endpoint URL",
    "default": "https://api.openai.com/v1/chat/completions"
   },
   {
    "fieldname": "antoine_model_id",
    "fieldtype": "Data",
-   "label": "Antoine Model ID / Assistant ID"
+   "label": "WorkCom Connect Reports Model ID / Assistant ID"
   },
   {
    "fieldname": "enhancement_agent_section",
    "fieldtype": "Section Break",
-   "label": "Enhancement Agent (Tone & Grammar Adjustments)"
+   "label": "WorkCom Connect (Survey Templates & Logic Agent)"
   },
   {
    "fieldname": "enhancement_api_key",
    "fieldtype": "Password",
-   "label": "Enhancement Agent API Key"
+   "label": "WorkCom Connect Survey Agent API Key"
   },
   {
    "fieldname": "enhancement_endpoint_url",
    "fieldtype": "Data",
-   "label": "Enhancement Agent Endpoint URL",
+   "label": "WorkCom Connect Survey Agent Endpoint URL",
    "default": "https://api.openai.com/v1/chat/completions"
   },
   {
    "fieldname": "enhancement_model_id",
    "fieldtype": "Data",
-   "label": "Enhancement Agent Model ID"
+   "label": "WorkCom Connect Survey Agent Model ID"
   },
   {
    "default": "1000",
