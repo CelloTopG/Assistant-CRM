@@ -836,13 +836,13 @@ def close_conversation(conversation_name: str, resolution_notes: str = None):
 			except Exception as sync_err:
 				frappe.log_error(f"Failed to sync agent load after close: {sync_err}", "Unified Inbox Agent Load Sync")
 
-        return {
-            "status": "success",
-            "message": "Conversation closed successfully",
-        }
-    except Exception as e:
-        frappe.log_error(f"Error closing conversation: {str(e)}", "Unified Inbox API Error")
-        return {"status": "error", "message": "Failed to close conversation"}
+		return {
+			"status": "success",
+			"message": "Conversation closed successfully",
+		}
+	except Exception as e:
+		frappe.log_error(f"Error closing conversation: {str(e)}", "Unified Inbox API Error")
+		return {"status": "error", "message": "Failed to close conversation"}
 
 @frappe.whitelist()
 def get_supervisors():
