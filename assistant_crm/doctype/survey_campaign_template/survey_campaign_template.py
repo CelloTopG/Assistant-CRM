@@ -113,49 +113,38 @@ def _call_openai(prompt, max_tokens=500):
     Returns:
         str: The AI response text or None on error
     """
-    import requests
-
     try:
-        settings = frappe.get_single("Enhanced AI Settings")
-        api_key = (settings.get_password("enhancement_api_key") or "").strip()
-        endpoint_url = (settings.get("enhancement_endpoint_url") or OPENAI_API_URL).strip()
-        model_id = (settings.get("enhancement_model_id") or "gpt-4").strip()
+        from assistant_crm.services.enhanced_ai_service import EnhancedAIService
+        
+        service = EnhancedAIService()
+        client = service.enhancement_client
+        model_id = service.config.get("enhancement_model_id", "gpt-4")
 
-        if not api_key:
-            frappe.throw("Enhancement Agent API key not configured in Enhanced AI Settings.")
-            
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
-        }
+        if not client:
+            frappe.throw("WorkCom/Enhancement Agent API key not configured in Enhanced AI Settings.")
 
-        payload = {
-            "model": model_id,
-            "messages": [
-                {
-                    "role": "system",
-                    "content": "You are WorkCom, a professional AI assistant that creates high-quality survey content for a CRM system. Be concise, strategic, and professional."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            "max_tokens": max_tokens,
-            "temperature": 0.7
-        }
+        messages = [
+            {
+                "role": "system",
+                "content": "You are WorkCom, a professional AI assistant that creates high-quality survey content for a CRM system. Be concise, strategic, and professional."
+            },
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
 
-        response = requests.post(endpoint_url, headers=headers, json=payload, timeout=30)
-        response.raise_for_status()
+        text = service._execute_ai_call(
+            client=client,
+            model_id=model_id,
+            messages=messages,
+            max_tokens=max_tokens,
+            temperature=0.7
+        )
+        return text
 
-        result = response.json()
-        return result["choices"][0]["message"]["content"].strip()
-
-    except requests.exceptions.RequestException as e:
-        frappe.log_error(f"OpenAI API Error: {str(e)}", "AI Suggestion Error")
-        return None
-    except (KeyError, IndexError) as e:
-        frappe.log_error(f"OpenAI Response Parse Error: {str(e)}", "AI Suggestion Error")
+    except Exception as e:
+        frappe.log_error(f"AI Execution Error: {str(e)}", "AI Suggestion Error")
         return None
 
 
