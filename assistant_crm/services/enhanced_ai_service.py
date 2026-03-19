@@ -344,7 +344,7 @@ class EnhancedAIService:
             corrected_text = self._execute_ai_call(client=self.enhancement_client, model_id=self.config["enhancement_model_id"], messages=[
                     {"role": "system", "content": "You are a professional editor specializing in business communications for a workers' compensation fund."},
                     {"role": "user", "content": prompt}
-                ], max_tokens=self.config["max_tokens"], temperature=0.3  # Lower temperature for more consistent corrections)
+                ], max_tokens=self.config["max_tokens"], temperature=0.3)  # Lower temperature for more consistent corrections
             return corrected_text if corrected_text else text
 
         except Exception as e:
