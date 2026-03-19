@@ -205,13 +205,15 @@ class EnhancedAIService:
                 
                 thread = client.beta.threads.create(messages=thread_messages)
                 
-                run = client.beta.threads.runs.create_and_poll(
-                    thread_id=thread.id,
-                    assistant_id=model_id,
-                    instructions=sys_msg,
-                    max_completion_tokens=int(max_tokens or 800),
-                    temperature=float(temperature or 0.7)
-                )
+                run_kwargs = {
+                    "thread_id": thread.id,
+                    "assistant_id": model_id,
+                    "temperature": float(temperature or 0.7)
+                }
+                if sys_msg:
+                    run_kwargs["instructions"] = str(sys_msg)
+                    
+                run = client.beta.threads.runs.create_and_poll(**run_kwargs)
                 
                 if run.status == "completed":
                     msgs = client.beta.threads.messages.list(thread_id=thread.id)
@@ -290,10 +292,9 @@ class EnhancedAIService:
             }
 
         except Exception as e:
-            frappe.log_error(f"Error enhancing message quality: {str(e)}")
+            frappe.log_error(message=f"Error enhancing message quality: {str(e)}")
             return {
-                "success": False,
-                "error": str(e),
+                "success": False, title="error": str(e),
                 "original_message": message_text,
                 "enhanced_message": message_text
             }
@@ -322,10 +323,10 @@ class EnhancedAIService:
             return corrected_text
 
         except Exception as e:
-            frappe.log_error(f"Error in grammar correction: {str(e)}")
+            frappe.log_error(message=f"Error in grammar correction: {str(e)}")
             return text
 
-    def ai_grammar_correction(self, text: str) -> str:
+    def ai_grammar_correction(self, title=text: str) -> str:
         """Use AI for advanced grammar and spelling correction"""
         try:
             prompt = f"""
@@ -571,10 +572,10 @@ class EnhancedAIService:
             return text
 
         except Exception as e:
-            frappe.log_error(f"Error optimizing readability: {str(e)}")
+            frappe.log_error(message=f"Error optimizing readability: {str(e)}")
             return text
 
-    def get_target_readability(self, tone: str) -> Dict[str, float]:
+    def get_target_readability(self, title=tone: str) -> Dict[str, float]:
         """Get target readability scores for different tones"""
         readability_targets = {
             "professional": {"min_flesch": 40, "max_flesch": 60, "max_grade": 12},
@@ -659,10 +660,10 @@ class EnhancedAIService:
             return analysis
 
         except Exception as e:
-            frappe.log_error(f"Error analyzing message quality: {str(e)}")
+            frappe.log_error(message=f"Error analyzing message quality: {str(e)}")
             return {}
 
-    def get_tone_keywords(self, tone: str) -> List[str]:
+    def get_tone_keywords(self, title=tone: str) -> List[str]:
         """Get keywords associated with specific tones"""
         tone_keywords = {
             "professional": ["please", "kindly", "appreciate", "inform", "regarding", "sincerely"],
@@ -918,8 +919,8 @@ USER MESSAGE:
             key = (self.config.get("openai_api_key") or "")
             key_len = len(key)
             frappe.log_error(
-                f"Error generating unified inbox reply (key_len={key_len}): {str(e)}",
-                "EnhancedAI WorkCom Unified Reply",
+                message=f"Error generating unified inbox reply (key_len={key_len}): {str(e)}",
+                title="EnhancedAI WorkCom Unified Reply"[:140],
             )
             return (
                 "Our AI assistant is temporarily unavailable. "
@@ -1655,6 +1656,7 @@ USER QUESTION:
         }
 
         return optimizations.get(platform, {"character_limit": None, "features": []})
+
 
 
 
