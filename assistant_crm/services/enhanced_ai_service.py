@@ -193,6 +193,47 @@ class EnhancedAIService:
             ]
         }
 
+    def _execute_ai_call(self, client, model_id: str, messages: list, max_tokens: int, temperature: float) -> str:
+        """Dynamically route to either Chat Completions or Assistants API depending on if an Assistant ID is supplied."""
+        try:
+            if model_id.startswith("asst_"):
+                sys_msg = next((m["content"] for m in messages if m["role"] == "system"), None)
+                thread_messages = []
+                for m in messages:
+                    if m["role"] in ["user", "assistant"]:
+                        thread_messages.append({"role": m["role"], "content": str(m["content"])})
+                
+                thread = client.beta.threads.create(messages=thread_messages)
+                
+                run = client.beta.threads.runs.create_and_poll(
+                    thread_id=thread.id,
+                    assistant_id=model_id,
+                    instructions=sys_msg,
+                    max_completion_tokens=int(max_tokens or 800),
+                    temperature=float(temperature or 0.7)
+                )
+                
+                if run.status == "completed":
+                    msgs = client.beta.threads.messages.list(thread_id=thread.id)
+                    return msgs.data[0].content[0].text.value.strip()
+                elif run.status == "requires_action":
+                    client.beta.threads.runs.cancel(thread_id=thread.id, run_id=run.id)
+                    return "AI requires external tool action. Cannot complete synchronously."
+                else:
+                    return f"Assistant execution failed with status: {run.status}"
+            else:
+                response = client.chat.completions.create(
+                    model=model_id,
+                    messages=messages,
+                    max_tokens=int(max_tokens or 800),
+                    temperature=float(temperature or 0.7)
+                )
+                return response.choices[0].message.content.strip()
+        except Exception as e:
+            frappe.log_error(f"Error executing AI call via {model_id}: {str(e)}", "EnhancedAI Execution Error")
+            return f"Execution failed: {str(e)}"
+
+
     def enhance_message_quality(self, message_text: str, target_tone: str = "professional",
                               platform: str = "general", customer_context: Dict = None) -> Dict[str, Any]:
         """
@@ -300,17 +341,10 @@ class EnhancedAIService:
             Return only the corrected text without explanations.
             """
 
-            response = self.enhancement_client.chat.completions.create(
-                model=self.config["enhancement_model_id"],
-                messages=[
+            corrected_text = self._execute_ai_call(client=self.enhancement_client, model_id=self.config["enhancement_model_id"], messages=[
                     {"role": "system", "content": "You are a professional editor specializing in business communications for a workers' compensation fund."},
                     {"role": "user", "content": prompt}
-                ],
-                max_tokens=self.config["max_tokens"],
-                temperature=0.3  # Lower temperature for more consistent corrections
-            )
-
-            corrected_text = response.choices[0].message.content.strip()
+                ], max_tokens=self.config["max_tokens"], temperature=0.3  # Lower temperature for more consistent corrections)
             return corrected_text if corrected_text else text
 
         except Exception as e:
@@ -341,17 +375,10 @@ class EnhancedAIService:
                 Return the message with adjusted tone while maintaining the core information and meaning.
                 """
 
-                response = self.enhancement_client.chat.completions.create(
-                    model=self.config["enhancement_model_id"],
-                    messages=[
+                adjusted_text = self._execute_ai_call(client=self.enhancement_client, model_id=self.config["enhancement_model_id"], messages=[
                         {"role": "system", "content": f"You are a communication specialist for WCFCB, expert in adjusting tone for {platform} communications."},
                         {"role": "user", "content": prompt}
-                    ],
-                    max_tokens=self.config["max_tokens"],
-                    temperature=self.config["temperature"]
-                )
-
-                adjusted_text = response.choices[0].message.content.strip()
+                    ], max_tokens=self.config["max_tokens"], temperature=self.config["temperature"])
                 return adjusted_text if adjusted_text else text
 
             return text
@@ -441,17 +468,10 @@ class EnhancedAIService:
             Return the optimized message that follows {platform} best practices.
             """
 
-            response = self.enhancement_client.chat.completions.create(
-                model=self.config["enhancement_model_id"],
-                messages=[
+            optimized_text = self._execute_ai_call(client=self.enhancement_client, model_id=self.config["enhancement_model_id"], messages=[
                     {"role": "system", "content": f"You are a social media specialist optimizing content for {platform}."},
                     {"role": "user", "content": prompt}
-                ],
-                max_tokens=self.config["max_tokens"],
-                temperature=self.config["temperature"]
-            )
-
-            optimized_text = response.choices[0].message.content.strip()
+                ], max_tokens=self.config["max_tokens"], temperature=self.config["temperature"])
             return optimized_text if optimized_text else text
 
         except Exception as e:
@@ -513,17 +533,10 @@ class EnhancedAIService:
             Return the personalized message.
             """
 
-            response = self.enhancement_client.chat.completions.create(
-                model=self.config["enhancement_model_id"],
-                messages=[
+            personalized_text = self._execute_ai_call(client=self.enhancement_client, model_id=self.config["enhancement_model_id"], messages=[
                     {"role": "system", "content": "You are a customer service specialist for WCFCB, expert in personalizing communications."},
                     {"role": "user", "content": prompt}
-                ],
-                max_tokens=self.config["max_tokens"],
-                temperature=self.config["temperature"]
-            )
-
-            personalized_text = response.choices[0].message.content.strip()
+                ], max_tokens=self.config["max_tokens"], temperature=self.config["temperature"])
             return personalized_text if personalized_text else text
 
         except Exception as e:
@@ -599,17 +612,10 @@ class EnhancedAIService:
             Return the improved text with better readability.
             """
 
-            response = self.enhancement_client.chat.completions.create(
-                model=self.config["enhancement_model_id"],
-                messages=[
+            optimized_text = self._execute_ai_call(client=self.enhancement_client, model_id=self.config["enhancement_model_id"], messages=[
                     {"role": "system", "content": "You are a writing specialist focused on improving readability while maintaining professional standards."},
                     {"role": "user", "content": prompt}
-                ],
-                max_tokens=self.config["max_tokens"],
-                temperature=0.5
-            )
-
-            optimized_text = response.choices[0].message.content.strip()
+                ], max_tokens=self.config["max_tokens"], temperature=0.5)
             return optimized_text if optimized_text else text
 
         except Exception as e:
@@ -775,9 +781,10 @@ USER QUESTION:
 {query}
 """
 
-            response = self.antoine_client.chat.completions.create(
+            text = self._execute_ai_call(
+                client=self.antoine_client,
                 # Antoine / report model
-                model=self.config.get("antoine_model_id", "gpt-4"),
+                model_id=self.config.get("antoine_model_id", "gpt-4"),
                 messages=[
                     {
                         "role": "system",
@@ -788,11 +795,10 @@ USER QUESTION:
                     },
                     {"role": "user", "content": prompt},
                 ],
-                max_tokens=int(self.config.get("max_tokens", 800) or 800),
-                temperature=float(self.config.get("temperature", 0.7) or 0.7),
+                max_tokens=self.config.get("max_tokens", 800),
+                temperature=self.config.get("temperature", 0.7)
             )
 
-            text = response.choices[0].message.content.strip()
             return text or "No insights generated."
 
         except Exception as e:
@@ -895,14 +901,14 @@ USER MESSAGE:
             # Append the current prompt containing the latest instructions/message
             messages_payload.append({"role": "user", "content": prompt})
 
-            response = client.chat.completions.create(
-                model=active_model,
+            text = self._execute_ai_call(
+                client=client,
+                model_id=active_model,
                 messages=messages_payload,
-                max_tokens=int(self.config.get("max_tokens", 800) or 800),
-                temperature=float(self.config.get("temperature", 0.7) or 0.7),
+                max_tokens=self.config.get("max_tokens", 800),
+                temperature=self.config.get("temperature", 0.7)
             )
 
-            text = (response.choices[0].message.content or "").strip()
             return text or (
                 "I'm here to help, but I couldn't generate a detailed response. "
                 "Please try again in a moment or ask to speak with a human agent."
@@ -932,10 +938,10 @@ USER MESSAGE:
         - top_employers_by_claims: ranking of employers by claim volumes / amounts
         """
         try:
-            if not self.openai_client:
+            if not self.antoine_client:
                 return (
-                    "AI insights are not available because OpenAI is not configured. "
-                    "Please configure Enhanced AI Settings with a valid OpenAI API key."
+                    "AI insights are not available because Antoine AI is not configured. "
+                    "Please configure Enhanced AI Settings with a valid Antoine API key."
                 )
 
             context_json = json.dumps(context or {}, default=str, ensure_ascii=False)
@@ -968,9 +974,9 @@ USER QUESTION:
 {query}
 """
 
-            response = self.openai_client.chat.completions.create(
-                # WorkCom / report model
-                model=self.config.get("openai_model", "gpt-4"),
+            text = self._execute_ai_call(
+                client=self.antoine_client,
+                model_id=self.config.get("antoine_model_id", "gpt-4"),
                 messages=[
                     {
                         "role": "system",
@@ -981,15 +987,14 @@ USER QUESTION:
                     },
                     {"role": "user", "content": prompt},
                 ],
-                max_tokens=int(self.config.get("max_tokens", 800) or 800),
-                temperature=float(self.config.get("temperature", 0.7) or 0.7),
+                max_tokens=self.config.get("max_tokens", 800),
+                temperature=self.config.get("temperature", 0.7)
             )
 
-            text = response.choices[0].message.content.strip()
             return text or "No insights generated."
 
         except Exception as e:
-            key = (self.config.get("openai_api_key") or "")
+            key = (self.config.get("antoine_api_key") or "")
             key_len = len(key)
             frappe.log_error(
                 f"Error generating employer status report insights (key_len={key_len}): {str(e)}",
@@ -1051,9 +1056,7 @@ USER QUESTION:
 {query}
 """
 
-            response = self.antoine_client.chat.completions.create(
-                model=self.config.get("antoine_model_id", "gpt-4"),
-                messages=[
+            text = self._execute_ai_call(client=self.antoine_client, model_id=self.config.get("antoine_model_id", "gpt-4"), messages=[
                     {
                         "role": "system",
                         "content": (
@@ -1062,12 +1065,7 @@ USER QUESTION:
                         ),
                     },
                     {"role": "user", "content": prompt},
-                ],
-                max_tokens=int(self.config.get("max_tokens", 800) or 800),
-                temperature=float(self.config.get("temperature", 0.7) or 0.7),
-            )
-
-            text = response.choices[0].message.content.strip()
+                ], max_tokens=self.config.get("max_tokens", 800), temperature=self.config.get("temperature", 0.7))
             return text or "No insights generated."
 
         except Exception as e:
@@ -1135,9 +1133,7 @@ USER QUESTION:
 {query}
 """
 
-            response = self.antoine_client.chat.completions.create(
-                model=self.config.get("antoine_model_id", "gpt-4"),
-                messages=[
+            text = self._execute_ai_call(client=self.antoine_client, model_id=self.config.get("antoine_model_id", "gpt-4"), messages=[
                     {
                         "role": "system",
                         "content": (
@@ -1146,12 +1142,7 @@ USER QUESTION:
                         ),
                     },
                     {"role": "user", "content": prompt},
-                ],
-                max_tokens=int(self.config.get("max_tokens", 800) or 800),
-                temperature=float(self.config.get("temperature", 0.7) or 0.7),
-            )
-
-            text = response.choices[0].message.content.strip()
+                ], max_tokens=self.config.get("max_tokens", 800), temperature=self.config.get("temperature", 0.7))
             return text or "No insights generated."
 
         except Exception as e:
@@ -1215,9 +1206,7 @@ USER QUESTION:
 {query}
 """
 
-            response = self.antoine_client.chat.completions.create(
-                model=self.config.get("antoine_model_id", "gpt-4"),
-                messages=[
+            text = self._execute_ai_call(client=self.antoine_client, model_id=self.config.get("antoine_model_id", "gpt-4"), messages=[
                     {
                         "role": "system",
                         "content": (
@@ -1226,12 +1215,7 @@ USER QUESTION:
                         ),
                     },
                     {"role": "user", "content": prompt},
-                ],
-                max_tokens=int(self.config.get("max_tokens", 800) or 800),
-                temperature=float(self.config.get("temperature", 0.7) or 0.7),
-            )
-
-            text = response.choices[0].message.content.strip()
+                ], max_tokens=self.config.get("max_tokens", 800), temperature=self.config.get("temperature", 0.7))
             return text or "No insights generated."
 
         except Exception as e:
@@ -1293,9 +1277,7 @@ USER QUESTION:
 {query}
 """
 
-            response = self.antoine_client.chat.completions.create(
-                model=self.config.get("antoine_model_id", "gpt-4"),
-                messages=[
+            text = self._execute_ai_call(client=self.antoine_client, model_id=self.config.get("antoine_model_id", "gpt-4"), messages=[
                     {
                         "role": "system",
                         "content": (
@@ -1304,12 +1286,7 @@ USER QUESTION:
                         ),
                     },
                     {"role": "user", "content": prompt},
-                ],
-                max_tokens=int(self.config.get("max_tokens", 800) or 800),
-                temperature=float(self.config.get("temperature", 0.7) or 0.7),
-            )
-
-            text = response.choices[0].message.content.strip()
+                ], max_tokens=self.config.get("max_tokens", 800), temperature=self.config.get("temperature", 0.7))
             return text or "No insights generated."
         except Exception as e:
             key = (self.config.get("antoine_api_key") or "")
@@ -1371,9 +1348,7 @@ USER QUESTION:
 {query}
 """
 
-            response = self.antoine_client.chat.completions.create(
-                model=self.config.get("antoine_model_id", "gpt-4"),
-                messages=[
+            text = self._execute_ai_call(client=self.antoine_client, model_id=self.config.get("antoine_model_id", "gpt-4"), messages=[
                     {
                         "role": "system",
                         "content": (
@@ -1382,12 +1357,7 @@ USER QUESTION:
                         ),
                     },
                     {"role": "user", "content": prompt},
-                ],
-                max_tokens=int(self.config.get("max_tokens", 800) or 800),
-                temperature=float(self.config.get("temperature", 0.7) or 0.7),
-            )
-
-            text = response.choices[0].message.content.strip()
+                ], max_tokens=self.config.get("max_tokens", 800), temperature=self.config.get("temperature", 0.7))
             return text or "No insights generated."
         except Exception as e:
             key = (self.config.get("antoine_api_key") or "")
@@ -1444,9 +1414,7 @@ USER QUESTION:
 {query}
 """
 
-            response = self.antoine_client.chat.completions.create(
-                model=self.config.get("antoine_model_id", "gpt-4"),
-                messages=[
+            text = self._execute_ai_call(client=self.antoine_client, model_id=self.config.get("antoine_model_id", "gpt-4"), messages=[
                     {
                         "role": "system",
                         "content": (
@@ -1455,12 +1423,7 @@ USER QUESTION:
                         ),
                     },
                     {"role": "user", "content": prompt},
-                ],
-                max_tokens=int(self.config.get("max_tokens", 800) or 800),
-                temperature=float(self.config.get("temperature", 0.7) or 0.7),
-            )
-
-            text = response.choices[0].message.content.strip()
+                ], max_tokens=self.config.get("max_tokens", 800), temperature=self.config.get("temperature", 0.7))
             return text or "No insights generated."
         except Exception as e:
             key = (self.config.get("antoine_api_key") or "")
@@ -1519,9 +1482,7 @@ USER QUESTION:
 {query}
 """
 
-            response = self.antoine_client.chat.completions.create(
-                model=self.config.get("antoine_model_id", "gpt-4"),
-                messages=[
+            text = self._execute_ai_call(client=self.antoine_client, model_id=self.config.get("antoine_model_id", "gpt-4"), messages=[
                     {
                         "role": "system",
                         "content": (
@@ -1530,12 +1491,7 @@ USER QUESTION:
                         ),
                     },
                     {"role": "user", "content": prompt},
-                ],
-                max_tokens=int(self.config.get("max_tokens", 800) or 800),
-                temperature=float(self.config.get("temperature", 0.7) or 0.7),
-            )
-
-            text = response.choices[0].message.content.strip()
+                ], max_tokens=self.config.get("max_tokens", 800), temperature=self.config.get("temperature", 0.7))
             return text or "No insights generated."
         except Exception as e:
             key = (self.config.get("antoine_api_key") or "")
@@ -1593,9 +1549,7 @@ USER QUESTION:
 {query}
 """
 
-            response = self.antoine_client.chat.completions.create(
-                model=self.config.get("antoine_model_id", "gpt-4"),
-                messages=[
+            text = self._execute_ai_call(client=self.antoine_client, model_id=self.config.get("antoine_model_id", "gpt-4"), messages=[
                     {
                         "role": "system",
                         "content": (
@@ -1604,12 +1558,7 @@ USER QUESTION:
                         ),
                     },
                     {"role": "user", "content": prompt},
-                ],
-                max_tokens=int(self.config.get("max_tokens", 800) or 800),
-                temperature=float(self.config.get("temperature", 0.7) or 0.7),
-            )
-
-            text = response.choices[0].message.content.strip()
+                ], max_tokens=self.config.get("max_tokens", 800), temperature=self.config.get("temperature", 0.7))
             return text or "No insights generated."
         except Exception as e:
             key = (self.config.get("antoine_api_key") or "")
@@ -1669,9 +1618,7 @@ USER QUESTION:
 {query}
 """
 
-            response = self.antoine_client.chat.completions.create(
-                model=self.config.get("antoine_model_id", "gpt-4"),
-                messages=[
+            text = self._execute_ai_call(client=self.antoine_client, model_id=self.config.get("antoine_model_id", "gpt-4"), messages=[
                     {
                         "role": "system",
                         "content": (
@@ -1680,12 +1627,7 @@ USER QUESTION:
                         ),
                     },
                     {"role": "user", "content": prompt},
-                ],
-                max_tokens=int(self.config.get("max_tokens", 800) or 800),
-                temperature=float(self.config.get("temperature", 0.7) or 0.7),
-            )
-
-            text = response.choices[0].message.content.strip()
+                ], max_tokens=self.config.get("max_tokens", 800), temperature=self.config.get("temperature", 0.7))
             return text or "No insights generated."
         except Exception as e:
             key = (self.config.get("antoine_api_key") or "")
@@ -1713,5 +1655,7 @@ USER QUESTION:
         }
 
         return optimizations.get(platform, {"character_limit": None, "features": []})
+
+
 
 
