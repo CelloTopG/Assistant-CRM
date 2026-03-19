@@ -230,7 +230,7 @@ class EnhancedAIService:
                 )
                 return response.choices[0].message.content.strip()
         except Exception as e:
-            frappe.log_error(f"Error executing AI call via {model_id}: {str(e)}", "EnhancedAI Execution Error")
+            frappe.log_error(message=f"Error executing AI call via {model_id}: {str(e)}", title="EnhancedAI Execution Error")
             return f"Execution failed: {str(e)}"
 
 
@@ -1655,6 +1655,7 @@ USER QUESTION:
         }
 
         return optimizations.get(platform, {"character_limit": None, "features": []})
+
 
 
 

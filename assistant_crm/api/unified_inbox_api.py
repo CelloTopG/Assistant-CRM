@@ -947,8 +947,8 @@ def process_conversation_with_ai(conversation_id: str):
     except Exception as e:
         try:
             frappe.log_error(
-                f"Error in AI conversation processing: {str(e)}"[:2000],
-                "Unified Inbox AI Error"[:140],
+                message=f"Error in AI conversation processing: {str(e)}"[:2000],
+                title="Unified Inbox AI Error"[:140],
             )
         except Exception:
             pass
