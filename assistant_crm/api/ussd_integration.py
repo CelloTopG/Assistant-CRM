@@ -478,3 +478,108 @@ def cleanup_expired_ussd_sessions() -> int:
         frappe.log_error(f"USSD session cleanup error: {str(e)}", "USSD Session Cleanup")
         return 0
 
+@frappe.whitelist()
+def sync_ussd_feedback():
+    """Poll USSD paginated feedback dynamically and map it aggressively into Unified Inbox Message streams."""
+    try:
+        settings = frappe.get_doc("Social Media Settings", "Social Media Settings")
+        base_url = getattr(settings, "ussd_feedback_api_url", None)
+        if not base_url:
+            base_url = "https://192.168.1.199:9001"
+        base_url = base_url.rstrip("/")
+        
+        url = f"{base_url}/api/v1/feedback"
+        
+        import requests
+        page = 0
+        size = 20
+        synced_count = 0
+        
+        # We will need the UnifiedInbox integration to seamlessly insert them
+        integration = USSDIntegration()
+        
+        while True:
+            params = {
+                "page": page,
+                "size": size,
+                "sortBy": "createdAt",
+                "sortDir": "desc"
+            }
+            
+            headers = {"Accept": "application/json"}
+            api_key = None
+            try:
+                api_key = settings.get_password("ussd_api_key")
+            except Exception:
+                api_key = getattr(settings, "ussd_api_key", None)
+                
+            if api_key:
+                headers["X-API-Key"] = api_key
+                headers["Authorization"] = f"Bearer {api_key}"
+
+            resp = requests.get(url, params=params, headers=headers, timeout=15)
+            if resp.status_code != 200:
+                break
+                
+            res = resp.json()
+            data = res.get("data") or []
+            if not data:
+                break
+                
+            for item in data:
+                # Swagger obfuscated structural schema: dynamic fallback extraction
+                if isinstance(item, str):
+                    feedback_text = item
+                    feedback_id = str(hash(feedback_text))
+                    phone = "USSD Feedback"
+                    ts = None
+                else:
+                    feedback_text = item.get("message") or item.get("text") or item.get("feedback") or item.get("content") or str(item)
+                    feedback_id = str(item.get("id") or item.get("feedbackId") or item.get("uuid") or hash(feedback_text))
+                    phone = item.get("phoneNumber") or item.get("msisdn") or item.get("sender") or "USSD Feedback"
+                    ts = item.get("createdAt")
+                    
+                # Deduplicate directly via Native platform Unified Inbox Message architecture
+                platform_msg_id = f"ussd_feedback_{feedback_id}"
+                
+                exists = frappe.db.exists("Unified Inbox Message", {"message_id": platform_msg_id})
+                if not exists:
+                    conversation_id = phone
+                    conv_name = integration.create_unified_inbox_conversation({
+                        "conversation_id": conversation_id,
+                        "customer_name": phone,
+                        "customer_phone": phone if isinstance(phone, str) and phone.startswith("+") else None,
+                        "customer_platform_id": conversation_id,
+                        "initial_message": feedback_text,
+                        "provider": "USSD Feedback"
+                    })
+                    
+                    if conv_name:
+                        integration.create_unified_inbox_message(conv_name, {
+                            "message_id": platform_msg_id,
+                            "direction": "Inbound",
+                            "message_type": "text",
+                            "content": feedback_text,
+                            "sender_name": phone,
+                            "sender_id": phone,
+                            "sender_platform_id": phone,
+                            "timestamp": ts or now(),
+                            "metadata": {"source": "ussd_feedback_api", "raw": item}
+                        })
+                        synced_count += 1
+                        
+            is_last = res.get("last")
+            if is_last or not data:
+                break
+                
+            page += 1
+            
+        if synced_count > 0:
+            frappe.db.commit()
+            frappe.logger("assistant_crm.ussd").info(f"Auto-sync downloaded {synced_count} USSD feedbacks.")
+            
+        return {"status": "success", "synced": synced_count}
+    except Exception as e:
+        frappe.log_error(f"USSD Feedback Sync Error: {str(e)}", "USSD Sync")
+        return {"status": "error", "message": str(e)}
+

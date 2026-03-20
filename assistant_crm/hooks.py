@@ -211,7 +211,8 @@ doc_events = {
 scheduler_events = {
     "cron": {
         "*/5 * * * *": [
-            "assistant_crm.api.social_media_ports.sync_youtube_comments"
+            "assistant_crm.api.social_media_ports.sync_youtube_comments",
+            "assistant_crm.api.ussd_integration.sync_ussd_feedback"
         ],
         "*/10 * * * *": [
             "assistant_crm.tasks.poll_twitter",
