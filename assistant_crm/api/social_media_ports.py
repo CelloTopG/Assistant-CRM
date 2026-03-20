@@ -4664,81 +4664,108 @@ class USSDIntegration(SocialMediaPlatform):
         return {"status": "unsupported", "message": "Use ussd_webhook endpoint"}
 
 @frappe.whitelist(allow_guest=True)
-def google_oauth_callback():
-    """
-    Dedicated callback endpoint for Google OAuth integration (YouTube).
-    """
-    # 1. Get the authorization code from Google
-    code = frappe.request.args.get("code")
-    
-    if not code:
-        return "No authorization code provided by Google."
-
-    token_url = "https://oauth2.googleapis.com/token"
-
-    # 2. Retrieve your stored credentials from Social Media Settings
-    settings = frappe.get_single("Social Media Settings")
-    client_id = settings.get("youtube_client_id")
+def google_oauth_callback(code=None, error=None, error_description=None, **kwargs):
     try:
-        client_secret = settings.get_password("youtube_client_secret")
-    except Exception:
-        client_secret = settings.get("youtube_client_secret")
+        # 1️⃣ Handle errors from Google
+        if error:
+            frappe.log_error(f"OAuth Error: {error} - {error_description}", "Google OAuth")
+            return f"<h3>OAuth Error: {error_description}</h3>"
 
-    # Clean up whitespace if fetched from database
-    if client_id:
-        client_id = str(client_id).strip()
-    if client_secret:
-        client_secret = str(client_secret).strip()
+        if not code:
+            return "<h3>No authorization code received.</h3>"
 
-    # Check if settings are missing
-    if not client_id or not client_secret:
-        return "<script>alert('YouTube API Credentials missing in settings'); window.close();</script>"
+        # 2️⃣ Exchange code for tokens
+        token_url = "https://oauth2.googleapis.com/token"
 
-    # Force HTTPS for the production domain to prevent 'redirect_uri_mismatch' 
-    # when Frappe runs behind a reverse proxy that masks the HTTPS protocol.
-    base_url = str(frappe.utils.get_url())
-    if "clone.exn1.uk" in base_url:
-        base_url = "https://clone.exn1.uk"
-        
-    redirect_uri = f"{base_url}/api/method/assistant_crm.api.social_media_ports.google_oauth_callback"
+        settings = frappe.get_doc("Social Media Settings", "Social Media Settings")
+        client_id = settings.get("youtube_client_id")
+        # In Frappe 15, get_password retrieves decrypted password field values.
+        try:
+            client_secret = settings.get_password("youtube_client_secret")
+        except Exception:
+            client_secret = settings.get("youtube_client_secret")
 
-    payload = {
-        "client_id": client_id,
-        "client_secret": client_secret,
-        "code": code,
-        "grant_type": "authorization_code",
-        # Make sure this matches exactly what is in your Google Cloud Console
-        "redirect_uri": redirect_uri
-    }
+        payload = {
+            "code": code,
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "redirect_uri": "https://clone.exn1.uk/api/method/assistant_crm.api.social_media_ports.google_oauth_callback",
+            "grant_type": "authorization_code"
+        }
 
-    # 3. Exchange the code for the tokens
-    try:
         import requests
         response = requests.post(token_url, data=payload)
         tokens = response.json()
 
-        # 4. Save the tokens to the database securely
-        if "access_token" in tokens:
-            doc = frappe.get_doc("Social Media Settings", "Social Media Settings")
-            doc.youtube_access_token = tokens.get("access_token")
-            
-            # Google only sends a refresh token on the first connection or if access_type=offline
-            if "refresh_token" in tokens:
-                doc.youtube_refresh_token = tokens.get("refresh_token")
-            
-            doc.save(ignore_permissions=True)
-            frappe.db.commit()
-            
-            frappe.log_error(f"YouTube Authentication Successful via {redirect_uri}", "Google OAuth")
-            message = "Authentication successful! Tokens have been saved securely. You can close this window."
-            return f"<html><body><h3>{message}</h3></body></html>"
-        else:
-            # Log the exact error if authentication fails
-            frappe.log_error(f"Failed with Client ID: '{client_id}'\nResponse: {str(tokens)}", "Google OAuth Error")
-            message = f"Authentication failed: {tokens.get('error_description', 'Unknown error')} (Check Frappe Error Log for details)"
-            return f"<html><body><h3>{message}</h3></body></html>"
+        # 🔍 DEBUG LOG (VERY IMPORTANT)
+        frappe.logger("assistant_crm.webhook").info(f"Google Token Response: {tokens}")
+
+        # 3️⃣ Handle failure
+        if "access_token" not in tokens:
+            frappe.log_error(f"Token exchange failed: {tokens}", "Google OAuth")
+            return f"<h3>Token exchange failed: {tokens}</h3>"
+
+        access_token = tokens.get("access_token")
+        refresh_token = tokens.get("refresh_token")
+
+        # 4️⃣ Save tokens securely
+        settings = frappe.get_doc("Social Media Settings", "Social Media Settings")
+
+        settings.youtube_access_token = access_token
+
+        if refresh_token:
+            settings.youtube_refresh_token = refresh_token
+
+        settings.save(ignore_permissions=True)
+        frappe.db.commit()
+
+        return "<h3>Authentication successful! Tokens have been saved. You can close this window.</h3>"
+
     except Exception as e:
-        frappe.log_error(str(e), "Google OAuth Callback Exception")
-        message = f"Authentication process failed with an internal error: {str(e)}"
-        return f"<html><body><h3>{message}</h3></body></html>"
+        frappe.log_error(frappe.get_traceback(), "Google OAuth Callback Error")
+        return f"<h3>Internal Error: {str(e)}</h3>"
+
+
+@frappe.whitelist()
+def refresh_youtube_token():
+    try:
+        settings = frappe.get_doc("Social Media Settings", "Social Media Settings")
+
+        # In Frappe, .get_password retrieves decrypted password field values.
+        refresh_token = settings.get_password("youtube_refresh_token")
+
+        if not refresh_token:
+            return None
+
+        token_url = "https://oauth2.googleapis.com/token"
+
+        client_id = settings.get("youtube_client_id")
+        try:
+            client_secret = settings.get_password("youtube_client_secret")
+        except Exception:
+            client_secret = settings.get("youtube_client_secret")
+
+        payload = {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "refresh_token": refresh_token,
+            "grant_type": "refresh_token"
+        }
+
+        import requests
+        response = requests.post(token_url, data=payload)
+        data = response.json()
+
+        if "access_token" in data:
+            settings.youtube_access_token = data["access_token"]
+            settings.save(ignore_permissions=True)
+            frappe.db.commit()
+            return data["access_token"]
+
+        else:
+            frappe.log_error(f"Refresh failed: {data}", "YouTube Token Refresh")
+            return None
+    except Exception as e:
+        frappe.log_error(str(e), "YouTube Token Refresh Exception")
+        return None
 
