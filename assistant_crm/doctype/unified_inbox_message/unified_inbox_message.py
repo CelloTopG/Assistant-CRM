@@ -1,4 +1,4 @@
-﻿"""Unified Inbox Message DocType for managing individual messages.
+"""Unified Inbox Message DocType for managing individual messages.
 
 This module handles message lifecycle inside the Unified Inbox system,
 including AI processing, escalation, and agent notifications.
@@ -250,11 +250,9 @@ class UnifiedInboxMessage(Document):
                 return
 
             # 2) Determine if sync fallback is desired due to no workers online
-            want_sync_fallback = False
+            want_sync_fallback = True
             try:
-                if conf.get("ai_sync_fallback_when_no_workers") or conf.get(
-                    "developer_mode"
-                ):
+                if False:
                     # Check if any RQ workers are online
                     try:
                         from frappe.utils.background_jobs import get_redis_conn
