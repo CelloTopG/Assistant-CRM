@@ -19,15 +19,21 @@ class WorkersNotifyGateway:
             # Fallback to general settings if separate DocType not found yet
             settings = frappe.get_single("Assistant CRM Settings")
 
+        prod_url = settings.get("production_base_url") or "https://notify.workers.com.zm"
+        dev_url = settings.get("development_base_url") or "https://notify.workers.com.zm"
+        
         self.base_url = (
-            settings.get("production_base_url")
-            if settings.get("environment") == "Production"
-            else settings.get("development_base_url")
+            prod_url if settings.get("environment") == "Production" else dev_url
         ).rstrip("/")
 
         self.timeout = settings.get("timeout") or 30
         self.debug = settings.get("enable_debug_logging")
-        self.api_key = settings.get("api_key")
+        
+        # Proper Password retrieval for Frappe DocTypes
+        try:
+            self.api_key = settings.get_password("api_key")
+        except Exception:
+            self.api_key = settings.get("api_key")
 
         self.session = self._build_session()
 
