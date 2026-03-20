@@ -205,13 +205,16 @@ class EnhancedAIService:
                 
                 thread = client.beta.threads.create(messages=thread_messages)
                 
-                run = client.beta.threads.runs.create_and_poll(
-                    thread_id=thread.id,
-                    assistant_id=model_id,
-                    instructions=sys_msg,
-                    max_completion_tokens=int(max_tokens or 800),
-                    temperature=float(temperature or 0.7)
-                )
+                run_kwargs = {
+                    "thread_id": thread.id,
+                    "assistant_id": model_id,
+                    "max_completion_tokens": int(max_tokens or 800),
+                    "temperature": float(temperature or 0.7)
+                }
+                if sys_msg:
+                    run_kwargs["instructions"] = sys_msg
+
+                run = client.beta.threads.runs.create_and_poll(**run_kwargs)
                 
                 if run.status == "completed":
                     msgs = client.beta.threads.messages.list(thread_id=thread.id)
@@ -886,7 +889,9 @@ USER MESSAGE:
                 )
 
             # 2. Reconstruct the message array with strict conversation history
-            messages_payload = [{"role": "system", "content": system_identity}]
+            messages_payload = []
+            if not active_model.startswith("asst_"):
+                messages_payload.append({"role": "system", "content": system_identity})
 
             history = context.get("conversation_history", [])
             for turn in history:
@@ -899,7 +904,14 @@ USER MESSAGE:
                         messages_payload.append({"role": role, "content": content})
 
             # Append the current prompt containing the latest instructions/message
-            messages_payload.append({"role": "user", "content": prompt})
+            if active_model.startswith("asst_"):
+                # Provide only the raw message and backend context to avoid confusing the user's Assistant
+                messages_payload.append({
+                    "role": "user", 
+                    "content": f"{message}\n\n[System Context injected by Application: {context_json}]"
+                })
+            else:
+                messages_payload.append({"role": "user", "content": prompt})
 
             text = self._execute_ai_call(
                 client=client,
