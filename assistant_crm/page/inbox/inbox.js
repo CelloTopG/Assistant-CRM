@@ -413,6 +413,13 @@ class InboxManager {
             return true; // fallback to all
         });
 
+        // Explicitly sort newest (highest timestamp) to the top 
+        filteredConversations.sort((a, b) => {
+            const timeA = new Date(a.last_message_time || a.creation_time || a.creation || 0).getTime();
+            const timeB = new Date(b.last_message_time || b.creation_time || b.creation || 0).getTime();
+            return timeB - timeA;
+        });
+
         console.log('Filtered conversations:', filteredConversations.length);
         conversationCount.textContent = filteredConversations.length;
 

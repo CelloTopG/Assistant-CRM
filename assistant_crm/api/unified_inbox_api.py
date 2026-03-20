@@ -945,9 +945,10 @@ def process_conversation_with_ai(conversation_id: str):
         process_message_with_ai(message_doc.name)
 
     except Exception as e:
+        import traceback
         try:
             frappe.log_error(
-                message=f"Error in AI conversation processing: {str(e)}"[:2000],
+                message=f"Error in AI conversation processing: {traceback.format_exc()}"[:2000],
                 title="Unified Inbox AI Error"[:140],
             )
         except Exception:
