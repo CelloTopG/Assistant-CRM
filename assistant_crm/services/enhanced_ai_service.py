@@ -293,7 +293,7 @@ class EnhancedAIService:
         except Exception as e:
             frappe.log_error(message=f"Error enhancing message quality: {str(e)}")
             return {
-                "success": False, title="error": str(e),
+                "success": False, "error": str(e),
                 "original_message": message_text,
                 "enhanced_message": message_text
             }
@@ -325,7 +325,7 @@ class EnhancedAIService:
             frappe.log_error(message=f"Error in grammar correction: {str(e)}")
             return text
 
-    def ai_grammar_correction(self, title=text: str) -> str:
+    def ai_grammar_correction(self, text: str) -> str:
         """Use AI for advanced grammar and spelling correction"""
         try:
             prompt = f"""
@@ -574,7 +574,7 @@ class EnhancedAIService:
             frappe.log_error(message=f"Error optimizing readability: {str(e)}")
             return text
 
-    def get_target_readability(self, title=tone: str) -> Dict[str, float]:
+    def get_target_readability(self, tone: str) -> Dict[str, float]:
         """Get target readability scores for different tones"""
         readability_targets = {
             "professional": {"min_flesch": 40, "max_flesch": 60, "max_grade": 12},
@@ -662,7 +662,7 @@ class EnhancedAIService:
             frappe.log_error(message=f"Error analyzing message quality: {str(e)}")
             return {}
 
-    def get_tone_keywords(self, title=tone: str) -> List[str]:
+    def get_tone_keywords(self, tone: str) -> List[str]:
         """Get keywords associated with specific tones"""
         tone_keywords = {
             "professional": ["please", "kindly", "appreciate", "inform", "regarding", "sincerely"],
