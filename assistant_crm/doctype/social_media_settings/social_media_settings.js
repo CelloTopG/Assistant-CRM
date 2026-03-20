@@ -59,6 +59,21 @@ frappe.ui.form.on('Social Media Settings', {
         }, 'Exchange Long-Lived Token (Instagram)', 'Exchange');
       }, __('Instagram'));
     }
+    if (frm.doc.youtube_enabled || frm.doc.youtube_client_id) {
+      frm.add_custom_button('Authorize YouTube API', function() {
+        // Build the correct OAuth URL seamlessly!
+        const clientId = frm.doc.youtube_client_id ? frm.doc.youtube_client_id.trim() : '1000464698506-h645ofko1odvni48meu7lqoueh476sd5.apps.googleusercontent.com';
+        
+        // Use the exact origin of the Frappe site 
+        // e.g., https://clone.exn1.uk
+        const redirectUri = window.location.origin + '/api/method/assistant_crm.api.social_media_ports.google_oauth_callback';
+        const scope = 'https://www.googleapis.com/auth/youtube.force-ssl';
+        
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent`;
+        
+        // Open authorization flow in a new tab
+        window.open(authUrl, '_blank');
+      }, __('YouTube'));
+    }
   }
 });
-
