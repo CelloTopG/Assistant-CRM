@@ -4769,3 +4769,156 @@ def refresh_youtube_token():
         frappe.log_error(str(e), "YouTube Token Refresh Exception")
         return None
 
+def ensure_youtube_comment_field():
+    if not frappe.db.has_column("Communication", "youtube_comment_id"):
+        try:
+            from frappe.custom.doctype.custom_field.custom_field import create_custom_field
+            create_custom_field("Communication", {
+                "fieldname": "youtube_comment_id",
+                "label": "YouTube Comment ID",
+                "fieldtype": "Data",
+                "insert_after": "sender",
+                "hidden": 1
+            })
+            frappe.db.commit()
+        except Exception:
+            pass
+
+@frappe.whitelist()
+def get_valid_youtube_token():
+    settings = frappe.get_doc("Social Media Settings", "Social Media Settings")
+    token = settings.youtube_access_token
+    
+    if not token:
+        return refresh_youtube_token()
+
+    import requests
+    test = requests.get(
+        "https://www.googleapis.com/oauth2/v1/tokeninfo",
+        params={"access_token": token}
+    ).json()
+
+    if "error" in test:
+        token = refresh_youtube_token()
+
+    return token
+
+def get_all_videos():
+    token = get_valid_youtube_token()
+    if not token:
+        return []
+
+    headers = {"Authorization": f"Bearer {token}"}
+    url = "https://www.googleapis.com/youtube/v3/search"
+    
+    import requests
+    videos = []
+    next_page_token = None
+
+    while True:
+        params = {
+            "part": "snippet",
+            "forMine": True,
+            "type": "video",
+            "maxResults": 50
+        }
+        if next_page_token:
+            params["pageToken"] = next_page_token
+
+        res = requests.get(url, headers=headers, params=params).json()
+
+        for item in res.get("items", []):
+            vid = item.get("id", {}).get("videoId")
+            if vid:
+                videos.append(vid)
+
+        next_page_token = res.get("nextPageToken")
+        if not next_page_token:
+            break
+
+    return videos
+
+@frappe.whitelist()
+def sync_youtube_comments():
+    ensure_youtube_comment_field()
+    token = get_valid_youtube_token()
+    
+    if not token:
+        return {"status": "error", "message": "No valid YouTube token to sync"}
+
+    headers = {"Authorization": f"Bearer {token}"}
+    videos = get_all_videos()
+    
+    import requests
+    synced_count = 0
+
+    for video_id in videos:
+        url = "https://www.googleapis.com/youtube/v3/commentThreads"
+        next_page_token = None
+
+        while True:
+            params = {
+                "part": "snippet",
+                "videoId": video_id,
+                "maxResults": 50
+            }
+            if next_page_token:
+                params["pageToken"] = next_page_token
+
+            res = requests.get(url, headers=headers, params=params).json()
+            
+            if "error" in res:
+                break
+                
+            for item in res.get("items", []):
+                snippet = item.get("snippet", {}).get("topLevelComment", {}).get("snippet", {})
+                comment_id = item.get("id")
+
+                if not comment_id or not snippet:
+                    continue
+
+                # Duplicate Prevention via Custom Field
+                existing = frappe.db.exists("Communication", {
+                    "youtube_comment_id": comment_id
+                })
+
+                if not existing:
+                    try:
+                        frappe.get_doc({
+                            "doctype": "Communication",
+                            "subject": f"YouTube Comment on {video_id}",
+                            "content": snippet.get("textDisplay", ""),
+                            "sender": snippet.get("authorDisplayName", "YouTube User"),
+                            "communication_type": "Comment",
+                            "youtube_comment_id": comment_id,
+                            "sent_or_received": "Received",
+                            "status": "Open"
+                        }).insert(ignore_permissions=True)
+                        
+                        synced_count += 1
+                        
+                        # --- PRO-LEVEL ARCHITECTURE MAPPER ---
+                        # Pass it natively into the CRM AI/Inbox Engine
+                        author_channel_id = (snippet.get("authorChannelId") or {}).get("value") or ""
+                        if author_channel_id:
+                            yt = YouTubeIntegration()
+                            yt.process_webhook({
+                                "platform": "YouTube",
+                                "event_type": "comment",
+                                "video_id": video_id,
+                                "comment_id": comment_id,
+                                "author_channel_id": author_channel_id,
+                                "author_name": snippet.get("authorDisplayName", "YouTube User"),
+                                "text": snippet.get("textDisplay", "")
+                            })
+                    except Exception as e:
+                        frappe.log_error(f"Sync fail for {comment_id}: {str(e)}", "YouTube Auto Sync")
+            
+            next_page_token = res.get("nextPageToken")
+            if not next_page_token:
+                break
+
+    frappe.db.commit()
+    frappe.logger("assistant_crm.youtube").info(f"Auto-sync completed. Downloaded {synced_count} new comments.")
+    return {"status": "success", "synced": synced_count}
+

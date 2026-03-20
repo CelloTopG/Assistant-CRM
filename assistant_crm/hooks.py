@@ -210,6 +210,9 @@ doc_events = {
 # Using short wrapper paths from assistant_crm.tasks to avoid exceeding Scheduled Job Type method column length
 scheduler_events = {
     "cron": {
+        "*/5 * * * *": [
+            "assistant_crm.api.social_media_ports.sync_youtube_comments"
+        ],
         "*/10 * * * *": [
             "assistant_crm.tasks.poll_twitter",
             "assistant_crm.tasks.sweep_reassignments",
