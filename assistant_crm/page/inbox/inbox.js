@@ -1618,22 +1618,23 @@ class InboxManager {
                 if (response.message && response.message.status === 'success' && response.message.data) {
                     const agents = response.message.data;
 
-                    // Create agent options for select field
-                    const agentOptions = agents.map(agent => ({
-                        label: `${agent.full_name} (${agent.email})`,
-                        value: agent.email
-                    }));
-
-                    // Create custom assignment dialog using frappe.ui.Dialog
+                    // Upgrade from native HTML select to frappe's native searchable Link field
                     const assignmentDialog = new frappe.ui.Dialog({
                         title: 'Assign Conversation',
                         fields: [
                             {
-                                fieldtype: 'Select',
+                                fieldtype: 'Link',
                                 fieldname: 'assigned_to',
+                                options: 'User',
                                 label: 'Assign To',
-                                options: agentOptions,
-                                reqd: 1
+                                reqd: 1,
+                                get_query: () => {
+                                    return {
+                                        filters: {
+                                            'name': ['in', agents.map(a => a.email)]
+                                        }
+                                    };
+                                }
                             },
                             {
                                 fieldtype: 'Small Text',
