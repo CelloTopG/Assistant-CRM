@@ -2237,19 +2237,39 @@ This Issue was escalated from the Unified Inbox conversation: {conversation_name
 
         issue_doc.add_comment("Comment", escalation_comment)
 
-        # Assign to user if specified (ERPNext native assignment)
+        # Separate Escalation from Assignment by creating distinctly mapped Ticket fields dynamically
         if assign_to:
             try:
-                from frappe.desk.form.assign_to import add as add_assignment
-                add_assignment({
-                    "assign_to": [assign_to],
-                    "doctype": "Issue",
-                    "name": issue_id,
-                    "description": f"Escalated from Unified Inbox: {escalation_reason}"
-                })
-                print(f"DEBUG: Assigned Issue {issue_id} to {assign_to}")
-            except Exception as assign_error:
-                print(f"DEBUG: Assignment error (may already be assigned): {str(assign_error)}")
+                # Ensure Custom Fields exist distinctly on the Issue layout
+                if not frappe.db.exists("Custom Field", "Issue-custom_escalated_to"):
+                    # Add section break
+                    frappe.get_doc({
+                        "doctype": "Custom Field",
+                        "dt": "Issue",
+                        "fieldname": "custom_escalation_section",
+                        "label": "Escalation Details",
+                        "fieldtype": "Section Break",
+                        "insert_after": "priority"
+                    }).insert(ignore_permissions=True)
+                    
+                    # Add Escalated To field
+                    frappe.get_doc({
+                        "doctype": "Custom Field",
+                        "dt": "Issue",
+                        "fieldname": "custom_escalated_to",
+                        "label": "Escalated To",
+                        "fieldtype": "Link",
+                        "options": "User",
+                        "insert_after": "custom_escalation_section"
+                    }).insert(ignore_permissions=True)
+                    
+                    frappe.clear_cache(doctype="Issue")
+
+                # Store escalation inside the distinct structural field
+                issue_doc.custom_escalated_to = assign_to
+                print(f"DEBUG: Distinctly escalated Issue {issue_id} to {assign_to}")
+            except Exception as e:
+                print(f"DEBUG: Custom escalation field mapping error: {str(e)}")
 
         # Clear invalid link field values to prevent LinkValidationError
         _clear_invalid_issue_links(issue_doc)
