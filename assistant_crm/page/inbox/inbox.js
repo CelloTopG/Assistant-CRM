@@ -1164,7 +1164,16 @@ class InboxManager {
                             fieldname: 'assign_to',
                             label: 'Escalate to User',
                             options: 'User',
-                            description: supervisors.length > 0 ? 'Showing supervisors by default' : 'Assign the ERPNext Issue to a specific user'
+                            description: supervisors.length > 0 ? 'Showing supervisors by default' : 'Assign the ERPNext Issue to a specific user',
+                            get_query: () => {
+                                if (supervisor_names.length > 0) {
+                                    return {
+                                        filters: {
+                                            'name': ['in', supervisor_names]
+                                        }
+                                    };
+                                }
+                            }
                         },
                         {
                             fieldtype: 'Small Text',
