@@ -14,7 +14,9 @@
         "customer_id",
         "customer_name",
         "customer_phone",
-        "customer_email",
+        "customer_nrc",
+        "customer_type",
+        "customer_pas_number",
         "customer_platform_id",
         "conversation_details_section",
         "status",
@@ -123,6 +125,23 @@
             "fieldname": "customer_email",
             "fieldtype": "Data",
             "label": "Customer Email"
+        },
+        {
+            "fieldname": "customer_nrc",
+            "fieldtype": "Data",
+            "label": "Customer NRC"
+        },
+        {
+            "fieldname": "customer_type",
+            "fieldtype": "Select",
+            "options": "\nPensioner\nEmployer\nBeneficiary",
+            "label": "Customer Type"
+        },
+        {
+            "fieldname": "customer_pas_number",
+            "fieldtype": "Data",
+            "label": "CBS/PAS Number",
+            "read_only": 1
         },
         {
             "fieldname": "customer_platform_id",
