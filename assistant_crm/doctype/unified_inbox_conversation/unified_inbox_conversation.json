@@ -37,6 +37,7 @@
         "escalation_reason",
         "escalated_at",
         "escalated_by",
+        "escalated_to",
         "agent_assignment_section",
         "assigned_to",
         "assigned_agent",
@@ -244,6 +245,12 @@
             "fieldname": "escalated_by",
             "fieldtype": "Link",
             "label": "Escalated By",
+            "options": "User"
+        },
+        {
+            "fieldname": "escalated_to",
+            "fieldtype": "Link",
+            "label": "Escalated To",
             "options": "User"
         },
         {

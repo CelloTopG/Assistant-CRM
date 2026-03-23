@@ -211,7 +211,7 @@ def get_unified_inbox_conversations(filters: Dict[str, Any] = None, limit: int =
             "name", "conversation_id", "platform", "customer_name", "customer_phone",
             "customer_email", "status", "priority", "assigned_agent", "creation_time",
             "last_message_time", "last_message_preview", "ai_handled", "ai_mode", "ai_confidence_score",
-            "has_active_call", "call_status", "custom_issue_id"
+            "has_active_call", "call_status", "custom_issue_id", "escalated_to", "escalated_by", "escalated_at"
         ]
         try:
             meta = frappe.get_meta("Unified Inbox Conversation")
@@ -2268,7 +2268,8 @@ This Issue was escalated from the Unified Inbox conversation: {conversation_name
                         "status": "Escalated",
                         "priority": new_priority,
                         "escalated_at": frappe.utils.now(),
-                        "escalated_by": frappe.session.user
+                        "escalated_by": frappe.session.user,
+                        "escalated_to": assign_to
                     }
                 )
         except Exception as conv_error:
@@ -4116,6 +4117,10 @@ def sweep_escalate_inactive_conversations():
                 # Assign primary if none
                 if not c.get("assigned_agent") and primary_assignee:
                     doc.db_set("assigned_agent", primary_assignee)
+                    try:
+                        doc.db_set("escalated_to", primary_assignee)
+                    except Exception:
+                        pass
                     try:
                         doc.db_set("agent_assigned_at", now())
                     except Exception:

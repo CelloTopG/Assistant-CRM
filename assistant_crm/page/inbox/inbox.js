@@ -1193,7 +1193,7 @@ class InboxManager {
                                     conversation.status = 'Escalated';
                                     conversation.priority = values.priority;
                                     if (values.assign_to) {
-                                        conversation.assigned_agent = values.assign_to;
+                                        conversation.escalated_to = values.assign_to;
                                     }
 
                                     this.renderConversations();
@@ -1319,6 +1319,7 @@ class InboxManager {
                             <p><strong>Priority:</strong> ${conversation?.priority || 'Normal'}</p>
                             <p><strong>Phone:</strong> ${conversation?.customer_phone || 'N/A'}</p>
                             <p><strong>Agent:</strong> ${conversation?.assigned_agent || 'Unassigned'}</p>
+                            ${conversation?.escalated_to ? `<p><strong>Escalated To:</strong> ${conversation.escalated_to}</p>` : ''}
                         </div>
                     </div>
                 </div>
