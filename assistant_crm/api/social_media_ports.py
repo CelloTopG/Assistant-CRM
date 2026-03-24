@@ -4889,7 +4889,8 @@ def sync_youtube_comments():
                             "subject": f"YouTube Comment on {video_id}",
                             "content": snippet.get("textDisplay", ""),
                             "sender": snippet.get("authorDisplayName", "YouTube User"),
-                            "communication_type": "Comment",
+                            "communication_type": "Communication",
+                            "communication_medium": "YouTube",
                             "youtube_comment_id": comment_id,
                             "sent_or_received": "Received",
                             "status": "Open"
