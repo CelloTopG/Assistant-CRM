@@ -41,7 +41,9 @@ def extract_customer_metadata_from_message(message_name):
             frappe.enqueue("assistant_crm.api.customer_identification.link_customer_profile", conversation_name=conv.name, queue="default")
 
     except Exception as e:
-        frappe.log_error(f"Error extracting metadata from message {message_name}: {str(e)}", "Assistant CRM NRC Lookup")
+        import traceback
+        error_msg = f"Error extracting metadata from message {message_name}: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
+        frappe.log_error(error_msg, "Assistant CRM NRC Lookup - Extraction")
 
 
 def link_customer_profile(conversation_name):
@@ -100,4 +102,6 @@ def link_customer_profile(conversation_name):
             conv.add_comment("Comment", f"⚠️ **System Alert**: Visitor indicated NRC/Employer ID `{conv.customer_nrc}`, but no exact match is present in our database.")
             
     except Exception as e:
-        frappe.log_error(f"Error linking profile for conv {conversation_name}: {str(e)}", "Assistant CRM NRC Lookup")
+        import traceback
+        error_msg = f"Error linking profile for conv {conversation_name}: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
+        frappe.log_error(error_msg, "Assistant CRM NRC Lookup - Linking")
