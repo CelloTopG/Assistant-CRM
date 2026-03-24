@@ -844,98 +844,45 @@ class LiveDataOrchestrator:
         _ = fields  # Unused - doctype removed
         return None
 
-    def _find_employee_by_nrc_or_name(self, nrc_number: Optional[str], full_name: Optional[str]) -> Optional[Dict[str, Any]]:
-        """Safely locate an Employee by NRC (common custom fields) or full name."""
+    def _find_customer_by_nrc_or_name(self, nrc_number: Optional[str], full_name: Optional[str]) -> Optional[Dict[str, Any]]:
+        """Safely locate a Customer by NRC or full name."""
         try:
             if not (FRAPPE_AVAILABLE and frappe):
                 return None
 
-            # Try by NRC across likely custom field names (with NORMALIZED matching)
             if nrc_number:
-                import re as _re
-                norm = _re.sub(r'[^0-9]', '', cstr(nrc_number)) if nrc_number else None
-                # Prefer normalized exact matches, then exact, then partials
-                for field in ['custom_nrc_number', 'nrc_number', 'national_id', 'nrc']:
-                    try:
-                        if not frappe.db.has_column('Employee', field):
-                            continue
-                        # 1) Normalized exact match via SQL REPLACE
-                        if norm:
-                            cols = '`name`, `employee_name`, `company`'
-                            res = frappe.db.sql(
-                                f"""
-                                SELECT {cols}
-                                FROM `tabEmployee`
-                                WHERE REPLACE(REPLACE(REPLACE({field}, '/', ''), '-', ''), ' ', '') = %s
-                                LIMIT 1
-                                """,
-                                (norm,),
-                                as_dict=True,
-                            )
-                            if res:
-                                return res[0]
-                        # 2) Exact match via SQL (bypass permissions)
-                        res = frappe.db.sql(
-                            f"""
-                            SELECT `name`, `employee_name`, `company`
-                            FROM `tabEmployee`
-                            WHERE {field} = %s
-                            LIMIT 1
-                            """,
-                            (nrc_number,),
-                            as_dict=True,
-                        )
-                        if res:
-                            return res[0]
-                        # 3) Partial match fallback via SQL LIKE
-                        res = frappe.db.sql(
-                            f"""
-                            SELECT `name`, `employee_name`, `company`
-                            FROM `tabEmployee`
-                            WHERE {field} LIKE %s
-                            LIMIT 1
-                            """,
-                            (f"%{nrc_number}%",),
-                            as_dict=True,
-                        )
-                        if res:
-                            return res[0]
-                    except Exception:
-                        continue
+                # 1) Exact match
+                res = frappe.get_all(
+                    "Customer",
+                    filters={"custom_nrc_number": nrc_number},
+                    fields=["name", "customer_name"],
+                    limit=1
+                )
+                if res:
+                    res[0]["employee_name"] = res[0]["customer_name"]
+                    return res[0]
 
-            # Try by full name (case-insensitive). Use tokenized LIKE to tolerate double spaces/typos
+                # 2) Wildcard like match
+                res = frappe.get_all(
+                    "Customer",
+                    filters={"custom_nrc_number": ["like", f"%{nrc_number}%"]},
+                    fields=["name", "customer_name"],
+                    limit=1
+                )
+                if res:
+                    res[0]["employee_name"] = res[0]["customer_name"]
+                    return res[0]
+
             if full_name:
-                try:
-                    tokens = [t for t in (full_name or '').strip().split() if t]
-                    if len(tokens) >= 2:
-                        fname, lname = tokens[0], tokens[-1]
-                        res = frappe.db.sql(
-                            """
-                            SELECT `name`, `employee_name`, `company`
-                            FROM `tabEmployee`
-                            WHERE `employee_name` LIKE %s AND `employee_name` LIKE %s
-                            LIMIT 1
-                            """,
-                            (f"%{fname}%", f"%{lname}%"),
-                            as_dict=True,
-                        )
-                        if res:
-                            return res[0]
-                    # Fallback single LIKE
-                    res = frappe.db.sql(
-                        """
-                        SELECT `name`, `employee_name`, `company`
-                        FROM `tabEmployee`
-                        WHERE `employee_name` LIKE %s
-                        LIMIT 1
-                        """,
-                        (f"%{full_name}%",),
-                        as_dict=True,
-                    )
-                    if res:
-                        return res[0]
-                except Exception:
-                    pass
+                res = frappe.get_all(
+                    "Customer",
+                    filters={"customer_name": ["like", f"%{full_name}%"]},
+                    fields=["name", "customer_name"],
+                    limit=1
+                )
+                if res:
+                    res[0]["employee_name"] = res[0]["customer_name"]
+                    return res[0]
 
             return None
         except Exception:
@@ -987,7 +934,7 @@ class LiveDataOrchestrator:
 
             # Always attempt Employee → Employee Benefit Claim fallback (HRMS)
             if FRAPPE_AVAILABLE and frappe:
-                employee = self._find_employee_by_nrc_or_name(nrc_number, full_name)
+                employee = self._find_customer_by_nrc_or_name(nrc_number, full_name)
                 if employee:
                     erp_data['employee'] = employee
                     try:
@@ -1733,7 +1680,7 @@ def debug_get_claim_data(nrc: Optional[str] = None, full_name: Optional[str] = N
 # Lightweight debug helper to validate HRMS claim lookup path
 def debug_find_hrms_claims(full_name: Optional[str] = None, nrc: Optional[str] = None):
     o = get_live_data_orchestrator()
-    emp = o._find_employee_by_nrc_or_name(nrc, full_name)
+    emp = o._find_customer_by_nrc_or_name(nrc, full_name)
     if not emp:
         return {'employee_found': False, 'claims': []}
     claims = frappe.get_all('Employee Benefit Claim',
