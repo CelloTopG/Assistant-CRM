@@ -105,30 +105,20 @@ class UnifiedInboxConversation(Document):
                 self.customer_name = customer.customer_name
                 
             # Explicit Field 2: customer_type
-            backend_type = str(customer.get("customer_group") or customer.get("custom_customer_type") or customer.get("customer_type") or "Beneficiary").lower()
-            normalized_type = "Beneficiary" # default fallback
-            if "pension" in backend_type:
-                normalized_type = "Pensioner"
-            elif "employ" in backend_type:
-                normalized_type = "Employer"
-            self.customer_type = normalized_type
+            if customer.get("customer_type"):
+                self.customer_type = customer.get("customer_type")
             
-            # Explicit Field 3: customer_group (Checking if developer custom field exists)
+            # Explicit Field 3: customer_group
             if self.meta.has_field("customer_group") and customer.get("customer_group"):
                 self.customer_group = customer.customer_group
-            elif self.meta.has_field("custom_customer_group") and customer.get("customer_group"):
-                self.set("custom_customer_group", customer.customer_group)
                 
-            # Explicit Field 4: custom_pas_number (Checking for both custom_pas_number and customer_pas_number)
+            # Explicit Field 4: custom_pas_number -> customer_pas_number
             if self.meta.has_field("customer_pas_number") and customer.get("custom_pas_number"):
-                self.customer_pas_number = customer.custom_pas_number
-            elif self.meta.has_field("custom_pas_number") and customer.get("custom_pas_number"):
-                self.set("custom_pas_number", customer.custom_pas_number)
+                self.customer_pas_number = customer.get("custom_pas_number")
                 
-            # Try to grab phone
-            phone = customer.get("mobile_no") or customer.get("phone") or customer.get("custom_primary_phone_number")
-            if phone:
-                self.customer_phone = phone
+            # Explicit Field 5: customer_phone -> mobile_no
+            if customer.get("mobile_no"):
+                self.customer_phone = customer.get("mobile_no")
                 
             # Extra Logging specifically requested by the user: force a popup ALWAYS when the method successfully runs
             popup_msg = f"✅ Extracted Profile for <b>{customer.customer_name}</b>!<br>Mapped Fields:<br>- Name: {self.customer_name}<br>- Type: {self.customer_type}<br>- CBS Number: {getattr(self, 'customer_pas_number', getattr(self, 'custom_pas_number', 'N/A'))}<br>- Group: {getattr(self, 'customer_group', getattr(self, 'custom_customer_group', 'N/A'))}"

@@ -73,20 +73,16 @@ def link_customer_profile(conversation_name):
                 conv.db_set("customer_name", name_val)
                 
             # Autonomously Pull Telephone Configuration
-            phone = profile.get("mobile_no") or profile.get("phone") or profile.get("custom_primary_phone_number") or profile.get("primary_mobile_number")
-            if phone:
-                conv.db_set("customer_phone", phone)
+            if profile.get("mobile_no"):
+                conv.db_set("customer_phone", profile.get("mobile_no"))
 
             # Autonomously infer Customer Type strictly based on backend truth
-            backend_type = str(profile.get("customer_group") or profile.get("custom_customer_type") or profile.get("customer_type") or "Beneficiary").lower()
-            normalized_type = "Beneficiary" # default fallback
-            
-            if "pension" in backend_type:
-                normalized_type = "Pensioner"
-            elif "employ" in backend_type:
-                normalized_type = "Employer"
+            if profile.get("customer_type"):
+                conv.db_set("customer_type", profile.get("customer_type"))
                 
-            conv.db_set("customer_type", normalized_type)
+            # Explicitly Pull Customer Group if custom field exists
+            if profile.get("customer_group"):
+                conv.db_set("customer_group", profile.get("customer_group"))
                 
             # Autonomously Pull CBS / PAS number down into the conversation
             pas = profile.get("custom_pas_number")
@@ -94,7 +90,7 @@ def link_customer_profile(conversation_name):
                 conv.db_set("customer_pas_number", pas)
                 
             # Log successful sync audit trail for agents
-            conv.add_comment("Comment", f"✅ **System Auth Match**: Autonomously linked to verified system Profile ({profile.name}).\nNRC: {conv.customer_nrc}\nType: {normalized_type}")
+            conv.add_comment("Comment", f"✅ **System Auth Match**: Autonomously linked to verified system Profile ({profile.name}).\\nNRC: {conv.customer_nrc}\\nType: {profile.get('customer_type', 'Beneficiary')}")
             
         else:
             # Document Unverified Visitor cleanly for agents
