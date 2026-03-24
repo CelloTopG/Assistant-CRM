@@ -67,10 +67,9 @@ def link_customer_profile(conversation_name):
             # Map core identity
             conv.db_set("customer_id", profile.name)
             
-            # Try mapping customer_name using various standard fields
-            name_val = profile.get("customer_name") or profile.get("beneficiary_name") or profile.get("full_name")
-            if name_val:
-                conv.db_set("customer_name", name_val)
+            # Explicit Field 1: customer_name
+            if profile.get("customer_name"):
+                conv.db_set("customer_name", profile.get("customer_name"))
                 
             # Autonomously Pull Telephone Configuration
             if profile.get("mobile_no"):
