@@ -57,21 +57,24 @@ def link_customer_profile(conversation_name):
         if not conv.customer_nrc or conv.customer_id:
             return
             
-        # Query the core Customer/Beneficiary doctype strictly using custom_nrc_number
+        # Query the core Beneficiary doctype strictly using custom_nrc_number
         customer_candidates = frappe.get_all(
-            "Customer", 
+            "Beneficiary", 
             filters={"custom_nrc_number": conv.customer_nrc}, 
             limit=1
         )
         
         if customer_candidates:
             # Full structured Document load to capture granular metadata across schema custom fields
-            profile = frappe.get_doc("Customer", customer_candidates[0].name)
+            profile = frappe.get_doc("Beneficiary", customer_candidates[0].name)
             
             # Map core identity
             conv.db_set("customer_id", profile.name)
-            if profile.customer_name:
-                conv.db_set("customer_name", profile.customer_name)
+            
+            # Try mapping customer_name using various standard fields
+            name_val = profile.get("beneficiary_name") or profile.get("customer_name") or profile.get("full_name")
+            if name_val:
+                conv.db_set("customer_name", name_val)
                 
             # Autonomously Pull Telephone Configuration
             phone = profile.get("mobile_no") or profile.get("phone") or profile.get("custom_primary_phone_number") or profile.get("primary_mobile_number")

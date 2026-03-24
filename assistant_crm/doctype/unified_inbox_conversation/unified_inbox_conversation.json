@@ -108,7 +108,7 @@
             "fieldname": "customer_id",
             "fieldtype": "Link",
             "label": "Customer",
-            "options": "Customer"
+            "options": "Beneficiary"
         },
         {
             "fieldname": "customer_name",
