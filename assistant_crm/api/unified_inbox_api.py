@@ -60,41 +60,47 @@ def _extract_first_nrc_from_text(text: str) -> Optional[str]:
 
 
 def _find_beneficiary_or_employee_by_nrc(nrc: str) -> Optional[Dict[str, Any]]:
-    """Return dict with keys: kind ('Employee'), full_name, link_doctype, link_name. None if not found.
-
-    NOTE: Beneficiary Profile and Employee Profile doctypes have been removed.
-    Now uses ERPNext Employee doctype instead.
-    """
+    """Return dict with keys: kind ('Customer'), full_name, link_doctype, link_name. None if not found."""
     try:
         normalized = _normalize_nrc(nrc)
 
-        # Try ERPNext Employee doctype (replaced Employee Profile)
+        # 1) Try exact match on Customer
         emp = frappe.get_all(
-            "Employee",
+            "Customer",
             filters={"custom_nrc_number": normalized},
-            fields=["name", "employee_name"],
+            fields=["name", "customer_name"],
             limit=1,
         )
         if not emp:
-            # Try hyphen variant
+            # 2) Try hyphen variant
             hyphen = normalized.replace("/", "-")
             emp = frappe.get_all(
-                "Employee",
+                "Customer",
                 filters={"custom_nrc_number": hyphen},
-                fields=["name", "employee_name"],
+                fields=["name", "customer_name"],
                 limit=1,
             )
+        if not emp:
+            # 3) Try wildcard fallback
+            emp = frappe.get_all(
+                "Customer",
+                filters={"custom_nrc_number": ["like", f"%{normalized}%"]},
+                fields=["name", "customer_name"],
+                limit=1,
+            )
+            
         if emp:
             e = emp[0]
             return {
-                "kind": "Employee",
-                "full_name": e.get("employee_name") or e.get("name"),
-                "link_doctype": "Employee",
+                "kind": "Customer",
+                "full_name": e.get("customer_name") or e.get("name"),
+                "link_doctype": "Customer",
                 "link_name": e.get("name"),
             }
     except Exception as lookup_err:
         try:
-            frappe.log_error(f"NRC lookup error: {lookup_err}", "Assistant CRM NRC Lookup")
+            import traceback
+            frappe.log_error(f"Error: {str(lookup_err)}\\n\\nTraceback:\\n{traceback.format_exc()}", "Assistant CRM NRC Lookup")
         except Exception:
             pass
     return None
@@ -146,19 +152,9 @@ def _set_issue_employer_link(issue_name: str, customer_info: Optional[Dict[str, 
             return
         if not customer_info:
             return
-        if customer_info.get("kind") == "Employee" and customer_info.get("link_name"):
-            emp = frappe.get_value(
-                "Employee",
-                customer_info.get("link_name"),
-                ["company"],
-                as_dict=True,
-            )
-            company = (emp or {}).get("company")
-            # Try to find Customer by company name
-            if company:
-                customer = frappe.db.get_value("Customer", {"customer_name": company}, "name")
-                if customer:
-                    frappe.db.set_value("Issue", issue_name, {"customer": customer})
+        if customer_info.get("kind") == "Customer" and customer_info.get("link_name"):
+            frappe.db.set_value("Issue", issue_name, "customer", customer_info["link_name"])
+            
     except Exception as e:
         try:
             frappe.log_error(f"Failed to set Issue.customer: {e}", "Assistant CRM Customer Link")
