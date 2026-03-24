@@ -57,16 +57,12 @@ def link_customer_profile(conversation_name):
         if not conv.customer_nrc or conv.customer_id:
             return
             
-        # Query the core Customer doctype strictly using custom_nrc_number
-        customer_candidates = frappe.get_all(
-            "Customer", 
-            filters={"custom_nrc_number": conv.customer_nrc}, 
-            limit=1
-        )
+        from assistant_crm.api.unified_inbox_api import _find_beneficiary_or_employee_by_nrc
+        customer_info = _find_beneficiary_or_employee_by_nrc(conv.customer_nrc)
         
-        if customer_candidates:
+        if customer_info and customer_info.get("link_name"):
             # Full structured Document load to capture granular metadata across schema custom fields
-            profile = frappe.get_doc("Customer", customer_candidates[0].name)
+            profile = frappe.get_doc("Customer", customer_info["link_name"])
             
             # Map core identity
             conv.db_set("customer_id", profile.name)

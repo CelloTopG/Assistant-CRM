@@ -1991,6 +1991,7 @@ def create_issue_for_conversation(conversation_name, customer_name, platform, in
             conv_meta = frappe.get_meta("Unified Inbox Conversation")
             if nrc_to_use and getattr(conv_meta, 'has_field', None) and conv_meta.has_field('customer_nrc'):
                 frappe.db.set_value("Unified Inbox Conversation", conversation_name, {"customer_nrc": _normalize_nrc(nrc_to_use)})
+                frappe.enqueue("assistant_crm.api.customer_identification.link_customer_profile", conversation_name=conversation_name, queue="default")
         except Exception:
             pass
         print(f"DEBUG: Issue created successfully with ID: {issue_doc.name}")
@@ -4854,6 +4855,7 @@ def update_issue_with_conversation_history(conversation_name, new_message_conten
                         conv_meta = frappe.get_meta("Unified Inbox Conversation")
                         if getattr(conv_meta, 'has_field', None) and conv_meta.has_field('customer_nrc'):
                             frappe.db.set_value("Unified Inbox Conversation", conversation_name, {"customer_nrc": _normalize_nrc(nrc_to_use)})
+                            frappe.enqueue("assistant_crm.api.customer_identification.link_customer_profile", conversation_name=conversation_name, queue="default")
                     except Exception:
                         pass
 
