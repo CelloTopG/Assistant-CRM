@@ -1,4 +1,4 @@
-﻿# Copyright (c) 2025, WCFCB and contributors
+# Copyright (c) 2025, WCFCB and contributors
 # For license information, please see license.txt
 
 import frappe
@@ -45,6 +45,8 @@ class UnifiedInboxConversation(Document):
     
     def before_save(self):
         """Actions to perform before saving the document."""
+        self.enforce_customer_data_sync()
+        
         # Update last message time if status changed
         if self.has_value_changed("status"):
             self.last_message_time = now()
@@ -61,6 +63,71 @@ class UnifiedInboxConversation(Document):
         # Calculate/Update SLA Expiry
         self.calculate_resolution_sla()
         self.update_sla_status()
+
+    def enforce_customer_data_sync(self):
+        """Synchronously pull demographic variables directly from Customer when NRC is bound."""
+        if not self.customer_nrc:
+            return
+            
+        # Only sync when NRC is freshly populated or we don't have the explicit customer_id cache
+        if not (self.has_value_changed("customer_nrc") or not self.customer_id):
+            return
+            
+        try:
+            from assistant_crm.api.unified_inbox_api import _find_beneficiary_or_employee_by_nrc
+            customer_info = _find_beneficiary_or_employee_by_nrc(self.customer_nrc)
+            
+            if not customer_info or not customer_info.get("link_name"):
+                frappe.msgprint(
+                    f"⚠️ NRC Linking Failed: No exact or wildcard match found for '{self.customer_nrc}' in the backend Customer database.",
+                    title="Assistant CRM Diagnosis",
+                    indicator="orange"
+                )
+                return
+                
+            self.customer_id = customer_info["link_name"]
+            customer = frappe.get_doc("Customer", self.customer_id)
+            
+            # Explicit Field 1: customer_name
+            if customer.customer_name:
+                self.customer_name = customer.customer_name
+                
+            # Explicit Field 2: customer_type
+            backend_type = str(customer.get("customer_group") or customer.get("custom_customer_type") or customer.get("customer_type") or "Beneficiary").lower()
+            normalized_type = "Beneficiary" # default fallback
+            if "pension" in backend_type:
+                normalized_type = "Pensioner"
+            elif "employ" in backend_type:
+                normalized_type = "Employer"
+            self.customer_type = normalized_type
+            
+            # Explicit Field 3: customer_group (Checking if developer custom field exists)
+            if self.meta.has_field("customer_group") and customer.get("customer_group"):
+                self.customer_group = customer.customer_group
+            elif self.meta.has_field("custom_customer_group") and customer.get("customer_group"):
+                self.set("custom_customer_group", customer.customer_group)
+                
+            # Explicit Field 4: custom_pas_number (Checking for both custom_pas_number and customer_pas_number)
+            if self.meta.has_field("customer_pas_number") and customer.get("custom_pas_number"):
+                self.customer_pas_number = customer.custom_pas_number
+            elif self.meta.has_field("custom_pas_number") and customer.get("custom_pas_number"):
+                self.set("custom_pas_number", customer.custom_pas_number)
+                
+            # Try to grab phone
+            phone = customer.get("mobile_no") or customer.get("phone") or customer.get("custom_primary_phone_number")
+            if phone:
+                self.customer_phone = phone
+                
+            frappe.msgprint(f"✅ Extracted Profile for {customer.customer_name}. The backend correctly pulled your demanded fields natively into the Inbox.", title="Assistant CRM Diagnosis", indicator="green")
+            
+        except Exception as e:
+            import traceback
+            frappe.msgprint(
+                f"🚨 CRITICAL ERROR fetching Customer fields for NRC {self.customer_nrc}:<br><br>{str(e)}",
+                title="Unified Inbox Schema Error",
+                indicator="red"
+            )
+            frappe.log_error(f"Sync error:\\n{traceback.format_exc()}", "Unified Inbox CRM Sync")
 
     def calculate_resolution_sla(self):
         """Calculate the resolution SLA expiry based on the platform.
