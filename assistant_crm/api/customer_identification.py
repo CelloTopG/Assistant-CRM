@@ -14,7 +14,7 @@ def extract_customer_metadata_from_message(message_name):
         conv = frappe.get_doc("Unified Inbox Conversation", msg.conversation)
         
         # If already fully populated, skip to save resources
-        if conv.customer_nrc and conv.customer_id:
+        if conv.customer_nrc and getattr(conv, "customer_name", None) and getattr(conv, "customer_type", None) and getattr(conv, "customer_pas_number", getattr(conv, "custom_pas_number", None)):
             return
 
         updated = False
@@ -37,7 +37,7 @@ def extract_customer_metadata_from_message(message_name):
         if updated:
             conv.reload()
 
-        if conv.customer_nrc and not conv.customer_id:
+        if conv.customer_nrc:
             frappe.enqueue("assistant_crm.api.customer_identification.link_customer_profile", conversation_name=conv.name, queue="default")
 
     except Exception as e:
@@ -54,7 +54,7 @@ def link_customer_profile(conversation_name):
     try:
         conv = frappe.get_doc("Unified Inbox Conversation", conversation_name)
         
-        if not conv.customer_nrc or conv.customer_id:
+        if not conv.customer_nrc:
             return
             
         from assistant_crm.api.unified_inbox_api import _find_beneficiary_or_employee_by_nrc

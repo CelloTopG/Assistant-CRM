@@ -73,8 +73,6 @@ class UnifiedInboxConversation(Document):
         needs_sync = False
         if getattr(self, "has_value_changed", lambda x: False)("customer_nrc"):
             needs_sync = True
-        elif not self.customer_id:
-            needs_sync = True
         elif not self.customer_name or not self.customer_type:
             needs_sync = True
         # Check custom_pas_number
