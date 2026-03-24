@@ -97,16 +97,18 @@ def get_data_quality_metrics():
     """Get data quality assessment metrics"""
     try:
         # Check for duplicate contacts
-        duplicate_contacts = frappe.db.sql("""
-            SELECT COUNT(*) as count
-            FROM (
-                SELECT corebusiness_id, COUNT(*) as cnt
-                FROM `tabContact`
-                WHERE corebusiness_id IS NOT NULL AND corebusiness_id != ''
-                GROUP BY corebusiness_id
-                HAVING cnt > 1
-            ) as duplicates
-        """, as_dict=True)[0]['count']
+        duplicate_contacts = 0
+        if frappe.db.has_column("Contact", "corebusiness_id"):
+            duplicate_contacts = frappe.db.sql("""
+                SELECT COUNT(*) as count
+                FROM (
+                    SELECT corebusiness_id, COUNT(*) as cnt
+                    FROM `tabContact`
+                    WHERE corebusiness_id IS NOT NULL AND corebusiness_id != ''
+                    GROUP BY corebusiness_id
+                    HAVING cnt > 1
+                ) as duplicates
+            """, as_dict=True)[0]['count']
 
         # Check for missing required fields
         missing_email = frappe.db.count('Contact', {
@@ -227,14 +229,16 @@ def run_data_quality_assessment():
         }
 
         # Check 1: Duplicate detection
-        duplicates = frappe.db.sql("""
-            SELECT corebusiness_id, COUNT(*) as count, 
-                   GROUP_CONCAT(name) as contact_ids
-            FROM `tabContact`
-            WHERE corebusiness_id IS NOT NULL AND corebusiness_id != ''
-            GROUP BY corebusiness_id
-            HAVING count > 1
-        """, as_dict=True)
+        duplicates = []
+        if frappe.db.has_column("Contact", "corebusiness_id"):
+            duplicates = frappe.db.sql("""
+                SELECT corebusiness_id, COUNT(*) as count, 
+                       GROUP_CONCAT(name) as contact_ids
+                FROM `tabContact`
+                WHERE corebusiness_id IS NOT NULL AND corebusiness_id != ''
+                GROUP BY corebusiness_id
+                HAVING count > 1
+            """, as_dict=True)
 
         assessment_results['checks_performed'].append({
             'check_name': 'Duplicate Detection',
