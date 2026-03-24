@@ -69,8 +69,22 @@ class UnifiedInboxConversation(Document):
         if not self.customer_nrc:
             return
             
-        # Only sync when NRC is freshly populated or we don't have the explicit customer_id cache
-        if not (self.has_value_changed("customer_nrc") or not self.customer_id):
+        # Aggressive sync check: If any of the mandatory fields are empty, Force the Sync to trigger!
+        needs_sync = False
+        if getattr(self, "has_value_changed", lambda x: False)("customer_nrc"):
+            needs_sync = True
+        elif not self.customer_id:
+            needs_sync = True
+        elif not self.customer_name or not self.customer_type:
+            needs_sync = True
+        # Check custom_pas_number
+        elif not getattr(self, "customer_pas_number", getattr(self, "custom_pas_number", None)):
+            needs_sync = True
+        # Check customer_group
+        elif not getattr(self, "customer_group", getattr(self, "custom_customer_group", None)):
+            needs_sync = True
+
+        if not needs_sync:
             return
             
         try:
@@ -118,7 +132,9 @@ class UnifiedInboxConversation(Document):
             if phone:
                 self.customer_phone = phone
                 
-            frappe.msgprint(f"✅ Extracted Profile for {customer.customer_name}. The backend correctly pulled your demanded fields natively into the Inbox.", title="Assistant CRM Diagnosis", indicator="green")
+            # Extra Logging specifically requested by the user: force a popup ALWAYS when the method successfully runs
+            popup_msg = f"✅ Extracted Profile for <b>{customer.customer_name}</b>!<br>Mapped Fields:<br>- Name: {self.customer_name}<br>- Type: {self.customer_type}<br>- CBS Number: {getattr(self, 'customer_pas_number', getattr(self, 'custom_pas_number', 'N/A'))}<br>- Group: {getattr(self, 'customer_group', getattr(self, 'custom_customer_group', 'N/A'))}"
+            frappe.msgprint(popup_msg, title="Assistant CRM Diagnosis", indicator="green")
             
         except Exception as e:
             import traceback
