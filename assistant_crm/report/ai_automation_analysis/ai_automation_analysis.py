@@ -296,7 +296,7 @@ def get_report_summary(summary: Dict[str, Any]) -> List[Dict[str, Any]]:
 def get_ai_insights(filters: str, query: str) -> Dict[str, Any]:
     """Return WorkCom-style insights for the AI Automation Analysis report."""
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters or {})
-    _ensure_dates(filters)
+    get_period_dates(filters)
 
     df = getdate(filters.date_from)
     dt = getdate(filters.date_to)
@@ -366,7 +366,7 @@ def get_ai_insights(filters: str, query: str) -> Dict[str, Any]:
 def get_automation_status_chart(filters: str) -> Dict[str, Any]:
     """Get automation success/failure chart data."""
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters or {})
-    _ensure_dates(filters)
+    get_period_dates(filters)
     _, summary = get_data(filters)
 
     return {
@@ -386,7 +386,7 @@ def get_automation_status_chart(filters: str) -> Dict[str, Any]:
 def get_after_hours_chart(filters: str) -> Dict[str, Any]:
     """Get after-hours tickets by platform chart data."""
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters or {})
-    _ensure_dates(filters)
+    get_period_dates(filters)
     _, summary = get_data(filters)
 
     platform_counts = summary.get("after_hours_by_platform", {})
@@ -407,7 +407,7 @@ def get_after_hours_chart(filters: str) -> Dict[str, Any]:
 def get_document_validation_chart(filters: str) -> Dict[str, Any]:
     """Get document validation status chart data."""
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters or {})
-    _ensure_dates(filters)
+    get_period_dates(filters)
     _, summary = get_data(filters)
 
     status_counts = summary.get("doc_validation_status_counts", {})
@@ -428,7 +428,7 @@ def get_document_validation_chart(filters: str) -> Dict[str, Any]:
 def get_data_quality_chart(filters: str) -> Dict[str, Any]:
     """Get data quality issues chart data."""
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters or {})
-    _ensure_dates(filters)
+    get_period_dates(filters)
     _, summary = get_data(filters)
 
     issues = summary.get("data_quality_issues", [])
@@ -449,7 +449,7 @@ def get_data_quality_chart(filters: str) -> Dict[str, Any]:
 def get_ai_failures_chart(filters: str) -> Dict[str, Any]:
     """Get AI failures by reason chart data."""
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters or {})
-    _ensure_dates(filters)
+    get_period_dates(filters)
     _, summary = get_data(filters)
 
     by_reason = summary.get("ai_failures_by_reason", {})
@@ -470,7 +470,7 @@ def get_ai_failures_chart(filters: str) -> Dict[str, Any]:
 def get_system_health_chart(filters: str) -> Dict[str, Any]:
     """Get system health gauge chart data."""
     filters = frappe._dict(json.loads(filters) if isinstance(filters, str) else filters or {})
-    _ensure_dates(filters)
+    get_period_dates(filters)
     _, summary = get_data(filters)
 
     score = summary.get("system_health_score", 0)
