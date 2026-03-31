@@ -439,6 +439,10 @@ website_route_rules = [
 	{"from_route": "/api/omnichannel/webhook/ussd", "to_route": "assistant_crm.api.ussd_integration.ussd_webhook"},
 	# YouTube webhook (PubSubHubbub and custom integrations)
 	{"from_route": "/api/omnichannel/webhook/youtube", "to_route": "assistant_crm.api.realtime_webhooks.youtube_webhook"},
+	# Tawk.to webhook (chat:start, chat:end, chat:transcript_created, ticket:create)
+	{"from_route": "/api/omnichannel/webhook/tawkto", "to_route": "assistant_crm.api.social_media_ports.social_media_webhook"},
+	# Instagram webhook (uses same handler as Facebook — platform detected from payload object type)
+	{"from_route": "/api/omnichannel/webhook/instagram", "to_route": "assistant_crm.api.social_media_ports.social_media_webhook"},
 
 	# Assistant CRM web interface - REMOVED to prevent homepage interference
 	# {"from_route": "/assistant-crm/<path:app_path>", "to_route": "assistant-crm"}

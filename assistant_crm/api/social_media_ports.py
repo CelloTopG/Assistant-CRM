@@ -3773,13 +3773,40 @@ DEBUG: Request args: {frappe.request.args}
 
         print(f"DEBUG: About to validate platform and signatures...")
 
-        # Instagram: Temporarily skip signature validation (compatibility restore)
-        if platform == "Instagram":
-            print("DEBUG: Skipping Instagram signature validation (compat mode)")
-            # is_valid = validate_instagram_webhook_signature(webhook_data, frappe.request.headers)
-            # if not is_valid:
-            #     print("DEBUG: Instagram webhook signature validation failed (ignored)")
-            #     pass
+        # Validate Meta (Facebook/Instagram) webhook signature via X-Hub-Signature-256.
+        # Meta signs payloads with the App Secret — reject anything that doesn't match.
+        if platform in ("Facebook", "Instagram"):
+            sig_header = frappe.request.headers.get("X-Hub-Signature-256", "")
+            if sig_header:
+                try:
+                    settings = frappe.get_single("Social Media Settings")
+                    app_secret = settings.get_password("facebook_app_secret") or settings.get("facebook_app_secret", "")
+                    if not app_secret:
+                        # Try Assistant CRM Settings as fallback
+                        try:
+                            crm_settings = frappe.get_single("Assistant CRM Settings")
+                            app_secret = crm_settings.get_password("facebook_app_secret") or crm_settings.get("facebook_app_secret", "")
+                        except Exception:
+                            pass
+                    if app_secret:
+                        import hmac as _hmac
+                        raw_body = frappe.request.get_data()
+                        expected = "sha256=" + _hmac.new(
+                            app_secret.encode("utf-8"),
+                            raw_body,
+                            hashlib.sha256,
+                        ).hexdigest()
+                        if not _hmac.compare_digest(sig_header, expected):
+                            print(f"DEBUG: {platform} webhook signature mismatch — rejecting")
+                            from werkzeug.wrappers import Response as _Resp
+                            return _Resp("Forbidden", content_type="text/plain", status=403)
+                        print(f"DEBUG: {platform} webhook signature validated OK")
+                    else:
+                        print(f"DEBUG: No facebook_app_secret configured — skipping Meta signature check")
+                except Exception as e:
+                    print(f"DEBUG: Error during Meta signature check: {e}")
+            else:
+                print(f"DEBUG: No X-Hub-Signature-256 header on {platform} webhook — allowing (no secret configured yet)")
 
         # Validate Tawk.to webhook signature if it's a Tawk.to webhook
         if platform == "Tawk.to":
@@ -3788,9 +3815,9 @@ DEBUG: Request args: {frappe.request.args}
             raw_body = frappe.request.get_data()
             sig_valid = validate_tawkto_webhook_signature(raw_body, frappe.request.headers)
             if not sig_valid:
-                print(f"DEBUG: Tawk.to webhook signature validation failed - allowing webhook through (will investigate)")
-                # Allow webhook through despite signature mismatch (same as Instagram compat mode)
-                # This ensures messages are processed while we debug the signature issue
+                print(f"DEBUG: Tawk.to webhook signature validation failed — rejecting")
+                from werkzeug.wrappers import Response as _Resp
+                return _Resp("Forbidden", content_type="text/plain", status=403)
 
         if not platform:
             print(f"DEBUG: Could not determine platform from webhook data")
@@ -3839,10 +3866,11 @@ def detect_platform_from_webhook(data: Dict[str, Any]) -> Optional[str]:
         print(f"DEBUG: Detected YouTube webhook via platform/source field")
         return "YouTube"
 
-    if data.get("items") or data.get("comment") or data.get("liveChatMessage") or data.get("feed") or data.get("entry"):
+    # Note: do NOT include "entry" here — Facebook/Instagram payloads also use "entry"
+    if data.get("items") or data.get("comment") or data.get("liveChatMessage") or data.get("feed"):
         # Additional heuristics for YouTube feed events (PubSubHubbub) or comment events
-        if isinstance(data.get("items"), list) or data.get("feed") or data.get("entry"):
-            print(f"DEBUG: Detected YouTube webhook via items/feed/entry payload")
+        if isinstance(data.get("items"), list) or data.get("feed"):
+            print(f"DEBUG: Detected YouTube webhook via items/feed payload")
             return "YouTube"
 
     # WhatsApp webhook detection (enhanced)
@@ -3949,46 +3977,53 @@ def detect_platform_from_webhook(data: Dict[str, Any]) -> Optional[str]:
     return None
 
 
-def validate_instagram_webhook_signature(webhook_data: str, headers: Dict[str, str]) -> bool:
-    """Validate Instagram webhook signature using HMAC-SHA256."""
+def validate_instagram_webhook_signature(raw_body: bytes, headers: Dict[str, str]) -> bool:
+    """Validate Instagram webhook signature using HMAC-SHA256 on raw request bytes."""
     try:
         # Get signature from headers
         signature_header = headers.get('X-Hub-Signature-256', '')
         if not signature_header:
             print(f"DEBUG: No X-Hub-Signature-256 header found")
-            return True  # Allow for now if no signature
+            return True  # No signature present — allow (secret not yet configured)
 
-        # Extract signature (remove 'sha256=' prefix if present)
+        # Extract signature (remove 'sha256=' prefix)
         signature = signature_header.replace('sha256=', '')
 
-        # Get webhook secret from Instagram integration
-        instagram_integration = InstagramIntegration()
-        webhook_secret = instagram_integration.credentials.get('webhook_secret', '')
+        # Get webhook secret — try Instagram integration first, then Social Media Settings
+        webhook_secret = ""
+        try:
+            instagram_integration = InstagramIntegration()
+            webhook_secret = instagram_integration.credentials.get('webhook_secret', '')
+        except Exception:
+            pass
 
         if not webhook_secret:
-            print(f"DEBUG: No webhook secret configured for Instagram")
-            return True  # Allow for now if no secret configured
+            try:
+                settings = frappe.get_single("Social Media Settings")
+                webhook_secret = settings.get_password("facebook_app_secret") or settings.get("facebook_app_secret", "")
+            except Exception:
+                pass
 
-        # Calculate expected signature
+        if not webhook_secret:
+            print(f"DEBUG: No webhook secret configured for Instagram — skipping validation")
+            return True
+
+        # Meta signs using the raw request bytes (not re-encoded string)
         import hmac
+        body_bytes = raw_body if isinstance(raw_body, bytes) else raw_body.encode('utf-8')
         expected_signature = hmac.new(
             webhook_secret.encode('utf-8'),
-            webhook_data.encode('utf-8'),
+            body_bytes,
             hashlib.sha256
         ).hexdigest()
 
-        # Compare signatures
         is_valid = hmac.compare_digest(signature, expected_signature)
         print(f"DEBUG: Instagram signature validation: {'PASSED' if is_valid else 'FAILED'}")
-        print(f"DEBUG: Received signature: {signature}")
-        print(f"DEBUG: Expected signature: {expected_signature}")
-        print(f"DEBUG: Payload length: {len(webhook_data)} bytes")
-
         return is_valid
 
     except Exception as e:
         print(f"DEBUG: Error validating Instagram signature: {str(e)}")
-        return True  # Allow on error for now
+        return True  # Fail open on unexpected errors
 
 
 
@@ -4003,8 +4038,16 @@ def validate_tawkto_webhook_signature(raw_body: bytes, headers: Dict[str, str]) 
             print(f"DEBUG: No Tawk.to signature found in headers")
             return True  # Allow webhooks without signature for now
 
-        # Get the webhook secret
-        tawkto_secret = "e66329cfba799c070747679d0c1cf98d11699b5ed45ef47bc3c737759869fc5d3be7f59ba426654bf6f93394412aabf4"
+        # Read webhook secret from Social Media Settings (never hardcode)
+        try:
+            settings = frappe.get_single("Social Media Settings")
+            tawkto_secret = settings.get_password("tawkto_webhook_secret") or settings.get("tawkto_webhook_secret", "")
+        except Exception:
+            tawkto_secret = ""
+
+        if not tawkto_secret:
+            print(f"DEBUG: No Tawk.to webhook secret configured — skipping signature validation")
+            return True
 
         # Calculate expected signature using SHA1 on RAW BYTES (Tawk.to official algorithm)
         # Per Tawk.to docs: signature is HMAC-SHA1 of the raw request body using the webhook secret

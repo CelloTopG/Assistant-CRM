@@ -29,6 +29,20 @@ RATE_LIMITS = {
     },
 }
 
+# Webhook endpoint prefixes — these use signature-based auth and must bypass DDoS checks
+WEBHOOK_PATH_PREFIXES = [
+    "/api/omnichannel/webhook/",
+]
+
+# Direct API method paths for webhook handlers (matched as substrings)
+WEBHOOK_METHOD_PATTERNS = [
+    "assistant_crm.api.social_media_ports.social_media_webhook",
+    "assistant_crm.api.realtime_webhooks.whatsapp_webhook",
+    "assistant_crm.api.realtime_webhooks.facebook_webhook",
+    "assistant_crm.api.realtime_webhooks.telegram_webhook",
+    "assistant_crm.api.realtime_webhooks.youtube_webhook",
+]
+
 # CRM endpoints to protect
 PROTECTED_ROUTES = {
     "crm_routes": [
@@ -142,6 +156,15 @@ class BotDetector:
     Detect suspicious bot patterns without external services
     """
 
+    # Known legitimate webhook delivery agents — exempt from bot detection
+    TRUSTED_WEBHOOK_USER_AGENTS = [
+        "facebookexternalua",
+        "facebookplatform",
+        "meta-externalua",
+        "facebook",
+        "tawk",
+    ]
+
     # Suspicious patterns in User-Agent
     SUSPICIOUS_HEADERS = [
         "scrapy",
@@ -167,6 +190,11 @@ class BotDetector:
         if not user_agent:
             violations.append("missing_user_agent")
         else:
+            # Trusted webhook delivery agents don't send browser headers — skip all checks
+            for trusted_ua in BotDetector.TRUSTED_WEBHOOK_USER_AGENTS:
+                if trusted_ua in user_agent:
+                    return []
+
             for bot_signature in BotDetector.SUSPICIOUS_HEADERS:
                 if bot_signature in user_agent:
                     violations.append(f"bot_signature:{bot_signature}")
@@ -238,6 +266,15 @@ class DDoSProtectionMiddleware:
 
         # Skip non-GET/POST requests
         if frappe.request.method not in ["GET", "POST", "PUT", "DELETE"]:
+            return
+
+        # Skip webhook endpoints — they authenticate via HMAC signatures (Meta X-Hub-Signature-256,
+        # Tawk.to X-Tawk-Signature). Rate-limiting them causes legitimate platforms to retry
+        # and eventually disable the webhook subscription.
+        path = frappe.request.path
+        if any(path.startswith(wp) for wp in WEBHOOK_PATH_PREFIXES):
+            return
+        if any(m in path for m in WEBHOOK_METHOD_PATTERNS):
             return
 
         # Determine if this is a protected route
