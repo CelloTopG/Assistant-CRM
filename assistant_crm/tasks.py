@@ -15,6 +15,12 @@ def poll_twitter():
     poll_twitter_inbox()
 
 
+def poll_youtube():
+    """Poll YouTube comments into Unified Inbox."""
+    from assistant_crm.api.social_media_ports import poll_youtube_comments
+    poll_youtube_comments()
+
+
 def sweep_escalations():
     """Sweep and escalate inactive conversations."""
     from assistant_crm.api.unified_inbox_api import sweep_escalate_inactive_conversations

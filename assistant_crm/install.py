@@ -905,6 +905,20 @@ def setup_automated_notifications():
 				"send_system_notification": 1,
 				"recipients": [{"receiver_by_role": "System Manager"}],
 			},
+			# 6. Conversation Assigned to Agent (SMS Alert)
+			{
+				"name": "Conversation Assigned to Agent",
+				"subject": "📱 New Conversation Assigned: {{ doc.customer_name }}",
+				"document_type": "Unified Inbox Conversation",
+				"event": "Value Change",
+				"value_changed": "assigned_agent",
+				"condition": "doc.assigned_agent",
+				"channel": "SMS",
+				"message": """📱 WCFCB Alert: New conversation from {{ doc.customer_name }} ({{ doc.platform }}) assigned to you. Priority: {{ doc.priority }}. Check your inbox.""",
+				"send_to_all_assignees": 0,
+				"send_system_notification": 0,
+				"recipients": [{"receiver_by_field": "Unified Inbox Conversation", "field_value": "assigned_agent"}],
+			},
 		]
 
 		for notif_data in notifications:
@@ -919,14 +933,15 @@ def setup_automated_notifications():
 					print(f"⚠️  DocType '{notif_data['document_type']}' not found, skipping notification '{notif_data['name']}'")
 					continue
 
-				# Extract recipients before creating the doc
+				# Extract recipients and channel before creating the doc
 				recipients = notif_data.pop("recipients", [])
+				channel = notif_data.pop("channel", "System Notification")
 
 				# Create notification
 				notif = frappe.get_doc({
 					"doctype": "Notification",
 					"enabled": 1,
-					"channel": "System Notification",
+					"channel": channel,
 					**notif_data
 				})
 

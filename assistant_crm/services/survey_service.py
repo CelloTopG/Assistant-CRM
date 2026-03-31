@@ -420,7 +420,7 @@ class SurveyService:
 
                     ch_name = channel.channel
                     if ch_name not in channel_stats:
-                        channel_stats[ch_name] = {'attempts': 0, 'success': 0, 'failures': 0, 'reasons': {}}
+                        channel_stats[ch_name] = {'attempts': 0, 'success': 0, 'failures': 0, 'queued': 0, 'reasons': {}}
 
                     channel_stats[ch_name]['attempts'] += 1
 
@@ -453,16 +453,22 @@ class SurveyService:
 
                     if ch_name == 'SMS':
                         # Production-ready: Use async queue for SMS distribution
-                        frappe.enqueue(
-                            "assistant_crm.services.sms_service.send_survey_sms_async",
-                            recipient=recipient,
-                            campaign_name=campaign.name,
-                            response_id=survey_response.name,
-                            queue="long"
-                        )
-                        channel_stats[ch_name]['success'] += 1
-                        recipient_delivered = True
-                    else:
+                        try:
+                            frappe.enqueue(
+                                "assistant_crm.services.sms_service.send_survey_sms_async",
+                                recipient=recipient,
+                                campaign_name=campaign.name,
+                                response_id=survey_response.name,
+                                queue="long"
+                            )
+                            channel_stats[ch_name]['queued'] += 1
+                        except Exception as enqueue_exc:
+                            channel_stats[ch_name]['failures'] += 1
+                            channel_stats[ch_name]['reasons']['enqueue_error'] = channel_stats[ch_name]['reasons'].get('enqueue_error', 0) + 1
+                            frappe.log_error(
+                                title="Survey SMS Enqueue Failed",
+                                message=f"Campaign: {campaign.name}, recipient: {recipient.get('mobile_no')}, error: {str(enqueue_exc)}\n{frappe.get_traceback()}"
+                            )
                         invitation_result = self.send_survey_invitation(recipient, campaign, ch_name, survey_response.name)
                         if invitation_result.get('success'):
                             channel_stats[ch_name]['success'] += 1
@@ -847,12 +853,19 @@ WCFCB Team
                 sms = SMSService()
                 # Pass campaign name for logging
                 result = sms.send_message(recipient.get('mobile_no'), message, survey_id=campaign.name)
-                
+
                 if result and result.get("success"):
                     return {"success": True}
-                
+
                 error_msg = result.get("error") if result else "SMS Gateway failed"
-                # Improved logging handled inside SMSService
+
+                # Enhanced error logging with more context
+                frappe.log_error(title="Survey SMS Invitation Failed",
+                               message=f"SMS survey invitation failed for campaign '{campaign.name}'\n"
+                                      f"Recipient: {recipient.get('mobile_no')}\n"
+                                      f"Error: {error_msg}\n"
+                                      f"Response: {frappe.as_json(result) if result else 'None'}")
+
                 return {"success": False, "error": error_msg}
 
             return {"success": False, "error": "channel_not_supported_or_missing_data"}

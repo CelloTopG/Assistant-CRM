@@ -127,24 +127,38 @@ class BulkMessagingService:
                 # Bulk send SMS for this batch
                 if 'SMS' in enabled_channels:
                     sms_recipients = []
+                    sms_messages = []
                     for recipient in batch:
                         personalized_message = campaign.personalize_message(message_content, recipient)
-                        sms_recipients.append({
-                            'mobile_no': recipient.get('mobile_no'),
-                            'phone': recipient.get('phone'),
-                            'message': personalized_message
-                        })
-                    
+                        phone = recipient.get('mobile_no') or recipient.get('phone')
+                        if phone:
+                            sms_recipients.append(phone)
+                            sms_messages.append(personalized_message)
+
                     if sms_recipients:
                         from assistant_crm.services.sms_service import SMSService
                         sms_service = SMSService()
-                        # We need to handle the fact that send_bulk_messages in SMSService 
-                        # currently expects a single message for all recipients.
-                        # I'll update SMSService to support a list of personalized messages.
-                        bulk_result = sms_service.send_bulk_messages(sms_recipients, message_content)
-                        total_sent += bulk_result.get('total', 0)
-                        total_delivered += bulk_result.get('sent', 0)
-                        total_failed += bulk_result.get('failed', 0)
+
+                        # Send individually for better error tracking and personalized messages
+                        sms_sent = 0
+                        sms_failed = 0
+                        for i, phone in enumerate(sms_recipients):
+                            try:
+                                result = sms_service.send_message(phone, sms_messages[i], survey_id=campaign.name)
+                                if result.get("success"):
+                                    sms_sent += 1
+                                else:
+                                    sms_failed += 1
+                                    frappe.log_error(f"Bulk SMS Failed for {phone}",
+                                                   f"Error: {result.get('error')}\nCampaign: {campaign.name}")
+                            except Exception as e:
+                                sms_failed += 1
+                                frappe.log_error(f"Bulk SMS Exception for {phone}",
+                                               f"Exception: {str(e)}\nCampaign: {campaign.name}")
+
+                        total_sent += len(sms_recipients)
+                        total_delivered += sms_sent
+                        total_failed += sms_failed
                 
                 # Update progress
                 campaign.messages_sent = total_sent

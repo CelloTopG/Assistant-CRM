@@ -82,47 +82,104 @@ class WorkersNotifyGateway:
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
-        
+
         if self.api_key:
             headers["X-API-Key"] = self.api_key
+        else:
+            frappe.log_error(
+                title="Workers SMS Gateway Warning",
+                message="No API key configured for Workers Gateway"
+            )
 
         try:
             if self.debug:
                 frappe.log_error(
                     title="Workers SMS Gateway Payload",
-                    message=f"URL: {url}\nPayload: {json.dumps(payload, indent=2)}"
+                    message=f"URL: {url}\nHeaders: {headers}\nPayload: {json.dumps(payload, indent=2)}"
                 )
 
             response = self.session.post(
                 url,
                 json=payload,
                 headers=headers,
-                timeout=self.timeout,
+                timeout=self.timeout
             )
 
             # Log raw response in debug mode
             if self.debug:
                 frappe.log_error(
                     title="Workers SMS Gateway Raw Response",
-                    message=f"Status: {response.status_code}\nText: {response.text}"
+                    message=f"Status: {response.status_code}\nHeaders: {dict(response.headers)}\nText: {response.text[:1000]}"
                 )
+
+            # Check for HTTP errors
+            if response.status_code >= 400:
+                error_msg = f"HTTP {response.status_code}: {response.reason}"
+                try:
+                    error_data = response.json()
+                    if error_data.get("message"):
+                        error_msg += f" - {error_data['message']}"
+                    if error_data.get("error"):
+                        error_msg += f" - {error_data['error']}"
+                except:
+                    pass
+
+                frappe.log_error(
+                    title="Workers SMS Gateway HTTP Error",
+                    message=f"{error_msg}\nURL: {url}\nPayload: {json.dumps(payload)}\nResponse: {response.text[:500]}"
+                )
+                return {"success": False, "error": error_msg, "status_code": response.status_code}
 
             response.raise_for_status()
             data = response.json()
 
+            # Check for API-level errors
+            if not data.get("success", False):
+                error_msg = data.get("message", data.get("error", "API returned success=false"))
+                frappe.log_error(
+                    title="Workers SMS Gateway API Error",
+                    message=f"API Error: {error_msg}\nResponse: {json.dumps(data)}\nPayload: {json.dumps(payload)}"
+                )
+                return {"success": False, "error": error_msg, "response": data}
+
             return data
 
-        except requests.exceptions.RequestException as e:
-            error_msg = f"Workers SMS Gateway Failure: {str(e)}"
+        except requests.exceptions.Timeout as e:
+            error_msg = f"Workers SMS Gateway Timeout: {str(e)}"
             frappe.log_error(
-                title="Workers SMS Gateway Error",
-                message=f"{error_msg}\n\n{frappe.get_traceback()}"
+                title="Workers SMS Gateway Timeout",
+                message=f"{error_msg}\nURL: {url}\nTimeout: {self.timeout}s\nPayload: {json.dumps(payload)}"
             )
             return {"success": False, "error": error_msg}
+
+        except requests.exceptions.ConnectionError as e:
+            error_msg = f"Workers SMS Gateway Connection Error: {str(e)}"
+            frappe.log_error(
+                title="Workers SMS Gateway Connection Error",
+                message=f"{error_msg}\nURL: {url}\nPayload: {json.dumps(payload)}"
+            )
+            return {"success": False, "error": error_msg}
+
+        except requests.exceptions.RequestException as e:
+            error_msg = f"Workers SMS Gateway Request Error: {str(e)}"
+            frappe.log_error(
+                title="Workers SMS Gateway Request Error",
+                message=f"{error_msg}\nURL: {url}\nPayload: {json.dumps(payload)}"
+            )
+            return {"success": False, "error": error_msg}
+
+        except json.JSONDecodeError as e:
+            error_msg = f"Workers SMS Gateway JSON Parse Error: {str(e)}"
+            frappe.log_error(
+                title="Workers SMS Gateway JSON Error",
+                message=f"{error_msg}\nResponse text: {response.text[:500] if 'response' in locals() else 'No response'}"
+            )
+            return {"success": False, "error": error_msg}
+
         except Exception as e:
             error_msg = f"Workers SMS Gateway Unexpected Error: {str(e)}"
             frappe.log_error(
                 title="Workers SMS Gateway Fatal Error",
-                message=f"{error_msg}\n\n{frappe.get_traceback()}"
+                message=f"{error_msg}\n{frappe.get_traceback()}"
             )
             return {"success": False, "error": error_msg}

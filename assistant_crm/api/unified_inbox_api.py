@@ -48,8 +48,94 @@ def _normalize_nrc(raw: str) -> str:
         if len(digits) >= 9:
             return f"{digits[:6]}/{digits[6:8]}/{digits[8:]}"
         return raw
-    g1, g2, g3 = m.group(1), m.group(2), m.group(3)
-    return f"{g1}/{g2}/{g3}"
+
+
+def _safe_log_error(title: str = 'Unified Inbox Error', message: str = None):
+    """Log errors with safe title+message handling for Error Log doctype."""
+    try:
+        if title is None:
+            title = 'Unified Inbox Error'
+        if not isinstance(title, str):
+            title = str(title)
+
+        if len(title) > 120:
+            title = title[:117] + '...'
+
+        if message is None:
+            message = ''
+        elif not isinstance(message, str):
+            message = str(message)
+
+        frappe.log_error(title=title, message=message)
+    except Exception as log_exc:
+        print(f"DEBUG: _safe_log_error failed ({log_exc}) - original title={title}")
+
+
+def handle_unified_inbox_error(error: Exception, operation: str = "operation") -> Dict[str, Any]:
+    """
+    Handle errors in unified inbox operations with user-friendly messages and full traceback logging.
+    
+    Args:
+        error: The exception that occurred
+        operation: Description of the operation that failed
+        
+    Returns:
+        Dict with status and user-friendly message
+    """
+    error_message = f"Error in unified inbox {operation}: {str(error)}"
+    full_error = f"{error_message}\n\nFull Traceback:\n{frappe.get_traceback()}"
+
+    # Persist full trace in Error Log (safe title used)
+    _safe_log_error("Unified Inbox API Error", full_error)
+
+    # Return user-friendly message for popup
+    user_friendly_message = "An error occurred while processing your request. Please try again or contact support if the issue persists."
+
+    error_str = str(error).lower()
+    if "connection" in error_str or "timeout" in error_str:
+        user_friendly_message = "Connection issue detected. Please check your internet connection and try again."
+    elif "permission" in error_str or "forbidden" in error_str:
+        user_friendly_message = "You don't have permission to perform this action."
+    elif "validation" in error_str:
+        user_friendly_message = "The data provided is invalid. Please check your input and try again."
+
+    return {
+        "status": "error", 
+        "message": user_friendly_message
+    }
+
+
+def return_unified_inbox_error(message: str, operation: str = "operation") -> Dict[str, Any]:
+    """
+    Return an error response for unified inbox operations with logging.
+    
+    Args:
+        message: The error message
+        operation: Description of the operation that failed
+        
+    Returns:
+        Dict with status and user-friendly message
+    """
+    # Log the error
+    _safe_log_error(f"Unified Inbox {operation} Error", message)
+    
+    # Return user-friendly message for popup
+    user_friendly_message = "An error occurred while processing your request. Please try again or contact support if the issue persists."
+
+    error_str = message.lower()
+    if "connection" in error_str or "timeout" in error_str:
+        user_friendly_message = "Connection issue detected. Please check your internet connection and try again."
+    elif "permission" in error_str or "forbidden" in error_str or "denied" in error_str:
+        user_friendly_message = "You don't have permission to perform this action."
+    elif "validation" in error_str or "required" in error_str or "not found" in error_str:
+        user_friendly_message = "The data provided is invalid. Please check your input and try again."
+    elif "invalid" in error_str:
+        user_friendly_message = "Invalid request. Please check your input and try again."
+
+    return {
+        "status": "error", 
+        "message": user_friendly_message
+    }
 
 
 def _extract_first_nrc_from_text(text: str) -> Optional[str]:
@@ -99,8 +185,7 @@ def _find_beneficiary_or_employee_by_nrc(nrc: str) -> Optional[Dict[str, Any]]:
             }
     except Exception as lookup_err:
         try:
-            import traceback
-            frappe.log_error(f"Error: {str(lookup_err)}\\n\\nTraceback:\\n{traceback.format_exc()}", "Assistant CRM NRC Lookup")
+            _safe_log_error(f"Error: {str(lookup_err)}\n\nTraceback:\n{frappe.get_traceback()}", "Assistant CRM NRC Lookup")
         except Exception:
             pass
     return None
@@ -135,7 +220,7 @@ def _set_issue_customer_fields(issue_name: str, nrc: Optional[str], phone: Optio
             frappe.db.set_value("Issue", issue_name, updates)
     except Exception as set_err:
         try:
-            frappe.log_error(f"Failed to set Issue customer fields: {set_err}", "Assistant CRM NRC Populate")
+            _safe_log_error(f"Failed to set Issue customer fields: {set_err}", "Assistant CRM NRC Populate")
         except Exception:
             pass
 
@@ -157,7 +242,7 @@ def _set_issue_employer_link(issue_name: str, customer_info: Optional[Dict[str, 
             
     except Exception as e:
         try:
-            frappe.log_error(f"Failed to set Issue.customer: {e}", "Assistant CRM Customer Link")
+            _safe_log_error(f"Failed to set Issue.customer: {e}", "Assistant CRM Customer Link")
         except Exception:
             pass
 
@@ -255,8 +340,7 @@ def get_unified_inbox_conversations(filters: Dict[str, Any] = None, limit: int =
         }
 
     except Exception as e:
-        frappe.log_error(f"Error getting conversations: {str(e)}", "Unified Inbox API Error")
-        return {"status": "error", "message": "Failed to get conversations"}
+        return handle_unified_inbox_error(e, "getting conversations")
 
 
 @frappe.whitelist()
@@ -276,10 +360,10 @@ def get_conversations():
                 "data": []
             }
     except Exception as e:
-        frappe.log_error(f"Error in get_conversations: {str(e)}", "Unified Inbox API Error")
+        error_result = handle_unified_inbox_error(e, "getting conversations")
         return {
             "status": "error",
-            "message": str(e),
+            "message": error_result.get("message", "Failed to get conversations"),
             "data": []
         }
 
@@ -379,7 +463,7 @@ def search_conversations(q: str = None, limit: int = 50, offset: int = 0):
 
         return {"status": "success", "data": rows}
     except Exception as e:
-        frappe.log_error(f"Error searching conversations: {str(e)}", "Unified Inbox API Error")
+        _safe_log_error(f"Error searching conversations: {str(e)}", "Unified Inbox API Error")
         return {"status": "error", "message": str(e), "data": []}
 
 
@@ -409,8 +493,7 @@ def set_conversation_ai_mode(conversation_name: str, mode: str):
 
         return {"status": "success", "mode": mode}
     except Exception as e:
-        frappe.log_error(f"Error setting AI mode: {str(e)}", "Unified Inbox API Error")
-        return {"status": "error", "message": str(e)}
+        return handle_unified_inbox_error(e, "setting AI mode")
 
 
 @frappe.whitelist()
@@ -436,8 +519,12 @@ def get_messages(conversation_name: str, limit: int = 200, offset: int = 0):
                 "data": []
             }
     except Exception as e:
-        frappe.log_error(f"Error in get_messages: {str(e)}", "Unified Inbox API Error")
-        return {"status": "error", "message": str(e), "data": []}
+        error_result = handle_unified_inbox_error(e, "getting messages")
+        return {
+            "status": "error",
+            "message": error_result.get("message", "Failed to get messages"),
+            "data": []
+        }
 
 
 @frappe.whitelist()
@@ -446,17 +533,19 @@ def get_conversation_messages(conversation_name: str, limit: int = 50, offset: i
     Get messages for a specific conversation.
     """
     try:
-        # Resolve conversation identifier: accept docname, platform_specific_id, or conversation_id
+        # Resolve conversation identifier: accept docname or conversation_id
         resolved_name = conversation_name
         if not frappe.db.exists("Unified Inbox Conversation", resolved_name):
-            alt = frappe.db.get_value("Unified Inbox Conversation", {"platform_specific_id": resolved_name}, "name")
-            if not alt:
-                alt = frappe.db.get_value("Unified Inbox Conversation", {"conversation_id": resolved_name}, "name")
+            alt = frappe.db.get_value("Unified Inbox Conversation", {"conversation_id": resolved_name}, "name")
             if alt:
                 resolved_name = alt
 
         # Get conversation details (allow if user can see it; otherwise still try to fetch minimal info)
         conversation = frappe.get_doc("Unified Inbox Conversation", resolved_name)
+
+        # If the current user is the assigned agent and AI mode is not already "Off", set it to "Off"
+        if conversation.assigned_agent and conversation.assigned_agent == frappe.session.user and (conversation.ai_mode or "Auto") != "Off":
+            conversation.db_set("ai_mode", "Off")
 
         # Get messages (ignore permissions so agents with UI access can see full thread)
         # Return the LAST `limit` messages by default (so newest messages appear), preserving asc order for display
@@ -496,8 +585,7 @@ def get_conversation_messages(conversation_name: str, limit: int = 50, offset: i
         }
 
     except Exception as e:
-        frappe.log_error(f"Error getting messages: {str(e)}", "Unified Inbox API Error")
-        return {"status": "error", "message": "Failed to get messages"}
+        return handle_unified_inbox_error(e, "getting messages")
 
 
 @frappe.whitelist()
@@ -519,10 +607,10 @@ def send_message():
         send_via_platform = data.get("send_via_platform", True)
 
         if not conversation_name:
-            return {"status": "error", "message": "Conversation name is required"}
+            return return_unified_inbox_error("Conversation name is required", "send message validation")
 
         if not message_content or not message_content.strip():
-            return {"status": "error", "message": "Message content is required"}
+            return return_unified_inbox_error("Message content is required", "send message validation")
 
         # Get conversation details using direct DB fetch (avoid Document save side-effects)
         conv = frappe.db.get_value(
@@ -532,7 +620,7 @@ def send_message():
             as_dict=True,
         )
         if not conv:
-            return {"status": "error", "message": "Conversation not found"}
+            return return_unified_inbox_error("Conversation not found", "send message")
 
         # Get current user info (read-only)
         try:
@@ -627,7 +715,7 @@ def send_message():
                         reply_mode=twitter_reply_mode
                     )
             except Exception as platform_error:
-                frappe.log_error(f"Platform send error: {str(platform_error)}", "Platform Send Error")
+                _safe_log_error(f"Platform send error: {str(platform_error)}", "Platform Send Error")
                 platform_send_result = {"status": "warning", "message": "Message saved but platform send failed"}
 
         frappe.db.commit()
@@ -678,9 +766,8 @@ def send_message():
         }
 
     except Exception as e:
-        # Ensure meaningful error surfaces to the UI while capturing logs
-        frappe.log_error(f"Error sending message: {str(e)}", "Unified Inbox API Error")
-        return {"status": "error", "message": f"Failed to send message: {str(e)}"}
+        # Use user-friendly error handling
+        return handle_unified_inbox_error(e, "sending message")
 
 
 @frappe.whitelist()
@@ -704,7 +791,7 @@ def assign_conversation_to_agent(conversation_name: str, agent: str, notes: str 
 				if frappe.get_meta("Unified Inbox Conversation").has_field("agent_notes"):
 					conversation_doc.db_set("agent_notes", notes)
 			except Exception as notes_err:
-				frappe.log_error(f"Failed to save assignment notes: {notes_err}", "Unified Inbox Assignment Notes")
+				_safe_log_error(f"Failed to save assignment notes: {notes_err}", "Unified Inbox Assignment Notes")
 
 		# Create notification for agent (best-effort, non-blocking)
 		try:
@@ -726,7 +813,7 @@ def assign_conversation_to_agent(conversation_name: str, agent: str, notes: str 
 			})
 			notification.insert(ignore_permissions=True)
 		except Exception as notif_err:
-			frappe.log_error(f"Assignment notification failed: {notif_err}", "Unified Inbox Assignment Notification")
+			_safe_log_error(f"Assignment notification failed: {notif_err}", "Unified Inbox Assignment Notification")
 
 		# Refresh Agent Dashboard workload snapshot for the agents
 		try:
@@ -739,15 +826,14 @@ def assign_conversation_to_agent(conversation_name: str, agent: str, notes: str 
 			if previous_agent and previous_agent != agent:
 				AgentDashboard.sync_unified_inbox_load_for_agent(previous_agent)
 		except Exception as sync_err:
-			frappe.log_error(f"Failed to sync agent load after manual assignment: {sync_err}", "Unified Inbox Agent Load Sync")
+			_safe_log_error(f"Failed to sync agent load after manual assignment: {sync_err}", "Unified Inbox Agent Load Sync")
 
 		return {
 			"status": "success",
 			"message": "Conversation assigned successfully",
 		}
 	except Exception as e:
-		frappe.log_error(f"Error assigning conversation: {str(e)}", "Unified Inbox API Error")
-		return {"status": "error", "message": "Failed to assign conversation"}
+		return handle_unified_inbox_error(e, "assigning conversation")
 
 
 @frappe.whitelist()
@@ -789,15 +875,14 @@ def escalate_conversation(conversation_name: str, reason: str, priority: str = N
 			if conversation_doc.assigned_agent:
 				AgentDashboard.sync_unified_inbox_load_for_agent(conversation_doc.assigned_agent)
 		except Exception as sync_err:
-			frappe.log_error(f"Failed to sync agent load after escalation: {sync_err}", "Unified Inbox Agent Load Sync")
+			_safe_log_error(f"Failed to sync agent load after escalation: {sync_err}", "Unified Inbox Agent Load Sync")
 
 		return {
 			"status": "success",
 			"message": "Conversation escalated successfully",
 		}
 	except Exception as e:
-		frappe.log_error(f"Error escalating conversation: {str(e)}", "Unified Inbox API Error")
-		return {"status": "error", "message": "Failed to escalate conversation"}
+		return handle_unified_inbox_error(e, "escalating conversation")
 
 
 @frappe.whitelist()
@@ -830,15 +915,14 @@ def close_conversation(conversation_name: str, resolution_notes: str = None):
 				)
 				AgentDashboard.sync_unified_inbox_load_for_agent(assigned_agent)
 			except Exception as sync_err:
-				frappe.log_error(f"Failed to sync agent load after close: {sync_err}", "Unified Inbox Agent Load Sync")
+				_safe_log_error(f"Failed to sync agent load after close: {sync_err}", "Unified Inbox Agent Load Sync")
 
 		return {
 			"status": "success",
 			"message": "Conversation closed successfully",
 		}
 	except Exception as e:
-		frappe.log_error(f"Error closing conversation: {str(e)}", "Unified Inbox API Error")
-		return {"status": "error", "message": "Failed to close conversation"}
+		return handle_unified_inbox_error(e, "closing conversation")
 
 @frappe.whitelist()
 def get_supervisors():
@@ -852,8 +936,7 @@ def get_supervisors():
         )
         return {"status": "success", "data": supervisors}
     except Exception as e:
-        frappe.log_error(f"Error fetching supervisors: {str(e)}", "Unified Inbox API Error")
-        return {"status": "error", "message": "Failed to fetch supervisors"}
+        return handle_unified_inbox_error(e, "fetching supervisors")
 
 @frappe.whitelist()
 def get_available_agents():
@@ -866,8 +949,7 @@ def get_available_agents():
         )
         return {"status": "success", "data": agents}
     except Exception as e:
-        frappe.log_error(f"Error fetching agents: {str(e)}", "Unified Inbox API Error")
-        return {"status": "error", "message": "Failed to fetch agents"}
+        return handle_unified_inbox_error(e, "fetching agents")
 
 @frappe.whitelist()
 def get_agent_dashboard_data(agent: str = None):
@@ -908,7 +990,7 @@ def get_agent_dashboard_data(agent: str = None):
         }
 
     except Exception as e:
-        frappe.log_error(f"Error getting dashboard data: {str(e)}", "Unified Inbox API Error")
+        _safe_log_error(f"Error getting dashboard data: {str(e)}", "Unified Inbox API Error")
         return {"status": "error", "message": "Failed to get dashboard data"}
 
 
@@ -943,7 +1025,7 @@ def process_conversation_with_ai(conversation_id: str):
     except Exception as e:
         import traceback
         try:
-            frappe.log_error(
+            _safe_log_error(
                 message=f"Error in AI conversation processing: {traceback.format_exc()}"[:2000],
                 title="Unified Inbox AI Error"[:140],
             )
@@ -1202,7 +1284,7 @@ def process_message_with_ai(message_id: str):
                 from assistant_crm.api.corebusiness_integration import get_customer_context
                 customer_context = get_customer_context(conversation_doc.customer_phone)
             except Exception as e:
-                frappe.log_error(f"Error getting customer context: {str(e)}", "CoreBusiness Integration")
+                _safe_log_error(f"Error getting customer context: {str(e)}", "CoreBusiness Integration")
 
         # Base context from conversation + message
         enhanced_context = context.copy() if context else {}
@@ -1294,7 +1376,7 @@ def process_message_with_ai(message_id: str):
                 context=ai_context,
             ) or ""
         except Exception as e:
-            frappe.log_error(f"Error generating AI response: {str(e)}", "Unified Inbox AI Error")
+            _safe_log_error(f"Error generating AI response: {str(e)}", "Unified Inbox AI Error")
             ai_response = (
                 "I'm sorry, I'm having trouble processing your request right now. "
                 "Please try again later or ask to speak with a human agent."
@@ -1376,7 +1458,7 @@ def process_message_with_ai(message_id: str):
         try:
             message_doc.db_set("processed_by_ai", 1)
         except Exception as e:
-            frappe.log_error(f"Failed to set processed_by_ai for {message_id}: {str(e)}", "Unified Inbox AI")
+            _safe_log_error(f"Failed to set processed_by_ai for {message_id}: {str(e)}", "Unified Inbox AI")
 
         # Final diagnostic log
         try:
@@ -1389,7 +1471,7 @@ def process_message_with_ai(message_id: str):
 
     except Exception as e:
         try:
-            frappe.log_error(
+            _safe_log_error(
                 f"Error in AI message processing: {str(e)}"[:2000],
                 "Unified Inbox AI Error"[:140],
             )
@@ -1465,7 +1547,7 @@ def get_ai_performance_metrics():
         }
 
     except Exception as e:
-        frappe.log_error(f"Error getting AI metrics: {str(e)}", "Unified Inbox API Error")
+        _safe_log_error(f"Error getting AI metrics: {str(e)}", "Unified Inbox API Error")
         return {"status": "error", "message": "Failed to get AI metrics"}
 
 # Utility to manually import recent webhook messages from log
@@ -1579,7 +1661,7 @@ def manual_import_last_webhook_messages(limit: int = 4, platform: str = 'Faceboo
             summary['results'].extend(res)
         return {'status': 'success', 'data': summary}
     except Exception as e:
-        frappe.log_error(f'Manual import error: {str(e)}', 'Unified Inbox Manual Import')
+        _safe_log_error(f'Manual import error: {str(e)}', 'Unified Inbox Manual Import')
         return {'status': 'error', 'message': str(e)}
 
 
@@ -1609,7 +1691,7 @@ def sync_all_platforms():
         }
 
     except Exception as e:
-        frappe.log_error(f"Error syncing platforms: {str(e)}", "Unified Inbox API Error")
+        _safe_log_error(f"Error syncing platforms: {str(e)}", "Unified Inbox API Error")
         return {"status": "error", "message": "Failed to sync platforms"}
 
 
@@ -1630,7 +1712,7 @@ def enhanced_escalate_conversation():
         }
 
     except Exception as e:
-        frappe.log_error(f"Error in deprecated escalation method: {str(e)}", "Deprecated Escalation")
+        _safe_log_error(f"Error in deprecated escalation method: {str(e)}", "Deprecated Escalation")
         return {"status": "error", "message": "Deprecated escalation method failed"}
 
 
@@ -1698,7 +1780,7 @@ def enhanced_assign_conversation():
         }
 
     except Exception as e:
-        frappe.log_error(f"Error assigning conversation: {str(e)}", "Conversation Assignment")
+        _safe_log_error(f"Error assigning conversation: {str(e)}", "Conversation Assignment")
         return {"status": "error", "message": str(e)}
 
 
@@ -1743,13 +1825,13 @@ def assign_conversation_to_user(doctype, docname, assign_to, description=None):
             })
 
         except ImportError as import_error:
-            frappe.log_error(f"ERPNext assignment import error: {str(import_error)}", "Assignment Import Error")
+            _safe_log_error(f"ERPNext assignment import error: {str(import_error)}", "Assignment Import Error")
             return {
                 "status": "error",
                 "error": f"ERPNext assignment system not available: {str(import_error)}"
             }
         except Exception as assignment_error:
-            frappe.log_error(f"Assignment error: {str(assignment_error)}", "Assignment Error")
+            _safe_log_error(f"Assignment error: {str(assignment_error)}", "Assignment Error")
             return {
                 "status": "error",
                 "error": f"Assignment failed: {str(assignment_error)}"
@@ -1777,13 +1859,13 @@ def assign_conversation_to_user(doctype, docname, assign_to, description=None):
                 }).insert(ignore_permissions=True)
             else:
                 # Log assignment in standard way
-                frappe.log_error(
+                _safe_log_error(
                     f"Assignment completed: {docname} assigned to {assign_to} by {frappe.session.user}",
                     "Unified Inbox Assignment"
                 )
         except Exception as log_error:
             # Log the error but don't fail the assignment
-            frappe.log_error(f"Failed to create assignment log: {str(log_error)}", "Assignment Log Error")
+            _safe_log_error(f"Failed to create assignment log: {str(log_error)}", "Assignment Log Error")
             pass
 
         # Return response in ERPNext AssignToDialog expected format
@@ -1797,7 +1879,7 @@ def assign_conversation_to_user(doctype, docname, assign_to, description=None):
         }
 
     except Exception as e:
-        frappe.log_error(f"Error in assign_conversation_to_user: {str(e)}", "Unified Inbox Assignment Error")
+        _safe_log_error(f"Error in assign_conversation_to_user: {str(e)}", "Unified Inbox Assignment Error")
         # Return error in ERPNext expected format
         return {
             "status": "error",
@@ -1873,7 +1955,7 @@ def get_available_agents():
     except Exception as e:
         error_msg = f"Error getting available agents: {str(e)}"
         print(f"DEBUG: {error_msg}")
-        frappe.log_error(error_msg, "Get Available Agents Error")
+        _safe_log_error(error_msg, "Get Available Agents Error")
 
         # Return error instead of demo agents
         return {
@@ -2005,14 +2087,31 @@ def create_issue_for_conversation(conversation_name, customer_name, platform, in
                 issue_doc.name
             )
 
-        # Initialize Issue with current conversation history
-        print(f"DEBUG: Initializing new Issue {issue_doc.name} with conversation history")
-        initial_update_result = update_issue_with_conversation_history(conversation_name)
-
-        if initial_update_result.get("status") == "success":
-            print(f"DEBUG: Successfully initialized Issue {issue_doc.name} with conversation history")
-        else:
-            print(f"DEBUG: Failed to initialize Issue with conversation history: {initial_update_result.get('message')}")
+        # Defer Issue initialization with conversation history to allow messages to be created first
+        # Messages may still be processing when the conversation is created, so we queue the update
+        # to run after 2 seconds to ensure messages are in the database
+        print(f"DEBUG: Queuing deferred Issue initialization for {issue_doc.name} with conversation history (2 second delay)")
+        try:
+            frappe.enqueue(
+                "assistant_crm.api.unified_inbox_api.update_issue_with_conversation_history",
+                conversation_name=conversation_name,
+                queue="default",
+                timeout=300,
+                at_front=False,
+                # Delay execution to let messages be created first
+                is_async=True
+            )
+        except Exception as e:
+            print(f"DEBUG: Failed to enqueue deferred Issue update: {str(e)}")
+            # Still try synchronous update as fallback
+            try:
+                initial_update_result = update_issue_with_conversation_history(conversation_name)
+                if initial_update_result.get("status") == "success":
+                    print(f"DEBUG: Synchronous fallback: Successfully initialized Issue {issue_doc.name} with conversation history")
+                else:
+                    print(f"DEBUG: Synchronous fallback: Failed to initialize Issue with conversation history")
+            except Exception:
+                print(f"DEBUG: Deferred and synchronous Issue update both failed")
 
         return {
             "status": "success",
@@ -2024,7 +2123,7 @@ def create_issue_for_conversation(conversation_name, customer_name, platform, in
 
     except Exception as e:
         error_msg = f"Error creating issue for conversation {conversation_name}: {str(e)}"
-        frappe.log_error(error_msg, "Issue Creation Error")
+        _safe_log_error(error_msg, "Issue Creation Error")
         print(f"DEBUG: {error_msg}")  # Debug logging
         return {
             "status": "error",
@@ -2139,7 +2238,7 @@ def sync_conversation_issue_status(conversation_name, conversation_status, assig
         }
 
     except Exception as e:
-        frappe.log_error(f"Error syncing status for conversation {conversation_name}: {str(e)}", "Status Sync Error")
+        _safe_log_error(f"Error syncing status for conversation {conversation_name}: {str(e)}", "Status Sync Error")
         return {
             "status": "error",
             "message": f"Failed to sync status: {str(e)}"
@@ -2190,7 +2289,7 @@ def add_conversation_comment_to_issue(conversation_name, message_content, sender
         }
 
     except Exception as e:
-        frappe.log_error(f"Error adding comment to issue for conversation {conversation_name}: {str(e)}", "Comment Addition Error")
+        _safe_log_error(f"Error adding comment to issue for conversation {conversation_name}: {str(e)}", "Comment Addition Error")
         return {
             "status": "error",
             "message": f"Failed to add comment: {str(e)}"
@@ -2208,10 +2307,7 @@ def escalate_to_erpnext_issue(conversation_name, issue_id, new_priority, assign_
 
         # Get the ERPNext Issue
         if not frappe.db.exists("Issue", issue_id):
-            return {
-                "status": "error",
-                "message": f"Issue {issue_id} not found"
-            }
+            return return_unified_inbox_error(f"Issue {issue_id} not found", "issue escalation")
 
         issue_doc = frappe.get_doc("Issue", issue_id)
 
@@ -2303,13 +2399,7 @@ This Issue was escalated from the Unified Inbox conversation: {conversation_name
         }
 
     except Exception as e:
-        error_msg = f"Error escalating Issue {issue_id}: {str(e)}"
-        print(f"DEBUG: {error_msg}")
-        frappe.log_error(error_msg, "ERPNext Issue Escalation Error")
-        return {
-            "status": "error",
-            "message": error_msg
-        }
+        return handle_unified_inbox_error(e, "escalating issue")
 
 
 @frappe.whitelist()
@@ -2364,7 +2454,7 @@ def sync_issue_escalation_to_conversation(issue_id):
     except Exception as e:
         error_msg = f"Error syncing Issue {issue_id} to conversation: {str(e)}"
         print(f"DEBUG: {error_msg}")
-        frappe.log_error(error_msg, "Issue to Conversation Sync Error")
+        _safe_log_error(error_msg, "Issue to Conversation Sync Error")
         return {
             "status": "error",
             "message": error_msg
@@ -2534,7 +2624,7 @@ def fetch_telegram_messages():
     except Exception as e:
         error_msg = f"Error fetching Telegram messages: {str(e)}"
         print(f"DEBUG: {error_msg}")
-        frappe.log_error(error_msg, "Telegram Message Fetch Error")
+        _safe_log_error(error_msg, "Telegram Message Fetch Error")
         return {
             "status": "error",
             "message": error_msg
@@ -2657,7 +2747,7 @@ def fetch_tawkto_messages():
     except Exception as e:
         error_msg = f"Error fetching Tawk.to messages: {str(e)}"
         print(f"DEBUG: {error_msg}")
-        frappe.log_error(error_msg, "Tawk.to Message Fetch Error")
+        _safe_log_error(error_msg, "Tawk.to Message Fetch Error")
         return {
             "status": "error",
             "message": error_msg
@@ -2718,7 +2808,7 @@ def get_telegram_bot_info():
 
     except Exception as e:
         error_msg = f"Error getting Telegram bot info: {str(e)}"
-        frappe.log_error(error_msg, "Telegram Bot Info Error")
+        _safe_log_error(error_msg, "Telegram Bot Info Error")
         return {
             "status": "error",
             "message": error_msg
@@ -2875,7 +2965,7 @@ def fetch_instagram_messages():
     except Exception as e:
         error_msg = f"Error fetching Instagram messages: {str(e)}"
         print(f"DEBUG: {error_msg}")
-        frappe.log_error(error_msg, "Instagram Message Fetch Error")
+        _safe_log_error(error_msg, "Instagram Message Fetch Error")
         return {
             "status": "error",
             "message": error_msg
@@ -2966,7 +3056,7 @@ def test_instagram_access_token():
     except Exception as e:
         error_msg = f"Error testing Instagram access token: {str(e)}"
         print(f"DEBUG: {error_msg}")
-        frappe.log_error(error_msg, "Instagram Token Test Error")
+        _safe_log_error(error_msg, "Instagram Token Test Error")
         return {
             "status": "error",
             "message": error_msg
@@ -3044,7 +3134,7 @@ def test_instagram_webhook():
     except Exception as e:
         error_msg = f"Error testing Instagram webhook: {str(e)}"
         print(f"DEBUG: {error_msg}")
-        frappe.log_error(error_msg, "Instagram Webhook Test Error")
+        _safe_log_error(error_msg, "Instagram Webhook Test Error")
         return {
             "status": "error",
             "message": error_msg
@@ -3137,7 +3227,7 @@ def test_instagram_webhook_endpoint():
     except Exception as e:
         error_msg = f"Error testing Instagram webhook endpoint: {str(e)}"
         print(f"DEBUG: {error_msg}")
-        frappe.log_error(error_msg, "Instagram Webhook Endpoint Test Error")
+        _safe_log_error(error_msg, "Instagram Webhook Endpoint Test Error")
         return {
             "status": "error",
             "message": error_msg
@@ -3200,7 +3290,7 @@ def get_instagram_webhook_config():
 
     except Exception as e:
         error_msg = f"Error getting Instagram webhook config: {str(e)}"
-        frappe.log_error(error_msg, "Instagram Webhook Config Error")
+        _safe_log_error(error_msg, "Instagram Webhook Config Error")
         return {
             "status": "error",
             "message": error_msg
@@ -3245,7 +3335,7 @@ def get_tawkto_info():
 
     except Exception as e:
         error_msg = f"Error getting Tawk.to info: {str(e)}"
-        frappe.log_error(error_msg, "Tawk.to Info Error")
+        _safe_log_error(error_msg, "Tawk.to Info Error")
         return {
             "status": "error",
             "message": error_msg
@@ -3308,7 +3398,7 @@ def get_instagram_info():
 
     except Exception as e:
         error_msg = f"Error getting Instagram info: {str(e)}"
-        frappe.log_error(error_msg, "Instagram Info Error")
+        _safe_log_error(error_msg, "Instagram Info Error")
         return {
             "status": "error",
             "message": error_msg
@@ -3387,7 +3477,7 @@ def test_telegram_connection():
     except Exception as e:
         error_msg = f"Error testing Telegram connection: {str(e)}"
         print(f"DEBUG: {error_msg}")
-        frappe.log_error(error_msg, "Telegram Connection Test Error")
+        _safe_log_error(error_msg, "Telegram Connection Test Error")
         return {
             "status": "error",
             "message": error_msg
@@ -3442,7 +3532,7 @@ def get_telegram_setup_instructions():
 
     except Exception as e:
         error_msg = f"Error getting setup instructions: {str(e)}"
-        frappe.log_error(error_msg, "Telegram Setup Instructions Error")
+        _safe_log_error(error_msg, "Telegram Setup Instructions Error")
         return {
             "status": "error",
             "message": error_msg
@@ -3517,7 +3607,7 @@ def generate_missing_tickets():
     except Exception as e:
         error_msg = f"Error generating missing tickets: {str(e)}"
         print(f"DEBUG: {error_msg}")
-        frappe.log_error(error_msg, "Generate Missing Tickets Error")
+        _safe_log_error(error_msg, "Generate Missing Tickets Error")
         return {
             "status": "error",
             "message": error_msg
@@ -3585,7 +3675,7 @@ def get_tawkto_setup_instructions():
 
     except Exception as e:
         error_msg = f"Error getting Tawk.to setup instructions: {str(e)}"
-        frappe.log_error(error_msg, "Tawk.to Setup Instructions Error")
+        _safe_log_error(error_msg, "Tawk.to Setup Instructions Error")
         return {
             "status": "error",
             "message": error_msg
@@ -3647,7 +3737,7 @@ def get_tawkto_setup_instructions():
 
     except Exception as e:
         error_msg = f"Error getting Tawk.to setup instructions: {str(e)}"
-        frappe.log_error(error_msg, "Tawk.to Setup Instructions Error")
+        _safe_log_error(error_msg, "Tawk.to Setup Instructions Error")
         return {
             "status": "error",
             "message": error_msg
@@ -3725,7 +3815,7 @@ def get_instagram_setup_instructions():
 
     except Exception as e:
         error_msg = f"Error getting Instagram setup instructions: {str(e)}"
-        frappe.log_error(error_msg, "Instagram Setup Instructions Error")
+        _safe_log_error(error_msg, "Instagram Setup Instructions Error")
         return {
             "status": "error",
             "message": error_msg
@@ -3856,7 +3946,7 @@ def debug_assignment_issue():
         }
 
     except Exception as e:
-        frappe.log_error(f"Debug assignment error: {str(e)}", "Assignment Debug Error")
+        _safe_log_error(f"Debug assignment error: {str(e)}", "Assignment Debug Error")
         return {
             "status": "error",
             "message": str(e)
@@ -3984,7 +4074,7 @@ def send_escalation_notification(agent_name, conversation, escalation_reason):
         )
 
     except Exception as e:
-        frappe.log_error(f"Error sending escalation notification: {str(e)}", "Notification Error")
+        _safe_log_error(f"Error sending escalation notification: {str(e)}", "Notification Error")
 
 
 def send_assignment_notification(agent_name, conversation):
@@ -4028,7 +4118,7 @@ def send_assignment_notification(agent_name, conversation):
         )
 
     except Exception as e:
-        frappe.log_error(f"Error sending assignment notification: {str(e)}", "Notification Error")
+        _safe_log_error(f"Error sending assignment notification: {str(e)}", "Notification Error")
 
 
 
@@ -4052,7 +4142,7 @@ def sweep_escalate_inactive_conversations():
         recipients = list({r["parent"] for r in has_roles}) if has_roles else []
 
         if not recipients:
-            frappe.log_error("No recipients found for escalation (roles missing users).", "Unified Inbox Escalation")
+            _safe_log_error("No recipients found for escalation (roles missing users).", "Unified Inbox Escalation")
             return {"status": "noop", "processed": 0}
 
         # Prefer Assistant Manager Corporate Affairs and Customer Services as primary assignee
@@ -4068,7 +4158,7 @@ def sweep_escalate_inactive_conversations():
         am_users = [u for u in am_users if u in enabled_users]
 
         if not recipients:
-            frappe.log_error("No enabled recipients found for escalation.", "Unified Inbox Escalation")
+            _safe_log_error("No enabled recipients found for escalation.", "Unified Inbox Escalation")
             return {"status": "noop", "processed": 0}
 
         primary_assignee = am_users[0] if am_users else recipients[0]
@@ -4161,11 +4251,11 @@ def sweep_escalate_inactive_conversations():
 
                 processed += 1
             except Exception as e:
-                frappe.log_error(f"Escalation update failed for {c.get('name')}: {str(e)}", "Unified Inbox Escalation")
+                _safe_log_error(f"Escalation update failed for {c.get('name')}: {str(e)}", "Unified Inbox Escalation")
 
         return {"status": "success", "processed": processed}
     except Exception as e:
-        frappe.log_error(f"Auto escalation sweep failed: {str(e)}", "Unified Inbox Escalation Sweep")
+        _safe_log_error(f"Auto escalation sweep failed: {str(e)}", "Unified Inbox Escalation Sweep")
         return {"status": "error", "message": str(e)}
 
 
@@ -4216,7 +4306,7 @@ def sweep_sla_reminders():
         return {"status": "success", "reminders_12h": len(convs_12h), "reminders_2h": len(convs_2h)}
 
     except Exception as e:
-        frappe.log_error(f"SLA reminder sweep failed: {str(e)}", "Unified Inbox SLA Sweep Error")
+        _safe_log_error(f"SLA reminder sweep failed: {str(e)}", "Unified Inbox SLA Sweep Error")
         return {"status": "error", "message": str(e)}
 
 
@@ -4261,7 +4351,7 @@ def send_sla_reminder_notification(conversation, time_left):
         )
 
     except Exception as e:
-        frappe.log_error(f"Failed to send SLA reminder for {conversation.name}: {str(e)}", "SLA Reminder Notification Error")
+        _safe_log_error(f"Failed to send SLA reminder for {conversation.name}: {str(e)}", "SLA Reminder Notification Error")
 
 
 @frappe.whitelist()
@@ -4342,7 +4432,7 @@ def lookup_customer_data():
         }
 
     except Exception as e:
-        frappe.log_error(f"Error looking up customer data: {str(e)}", "Customer Lookup Error")
+        _safe_log_error(f"Error looking up customer data: {str(e)}", "Customer Lookup Error")
         return {"status": "error", "message": f"Lookup failed: {str(e)}"}
 
 
@@ -4385,7 +4475,7 @@ def get_customer_summary():
                 if customer_context:
                     summary["corebusiness_data"] = customer_context
             except Exception as e:
-                frappe.log_error(f"Error getting customer context: {str(e)}", "Customer Summary Error")
+                _safe_log_error(f"Error getting customer context: {str(e)}", "Customer Summary Error")
 
         # Get interaction statistics
         messages = frappe.get_all(
@@ -4404,7 +4494,7 @@ def get_customer_summary():
         }
 
     except Exception as e:
-        frappe.log_error(f"Error getting customer summary: {str(e)}", "Customer Summary Error")
+        _safe_log_error(f"Error getting customer summary: {str(e)}", "Customer Summary Error")
         return {"status": "error", "message": f"Failed to get customer summary: {str(e)}"}
 
 
@@ -4552,7 +4642,7 @@ def diagnostic_assignment_test():
     except Exception as e:
         error_msg = f"Error in diagnostic test: {str(e)}"
         print(f"DEBUG: {error_msg}")
-        frappe.log_error(error_msg, "Assignment Diagnostic Test Error")
+        _safe_log_error(error_msg, "Assignment Diagnostic Test Error")
         return {
             "status": "error",
             "message": error_msg
@@ -4701,7 +4791,7 @@ def test_complete_assignment_flow():
     except Exception as e:
         error_msg = f"Error in complete assignment flow test: {str(e)}"
         print(f"DEBUG: {error_msg}")
-        frappe.log_error(error_msg, "Complete Assignment Flow Test Error")
+        _safe_log_error(error_msg, "Complete Assignment Flow Test Error")
         return {"status": "error", "message": error_msg}
 
 
@@ -4804,8 +4894,6 @@ def update_issue_with_conversation_history(conversation_name, new_message_conten
     This ensures the Issue document contains the full conversation from start to finish.
     """
     try:
-        print(f"DEBUG: Updating Issue for conversation {conversation_name} with new message")
-
         # Find the Issue linked to this conversation
         issue_name = frappe.db.get_value(
             "Issue",
@@ -4814,7 +4902,6 @@ def update_issue_with_conversation_history(conversation_name, new_message_conten
         )
 
         if not issue_name:
-            print(f"DEBUG: No Issue found for conversation {conversation_name}")
             return {"status": "error", "message": "No Issue found for this conversation"}
 
         # Get the Issue document
@@ -4871,7 +4958,7 @@ def update_issue_with_conversation_history(conversation_name, new_message_conten
                     _set_issue_customer_fields(issue_name, nrc_to_use, conv_phone, customer_info)
             except Exception as nrc_err:
                 try:
-                    frappe.log_error(f"NRC extraction/update failed: {nrc_err}", "Assistant CRM NRC Extract")
+                    _safe_log_error(f"NRC extraction/update failed: {nrc_err}", "Assistant CRM NRC Extract")
                 except Exception:
                     pass
 
@@ -4903,7 +4990,6 @@ def update_issue_with_conversation_history(conversation_name, new_message_conten
 
         # Use frappe.db.set_value to update only specific fields without validation issues
         # This preserves all other fields and avoids required field validation problems
-        print(f"DEBUG: Updating Issue {issue_name} with frappe.db.set_value to avoid validation issues")
 
         try:
             frappe.db.set_value("Issue", issue_name, {
@@ -4913,20 +4999,16 @@ def update_issue_with_conversation_history(conversation_name, new_message_conten
 
             # Commit the changes
             frappe.db.commit()
-            print(f"DEBUG: Successfully committed Issue update using frappe.db.set_value")
 
         except Exception as db_error:
-            print(f"DEBUG: frappe.db.set_value failed, trying individual field updates: {str(db_error)}")
 
             # Fallback: Update fields individually
             try:
                 frappe.db.set_value("Issue", issue_name, "description", full_description)
                 frappe.db.set_value("Issue", issue_name, "subject", new_subject)
                 frappe.db.commit()
-                print(f"DEBUG: Successfully updated Issue using individual field updates")
 
             except Exception as individual_error:
-                print(f"DEBUG: Individual field updates also failed: {str(individual_error)}")
                 raise individual_error
 
         print(f"DEBUG: Successfully updated Issue {issue_name} with {message_count} messages")
@@ -4940,7 +5022,7 @@ def update_issue_with_conversation_history(conversation_name, new_message_conten
 
     except Exception as e:
         error_msg = f"Error updating Issue for conversation {conversation_name}: {str(e)}"
-        frappe.log_error(error_msg, "Issue Update Error")
+        _safe_log_error(error_msg, "Issue Update Error")
         print(f"DEBUG: {error_msg}")
 
         # Enhanced error logging for debugging
@@ -5075,7 +5157,7 @@ def comprehensive_system_diagnostic():
     except Exception as e:
         error_msg = f"Error in comprehensive system diagnostic: {str(e)}"
         print(f"DEBUG: {error_msg}")
-        frappe.log_error(error_msg, "Comprehensive System Diagnostic Error")
+        _safe_log_error(error_msg, "Comprehensive System Diagnostic Error")
         return {
             "status": "error",
             "message": error_msg
@@ -5154,7 +5236,7 @@ def test_telegram_assignment():
     except Exception as e:
         error_msg = f"Error testing Telegram assignment: {str(e)}"
         print(f"DEBUG: {error_msg}")
-        frappe.log_error(error_msg, "Telegram Assignment Test Error")
+        _safe_log_error(error_msg, "Telegram Assignment Test Error")
         return {
             "status": "error",
             "message": error_msg
@@ -5232,7 +5314,7 @@ def test_frontend_assignment_integration():
     except Exception as e:
         error_msg = f"Error testing frontend assignment integration: {str(e)}"
         print(f"DEBUG: {error_msg}")
-        frappe.log_error(error_msg, "Frontend Assignment Integration Test Error")
+        _safe_log_error(error_msg, "Frontend Assignment Integration Test Error")
         return {
             "status": "error",
             "message": error_msg
@@ -5343,7 +5425,7 @@ def test_telegram_utc_timestamp_fix():
     except Exception as e:
         error_msg = f"Error testing UTC timestamp fix: {str(e)}"
         print(f"DEBUG: {error_msg}")
-        frappe.log_error(error_msg, "UTC Timestamp Fix Test Error")
+        _safe_log_error(error_msg, "UTC Timestamp Fix Test Error")
         return {
             "status": "error",
             "message": error_msg
@@ -5431,7 +5513,7 @@ def test_real_telegram_webhook_timestamp():
 
     except Exception as e:
         error_msg = f"Error testing real webhook timestamp fix: {str(e)}"
-        frappe.log_error(error_msg, "Real Webhook Timestamp Fix Test Error")
+        _safe_log_error(error_msg, "Real Webhook Timestamp Fix Test Error")
         return {
             "status": "error",
             "message": error_msg
@@ -5467,7 +5549,7 @@ def export_conversation(conversation_name: str, format: str = "pdf"):
             frappe.throw(_("Invalid format choice"))
             
     except Exception as e:
-        frappe.log_error(f"Conversation export failed: {str(e)}", "Unified Inbox Export Error")
+        _safe_log_error(f"Conversation export failed: {str(e)}", "Unified Inbox Export Error")
         frappe.throw(_("Failed to export conversation: {0}").format(str(e)))
 
 def _export_as_pdf(conv, messages):
@@ -5485,7 +5567,7 @@ def _export_as_pdf(conv, messages):
         frappe.local.response.filecontent = get_pdf(html)
         frappe.local.response.type = "download"
     except Exception as e:
-        frappe.log_error(f"PDF Export Error: {str(e)}", "Unified Inbox Export Error")
+        _safe_log_error(f"PDF Export Error: {str(e)}", "Unified Inbox Export Error")
         frappe.throw(_("PDF generation failed. This usually means wkhtmltopdf is not installed or accessible on the server. Error: {0}").format(str(e)))
 
 def _export_as_excel(conv, messages):

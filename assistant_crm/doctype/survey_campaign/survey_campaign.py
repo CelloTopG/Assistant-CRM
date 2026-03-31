@@ -84,11 +84,44 @@ class SurveyCampaign(Document):
 				f"Failed: {', '.join(failed_ch) if failed_ch else 'None'}."
 			)
 			frappe.msgprint(msg)
+
+			# Check for SMS-specific issues and provide additional guidance
+			sms_stats = stats.get('SMS', {})
+			if sms_stats.get('attempts', 0) > 0 and sms_stats.get('success', 0) == 0:
+				self._check_sms_configuration_and_alert()
+
 		else:
 			# Distinguish between known errors and unknown errors
 			error_msg = result.get('error', 'Unknown error')
 			frappe.log_error(title="Survey Distribution Failed", message=f"Survey Distribution Error for {self.name}: {error_msg}")
 			frappe.throw(f"Wait, we couldn't send this survey. Reason: {error_msg}. Our administrators have been notified.")
+
+	def _check_sms_configuration_and_alert(self):
+		"""Check SMS configuration and alert user about potential issues."""
+		try:
+			from assistant_crm.services.sms_service import diagnose_sms_configuration
+			diagnostics = diagnose_sms_configuration()
+
+			if not diagnostics.get('success'):
+				frappe.msgprint(f"SMS Configuration Check Failed: {diagnostics.get('error')}", indicator="orange")
+				return
+
+			diag = diagnostics.get('diagnostics', {})
+			recommendations = diag.get('recommendations', [])
+
+			if recommendations:
+				msg = "SMS Configuration Issues Detected:\n" + "\n".join(f"• {rec}" for rec in recommendations[:3])
+				if len(recommendations) > 3:
+					msg += f"\n• ... and {len(recommendations) - 3} more issues"
+				frappe.msgprint(msg, indicator="orange", title="SMS Configuration Alert")
+
+				# Log detailed diagnostics
+				frappe.log_error(title="SMS Configuration Issues",
+							   message=f"Campaign: {self.name}\nDiagnostics: {frappe.as_json(diag)}")
+
+		except Exception as e:
+			frappe.log_error(title="SMS Diagnostics Check Failed",
+						   message=f"Campaign: {self.name}\nError: {str(e)}\n{frappe.get_traceback()}")
 
 @frappe.whitelist(allow_guest=False)
 def get_target_audience_count(campaign_name):

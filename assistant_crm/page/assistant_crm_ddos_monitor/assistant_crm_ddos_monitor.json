@@ -1,0 +1,13 @@
+{
+  "name": "assistant-crm-ddos-monitor",
+  "doctype": "Page",
+  "page_name": "assistant-crm-ddos-monitor",
+  "title": "Assistant CRM DDoS Monitor",
+  "module": "Assistant CRM",
+  "standard": "No",
+  "roles": [
+    {"role": "System Manager"},
+    {"role": "Assistant CRM Admin"},
+    {"role": "Assistant CRM User"}
+  ]
+}

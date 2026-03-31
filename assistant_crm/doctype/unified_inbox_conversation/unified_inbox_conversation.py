@@ -64,6 +64,39 @@ class UnifiedInboxConversation(Document):
         self.calculate_resolution_sla()
         self.update_sla_status()
 
+    def after_save(self):
+        """Actions to perform after saving the document."""
+        # Send SMS notification when conversation is assigned to an agent
+        if self.has_value_changed("assigned_agent") and self.assigned_agent:
+            self.send_assignment_notification()
+
+    def send_assignment_notification(self):
+        """Send SMS notification to the assigned agent."""
+        try:
+            # Create a Notification Log to trigger the SMS alert
+            notification_log = frappe.get_doc({
+                "doctype": "Notification Log",
+                "for_user": self.assigned_agent,
+                "document_type": "Unified Inbox Conversation",
+                "document_name": self.name,
+                "notification_name": "Conversation Assigned to Agent",
+                "type": "Assignment",
+                "subject": f"📱 New Conversation Assigned: {self.customer_name}",
+                "email_content": f"""<p>You have been assigned a new conversation:</p>
+<ul>
+    <li><strong>Beneficiary/Claimant:</strong> {self.customer_name or 'Unknown'}</li>
+    <li><strong>Platform:</strong> {self.platform}</li>
+    <li><strong>Priority:</strong> {self.priority}</li>
+    <li><strong>Subject:</strong> {self.subject or 'No subject'}</li>
+</ul>"""
+            })
+            notification_log.insert(ignore_permissions=True)
+        except Exception as e:
+            frappe.log_error(
+                f"Failed to create SMS notification for conversation assignment: {str(e)}",
+                "Unified Inbox - Assignment SMS"
+            )
+
     def enforce_customer_data_sync(self):
         """Synchronously pull demographic variables directly from Customer when NRC is bound."""
         if not self.customer_nrc:

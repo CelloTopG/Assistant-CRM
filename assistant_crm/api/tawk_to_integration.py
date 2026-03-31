@@ -147,7 +147,6 @@ class TawkToIntegration:
             conversation_doc = frappe.get_doc({
                 "doctype": "Unified Inbox Conversation",
                 "platform": "Tawk.to",
-                "platform_specific_id": chat_data.get("id"),
                 "customer_name": visitor_info.get("name") or chat_data.get("visitorName") or "Unknown Visitor",
                 "customer_email": visitor_info.get("email"),
                 "customer_phone": visitor_info.get("phone"),

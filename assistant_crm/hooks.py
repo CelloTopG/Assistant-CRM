@@ -211,7 +211,7 @@ doc_events = {
 scheduler_events = {
     "cron": {
         "*/5 * * * *": [
-            "assistant_crm.api.social_media_ports.sync_youtube_comments",
+            "assistant_crm.tasks.poll_youtube",
             "assistant_crm.api.ussd_integration.sync_ussd_feedback"
         ],
         "*/10 * * * *": [
@@ -290,6 +290,14 @@ scheduler_events = {
         "30 7 1 1,4,7,10 *": [
             "assistant_crm.tasks.quarterly_survey"
         ],
+        # DDoS Protection - Daily digest at 08:00
+        "0 8 * * *": [
+            "assistant_crm.ddos_email_digest.generate_daily_digest"
+        ],
+        # DDoS Protection - Weekly digest every Monday at 08:15
+        "15 8 * * 1": [
+            "assistant_crm.ddos_email_digest.generate_weekly_digest"
+        ],
     }
 }
 
@@ -338,8 +346,21 @@ scheduler_events = {
 
 # Request Events
 # ----------------
-# before_request = ["assistant_crm.utils.before_request"]
+# DDoS Protection: Rate limiting and bot detection middleware
+before_request = ["assistant_crm.ddos_protection.before_request"]
 # after_request = ["assistant_crm.utils.after_request"]
+
+# Whitelisted Methods (API Endpoints)
+# ------------------------------------
+# DDoS monitoring endpoints accessible via /api/method/
+api_methods = {
+    "assistant_crm.ddos_monitoring.get_ddos_violations": ["GET"],
+    "assistant_crm.ddos_monitoring.get_violations_summary": ["GET"],
+    "assistant_crm.ddos_monitoring.get_violation_timeline": ["GET"],
+    "assistant_crm.ddos_monitoring.get_redis_metrics": ["GET"],
+    "assistant_crm.ddos_monitoring.get_health_check": ["GET"],
+    "assistant_crm.ddos_monitoring.export_violation_report": ["GET"],
+}
 
 # Job Events
 # ----------

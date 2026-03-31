@@ -1,0 +1,389 @@
+{# DDoS Protection Monitoring Dashboard #}
+{% extends "templates/web.html" %}
+
+{% block title %}DDoS Protection Monitor{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid" style="padding: 20px;">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>🛡️ Assistant CRM DDoS Protection Monitor</h1>
+            <hr>
+        </div>
+    </div>
+
+    <!-- Status Indicator -->
+    <div class="row" id="status-section" style="margin-bottom: 20px;">
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                <strong>System Status:</strong> <span id="system-status">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row" id="metrics-section" style="margin-bottom: 20px;">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">🚨 Total Violations (24h)</h5>
+                    <p class="card-text" style="font-size: 32px; font-weight: bold;" id="total-violations">-</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">🌐 Unique IPs</h5>
+                    <p class="card-text" style="font-size: 32px; font-weight: bold;" id="unique-ips">-</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">👤 Affected Users</h5>
+                    <p class="card-text" style="font-size: 32px; font-weight: bold;" id="affected-users">-</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">⏱️ Active Limiters</h5>
+                    <p class="card-text" style="font-size: 32px; font-weight: bold;" id="active-limiters">-</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Violation Breakdown -->
+    <div class="row" style="margin-bottom: 20px;">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📊 Violations by Type</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm" id="violations-by-type">
+                        <thead>
+                            <tr>
+                                <th>Violation Type</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody id="violations-by-type-body">
+                            <tr><td colspan="2">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>🎯 Top Targeted Endpoints</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm" id="top-endpoints">
+                        <thead>
+                            <tr>
+                                <th>Endpoint</th>
+                                <th>Hits</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top-endpoints-body">
+                            <tr><td colspan="2">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Attacking IPs -->
+    <div class="row" style="margin-bottom: 20px;">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>🚨 Top Attacking IPs (Last 24 Hours)</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover" id="top-ips">
+                        <thead>
+                            <tr>
+                                <th>IP Address</th>
+                                <th>Violation Count</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top-ips-body">
+                            <tr><td colspan="3">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Violations -->
+    <div class="row" style="margin-bottom: 20px;">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📝 Recent Violations (Last 50)</h5>
+                    <div style="margin-top: 10px;">
+                        <button class="btn btn-sm btn-primary" onclick="exportViolations('json')">📥 Export JSON</button>
+                        <button class="btn btn-sm btn-secondary" onclick="exportViolations('csv')">📋 Export CSV</button>
+                        <button class="btn btn-sm btn-info" onclick="refreshDashboard()">🔄 Refresh Now</button>
+                    </div>
+                </div>
+                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-sm table-striped" id="recent-violations">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>User</th>
+                                <th>IP Address</th>
+                                <th>Endpoint</th>
+                                <th>Violation Type</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-violations-body">
+                            <tr><td colspan="5">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="row" style="margin-bottom: 20px;">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>⚙️ Configuration</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Rate Limiting Enabled:</strong> <span id="ddos-enabled">Checking...</span></p>
+                    <p><strong>Redis Cache:</strong> <span id="redis-status">Checking...</span></p>
+                    <p><strong>Database:</strong> <span id="db-status">Checking...</span></p>
+                    <hr>
+                    <p>
+                        <small>
+                            Auto-refresh interval: <strong>30 seconds</strong><br>
+                            Last updated: <strong id="last-updated">Never</strong><br>
+                            Dashboard updated: <strong id="dashboard-updated">Never</strong>
+                        </small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    .card-header {
+        background-color: #f5f5f5;
+        padding: 12px 15px;
+        border-bottom: 1px solid #ddd;
+        font-weight: 500;
+    }
+    .card-body {
+        padding: 15px;
+    }
+    .card-title {
+        margin: 0 0 10px 0;
+    }
+    table {
+        margin-bottom: 0;
+    }
+</style>
+
+<script>
+// Global auto-refresh interval
+let autoRefreshInterval;
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    refreshDashboard();
+    // Auto-refresh every 30 seconds
+    autoRefreshInterval = setInterval(refreshDashboard, 30000);
+});
+
+// Refresh all dashboard data
+function refreshDashboard() {
+    getHealthCheck();
+    getSummary();
+    getTimeline();
+    getRedisMetrics();
+    getRecentViolations();
+    document.getElementById('dashboard-updated').innerText = new Date().toLocaleTimeString();
+}
+
+// Get health status
+function getHealthCheck() {
+    frappe.call({
+        method: 'assistant_crm.ddos_monitoring.get_health_check',
+        callback: function(r) {
+            if (r.message) {
+                let status = r.message.status;
+                let checks = r.message.checks;
+                
+                document.getElementById('system-status').innerHTML = 
+                    `<span style="color: ${status === 'healthy' ? 'green' : 'orange'}; font-weight: bold;">
+                        ${status === 'healthy' ? '✅ Healthy' : '⚠️ Degraded'}
+                    </span>`;
+                
+                document.getElementById('ddos-enabled').innerHTML = 
+                    checks.ddos_enabled ? '✅ Yes' : '❌ No';
+                document.getElementById('redis-status').innerHTML = 
+                    checks.redis_available ? '✅ Connected' : '❌ Disconnected';
+                document.getElementById('db-status').innerHTML = 
+                    checks.database_available ? '✅ Connected' : '❌ Disconnected';
+            }
+        }
+    });
+}
+
+// Get summary statistics
+function getSummary() {
+    frappe.call({
+        method: 'assistant_crm.ddos_monitoring.get_violations_summary',
+        args: { hours: 24 },
+        callback: function(r) {
+            if (r.message && r.message.status === 'success') {
+                let summary = r.message.summary;
+                document.getElementById('total-violations').innerText = summary.total_violations;
+                document.getElementById('unique-ips').innerText = summary.unique_ips;
+                document.getElementById('affected-users').innerText = summary.unique_users;
+                
+                // Violations by type
+                let byType = r.message.by_type;
+                let typeHtml = '';
+                byType.forEach(function(item) {
+                    typeHtml += `<tr><td>${item.violation_type}</td><td><strong>${item.count}</strong></td></tr>`;
+                });
+                document.getElementById('violations-by-type-body').innerHTML = typeHtml;
+                
+                // Top endpoints
+                let endpoints = r.message.top_endpoints;
+                let endpointHtml = '';
+                endpoints.forEach(function(item) {
+                    endpointHtml += `<tr><td>${item.endpoint}</td><td><strong>${item.count}</strong></td></tr>`;
+                });
+                document.getElementById('top-endpoints-body').innerHTML = endpointHtml;
+                
+                // Top IPs
+                let ips = r.message.top_ips;
+                let ipHtml = '';
+                ips.forEach(function(item) {
+                    ipHtml += `<tr>
+                        <td><code>${item.ip_address}</code></td>
+                        <td><strong>${item.count}</strong></td>
+                        <td><button class="btn btn-xs btn-danger" onclick="blockIP('${item.ip_address}')">Block</button></td>
+                    </tr>`;
+                });
+                document.getElementById('top-ips-body').innerHTML = ipHtml || '<tr><td colspan="3">No violations yet</td></tr>';
+            }
+        }
+    });
+}
+
+// Get timeline data
+function getTimeline() {
+    frappe.call({
+        method: 'assistant_crm.ddos_monitoring.get_violation_timeline',
+        args: { hours: 24, interval_minutes: 60 },
+        callback: function(r) {
+            if (r.message && r.message.status === 'success') {
+                // Timeline data fetched - can be used for future charting
+                console.log('Timeline data:', r.message.data);
+            }
+        }
+    });
+}
+
+// Get Redis metrics
+function getRedisMetrics() {
+    frappe.call({
+        method: 'assistant_crm.ddos_monitoring.get_redis_metrics',
+        callback: function(r) {
+            if (r.message && r.message.status === 'success') {
+                document.getElementById('active-limiters').innerText = r.message.data.active_rate_limiters;
+            }
+        }
+    });
+}
+
+// Get recent violations
+function getRecentViolations() {
+    frappe.call({
+        method: 'assistant_crm.ddos_monitoring.get_ddos_violations',
+        args: { hours: 24, limit: 50 },
+        callback: function(r) {
+            if (r.message && r.message.status === 'success') {
+                let violations = r.message.data;
+                let html = '';
+                violations.forEach(function(v) {
+                    let timestamp = new Date(v.timestamp).toLocaleString();
+                    html += `<tr>
+                        <td>${timestamp}</td>
+                        <td>${v.user}</td>
+                        <td><code>${v.ip_address}</code></td>
+                        <td><small>${v.endpoint}</small></td>
+                        <td><span class="badge ${v.violation_type === 'rate_limit_exceeded' ? 'badge-danger' : 'badge-warning'}">${v.violation_type}</span></td>
+                    </tr>`;
+                });
+                document.getElementById('recent-violations-body').innerHTML = html || '<tr><td colspan="5">No violations in the last 24 hours</td></tr>';
+                document.getElementById('last-updated').innerText = new Date().toLocaleTimeString();
+            }
+        }
+    });
+}
+
+// Block an IP (placeholder function)
+function blockIP(ip) {
+    frappe.msgprint({
+        title: 'Block IP',
+        message: `Blocking IP: ${ip}<br><br>To block this IP, add it to the DDoS protection blacklist in site_config.json:<br><code>"ddos_blacklist_ips": ["${ip}"]</code>`,
+    });
+}
+
+// Export violations
+function exportViolations(format) {
+    frappe.call({
+        method: 'assistant_crm.ddos_monitoring.export_violation_report',
+        args: { hours: 24, format: format },
+        callback: function(r) {
+            if (r.message && r.message.status === 'success') {
+                let data = r.message.data;
+                let filename = r.message.filename;
+                
+                // Create download link
+                let element = document.createElement('a');
+                element.setAttribute('href', 'data:' + (format === 'json' ? 'application/json' : 'text/csv') + ';charset=utf-8,' + encodeURIComponent(data));
+                element.setAttribute('download', filename);
+                element.style.display = 'none';
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
+                
+                frappe.msgprint({
+                    title: 'Export Complete',
+                    message: `Violations exported to ${filename}`
+                });
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

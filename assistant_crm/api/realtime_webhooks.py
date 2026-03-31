@@ -194,7 +194,7 @@ def facebook_webhook():
             if sender_id:
                 conversation = frappe.db.get_value(
                     "Unified Inbox Conversation",
-                    {"platform": "Facebook", "platform_specific_id": sender_id},
+                    {"platform": "Facebook", "customer_platform_id": sender_id},
                     "name",
                 )
                 if conversation:
@@ -284,7 +284,7 @@ def telegram_webhook():
             if chat_id:
                 conversation = frappe.db.get_value(
                     "Unified Inbox Conversation",
-                    {"platform": "Telegram", "platform_specific_id": chat_id},
+                    {"platform": "Telegram", "customer_platform_id": chat_id},
                     "name",
                 )
                 if conversation:
@@ -355,7 +355,7 @@ def twitter_webhook():
             if sender_id:
                 conversation = frappe.db.get_value(
                     "Unified Inbox Conversation",
-                    {"platform": "Twitter", "platform_specific_id": sender_id},
+                    {"platform": "Twitter", "customer_platform_id": sender_id},
                     "name",
                 )
                 if conversation:

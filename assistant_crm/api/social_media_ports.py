@@ -30,6 +30,27 @@ import hashlib
 import hmac
 
 
+def _safe_log_error(title: str = 'Social Media Integration Error', message: str = None):
+    """Log errors with safe title+message handling for Error Log doctype."""
+    try:
+        if title is None:
+            title = 'Social Media Integration Error'
+        if not isinstance(title, str):
+            title = str(title)
+
+        if len(title) > 120:
+            title = title[:117] + '...'
+
+        if message is None:
+            message = ''
+        elif not isinstance(message, str):
+            message = str(message)
+
+        frappe.log_error(title=title, message=message)
+    except Exception as log_exc:
+        print(f"DEBUG: _safe_log_error failed (social_media_ports): {log_exc} - original title={title}")
+
+
 class SocialMediaPlatform(ABC):
     """
     Abstract base class for social media platform integrations.
@@ -81,7 +102,7 @@ class SocialMediaPlatform(ABC):
                 "Unified Inbox Conversation",
                 filters={
                     "platform": self.platform_name,
-                    "platform_specific_id": platform_data.get("conversation_id")
+                    "customer_platform_id": platform_data.get("customer_platform_id")
                 },
                 order_by="creation desc",
                 limit=1
@@ -151,7 +172,6 @@ class SocialMediaPlatform(ABC):
             doc_fields = {
                 "doctype": "Unified Inbox Conversation",
                 "platform": self.platform_name,
-                "platform_specific_id": platform_data.get("conversation_id"),
                 "customer_name": platform_data.get("customer_name", "Unknown Customer"),
                 "customer_email": platform_data.get("customer_email"),
                 "customer_phone": platform_data.get("customer_phone"),
@@ -185,7 +205,7 @@ class SocialMediaPlatform(ABC):
                 self.create_issue_for_new_conversation(conversation_doc.name, platform_data)
             except Exception as issue_err:
                 # Log but don't propagate ÔÇö the conversation was already created
-                frappe.log_error(
+                _safe_log_error(
                     message=f"Issue creation failed for {conversation_doc.name}: {str(issue_err)}",
                     title="Auto Issue Creation Error"
                 )
@@ -193,7 +213,7 @@ class SocialMediaPlatform(ABC):
             return conversation_doc.name
 
         except Exception as e:
-            frappe.log_error(
+            _safe_log_error(
                 message=f"Error creating conversation for {self.platform_name}: {str(e)}",
                 title="Social Media Integration Error"
             )
@@ -261,7 +281,7 @@ class SocialMediaPlatform(ABC):
             return message_doc.name
 
         except Exception as e:
-            frappe.log_error(f"Error creating message for {self.platform_name}: {str(e)}", "Social Media Integration Error")
+            _safe_log_error(f"Error creating message for {self.platform_name}: {str(e)}", "Social Media Integration Error")
             return None
 
     def create_issue_for_new_conversation(self, conversation_name: str, platform_data: Dict[str, Any]):
@@ -295,7 +315,7 @@ class SocialMediaPlatform(ABC):
 
         except Exception as e:
             print(f"DEBUG: Error creating Issue for conversation {conversation_name}: {str(e)}")
-            frappe.log_error(
+            _safe_log_error(
                 message=f"Error creating Issue for {self.platform_name} conversation {conversation_name}: {str(e)}",
                 title="Auto Issue Creation Error"
             )
@@ -311,7 +331,7 @@ class SocialMediaPlatform(ABC):
                 update_modified=True,
             )
         except Exception as e:
-            frappe.log_error(f"Error updating conversation timestamp: {str(e)}", "Social Media Integration")
+            _safe_log_error(f"Error updating conversation timestamp: {str(e)}", "Social Media Integration")
 
     def update_issue_conversation_history(self, conversation_name: str, new_message_content: str, sender_name: str, timestamp_str: str, direction: str):
         """Update the ERPNext Issue with complete conversation history after each message."""
@@ -389,7 +409,7 @@ class SocialMediaPlatform(ABC):
             print(f"DEBUG: Error updating Issue conversation history: {str(e)}")
             import traceback
             print(f"DEBUG: Traceback: {traceback.format_exc()}")
-            frappe.log_error(f"Error updating Issue conversation history: {str(e)}", "Social Media Integration")
+            _safe_log_error(f"Error updating Issue conversation history: {str(e)}\n\nTraceback:\n{frappe.get_traceback()}", "Social Media Integration")
 
 
 class WhatsAppIntegration(SocialMediaPlatform):
@@ -434,7 +454,7 @@ class WhatsAppIntegration(SocialMediaPlatform):
     def send_message(self, recipient_id: str, message: str, message_type: str = "text") -> bool:
         """Send WhatsApp message."""
         if not self.is_configured:
-            frappe.log_error("WhatsApp not configured", "WhatsApp Integration")
+            _safe_log_error("WhatsApp not configured", "WhatsApp Integration")
             return False
 
         try:
@@ -456,7 +476,7 @@ class WhatsAppIntegration(SocialMediaPlatform):
             return response.status_code == 200
 
         except Exception as e:
-            frappe.log_error(f"WhatsApp send error: {str(e)}", "WhatsApp Integration")
+            _safe_log_error(f"WhatsApp send error: {str(e)}", "WhatsApp Integration")
             return False
 
     def process_webhook(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -543,7 +563,7 @@ class WhatsAppIntegration(SocialMediaPlatform):
 
         except Exception as e:
             print(f"DEBUG: WhatsApp webhook error: {str(e)}")
-            frappe.log_error(f"WhatsApp webhook error: {str(e)}", "WhatsApp Integration")
+            _safe_log_error(f"WhatsApp webhook error: {str(e)}", "WhatsApp Integration")
             return {"status": "error", "message": str(e)}
 
     def extract_whatsapp_message_content(self, message: Dict[str, Any]) -> str:
@@ -646,7 +666,7 @@ class FacebookIntegration(SocialMediaPlatform):
           we attempt to exchange it for a page token using the configured page_id.
         """
         if not self.is_configured:
-            frappe.log_error("Facebook not configured", "Facebook Integration")
+            _safe_log_error("Facebook not configured", "Facebook Integration")
             return False
 
         try:
@@ -698,7 +718,7 @@ class FacebookIntegration(SocialMediaPlatform):
             token = token.strip().strip('"').strip("'")
             token = token.replace(" ", "").replace("\n", "").replace("\r", "")
             if not token:
-                frappe.log_error("Missing Facebook Page Access Token", "Facebook Integration")
+                _safe_log_error("Missing Facebook Page Access Token", "Facebook Integration")
                 return False
 
             # First attempt
@@ -734,7 +754,7 @@ class FacebookIntegration(SocialMediaPlatform):
                             self.last_error = "token_exchange_failed"
                         except Exception:
                             pass
-                        frappe.log_error(f"Facebook token exchange failed: HTTP {ex.status_code} - {ex_txt}", "Facebook Integration")
+                        _safe_log_error(f"Facebook token exchange failed: HTTP {ex.status_code} - {ex_txt}", "Facebook Integration")
                     if ex.status_code == 200:
                         page_token = (ex.json() or {}).get("access_token")
                         if page_token:
@@ -746,20 +766,20 @@ class FacebookIntegration(SocialMediaPlatform):
                                     err_txt2 = resp2.text
                                 except Exception:
                                     err_txt2 = "<no response text>"
-                                frappe.log_error(
+                                _safe_log_error(
                                     f"Facebook send failed after token exchange: HTTP {resp2.status_code} - {err_txt2}",
                                     "Facebook Integration"
                                 )
                                 return False
                 except Exception as ex_err:
-                    frappe.log_error(f"Facebook token exchange failed: {str(ex_err)}", "Facebook Integration")
+                    _safe_log_error(f"Facebook token exchange failed: {str(ex_err)}", "Facebook Integration")
 
             # Log detailed error for diagnostics
             try:
                 err_txt = resp.text
             except Exception:
                 err_txt = "<no response text>"
-            frappe.log_error(
+            _safe_log_error(
                 f"Facebook send failed: HTTP {resp.status_code} - {err_txt}",
                 "Facebook Integration"
             )
@@ -770,7 +790,7 @@ class FacebookIntegration(SocialMediaPlatform):
                 self.last_error = str(e)
             except Exception:
                 pass
-            frappe.log_error(f"Facebook send error: {str(e)}", "Facebook Integration")
+            _safe_log_error(f"Facebook send error: {str(e)}", "Facebook Integration")
             return False
 
     def process_webhook(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -853,7 +873,7 @@ class FacebookIntegration(SocialMediaPlatform):
             return {"status": "success", "platform": "Facebook"}
 
         except Exception as e:
-            frappe.log_error(f"Facebook webhook error: {str(e)}", "Facebook Integration")
+            _safe_log_error(f"Facebook webhook error: {str(e)}", "Facebook Integration")
             return {"status": "error", "message": str(e)}
 
     def get_user_info(self, user_id: str) -> Dict[str, Any]:
@@ -932,7 +952,7 @@ class TelegramIntegration(SocialMediaPlatform):
     def send_message(self, recipient_id: str, message: str, message_type: str = "text") -> bool:
         """Send Telegram message with diagnostics (parity with IG/FB)."""
         if not self.is_configured:
-            frappe.log_error("Telegram not configured", "Telegram Integration")
+            _safe_log_error("Telegram not configured", "Telegram Integration")
             return False
 
         try:
@@ -978,7 +998,7 @@ class TelegramIntegration(SocialMediaPlatform):
                 self.last_error = str(e)
             except Exception:
                 pass
-            frappe.log_error(f"Telegram send error: {str(e)}", "Telegram Integration")
+            _safe_log_error(f"Telegram send error: {str(e)}", "Telegram Integration")
             return False
 
     def process_webhook(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -1075,7 +1095,7 @@ class TelegramIntegration(SocialMediaPlatform):
                             queue="long",
                         )
                     except Exception as ai_err:
-                        frappe.log_error(f"Telegram AI enqueue error: {str(ai_err)}", "Telegram Integration")
+                        _safe_log_error(f"Telegram AI enqueue error: {str(ai_err)}", "Telegram Integration")
 
                     # Note: Issue update is now handled in create_issue_for_conversation()
                     # No need for redundant update here
@@ -1085,7 +1105,7 @@ class TelegramIntegration(SocialMediaPlatform):
             return {"status": "success", "platform": "Telegram"}
 
         except Exception as e:
-            frappe.log_error(f"Telegram webhook error: {str(e)}", "Telegram Integration")
+            _safe_log_error(f"Telegram webhook error: {str(e)}", "Telegram Integration")
             return {"status": "error", "message": str(e)}
 
 
@@ -1112,7 +1132,7 @@ class TawkToIntegration(SocialMediaPlatform):
     def send_message(self, recipient_id: str, message: str, message_type: str = "text") -> bool:
         """Send Tawk.to message (requires API key)."""
         if not self.credentials.get("api_key"):
-            frappe.log_error("Tawk.to API key not configured for sending messages", "Tawk.to Integration")
+            _safe_log_error("Tawk.to API key not configured for sending messages", "Tawk.to Integration")
             return False
 
         try:
@@ -1133,7 +1153,7 @@ class TawkToIntegration(SocialMediaPlatform):
             return response.status_code == 200
 
         except Exception as e:
-            frappe.log_error(f"Tawk.to send error: {str(e)}", "Tawk.to Integration")
+            _safe_log_error(f"Tawk.to send error: {str(e)}", "Tawk.to Integration")
             return False
 
     def build_customer_name(self, visitor: Dict[str, Any]) -> str:
@@ -1581,7 +1601,7 @@ class TawkToIntegration(SocialMediaPlatform):
 
         except Exception as e:
             print(f"DEBUG: Error processing real Tawk.to webhook: {str(e)}")
-            frappe.log_error(f"Real Tawk.to webhook error: {str(e)}", "Tawk.to Integration")
+            _safe_log_error(f"Real Tawk.to webhook error: {str(e)}", "Tawk.to Integration")
             return {"status": "error", "message": str(e)}
 
     def process_legacy_test_webhook(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -1659,7 +1679,7 @@ class TawkToIntegration(SocialMediaPlatform):
 
         except Exception as e:
             print(f"DEBUG: Error processing legacy Tawk.to webhook: {str(e)}")
-            frappe.log_error(f"Legacy Tawk.to webhook error: {str(e)}", "Tawk.to Integration")
+            _safe_log_error(f"Legacy Tawk.to webhook error: {str(e)}", "Tawk.to Integration")
             return {"status": "error", "message": str(e)}
 
     def create_conversation_and_message(self, platform_data: Dict[str, Any], webhook_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -1710,7 +1730,7 @@ class TawkToIntegration(SocialMediaPlatform):
 
         except Exception as e:
             print(f"DEBUG: Error creating conversation and message: {str(e)}")
-            frappe.log_error(f"Tawk.to conversation creation error: {str(e)}", "Tawk.to Integration")
+            _safe_log_error(f"Tawk.to conversation creation error: {str(e)}", "Tawk.to Integration")
             return {"status": "error", "message": str(e)}
 
     def process_webhook(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -1736,7 +1756,7 @@ class TawkToIntegration(SocialMediaPlatform):
 
         except Exception as e:
             print(f"DEBUG: Error in Tawk.to webhook processing: {str(e)}")
-            frappe.log_error(f"Tawk.to webhook error: {str(e)}", "Tawk.to Integration")
+            _safe_log_error(f"Tawk.to webhook error: {str(e)}", "Tawk.to Integration")
             return {"status": "error", "message": str(e)}
 
 
@@ -1823,7 +1843,7 @@ class InstagramIntegration(SocialMediaPlatform):
             token = token.replace(" ", "").replace("\n", "").replace("\r", "")
             if not token:
                 self.last_error = "Missing Instagram/Facebook Page Access Token"
-                frappe.log_error("Missing Instagram Access Token", "Instagram Integration")
+                _safe_log_error("Missing Instagram Access Token", "Instagram Integration")
                 return False
 
             def do_send(current_token: str) -> requests.Response:
@@ -1894,7 +1914,7 @@ class InstagramIntegration(SocialMediaPlatform):
                             else:
                                 # Log failure after token exchange attempt
                                 try:
-                                    frappe.log_error(
+                                    _safe_log_error(
                                         f"Instagram send failed after token exchange: HTTP {response2.status_code} - {response2.text}",
                                         "Instagram Integration",
                                     )
@@ -1906,12 +1926,12 @@ class InstagramIntegration(SocialMediaPlatform):
                             ex_txt = exchange_resp.text
                         except Exception:
                             ex_txt = "<no response text>"
-                        frappe.log_error(
+                        _safe_log_error(
                             f"Instagram token exchange failed: HTTP {exchange_resp.status_code} - {ex_txt}",
                             "Instagram Integration",
                         )
                 except Exception as ex_err:
-                    frappe.log_error(
+                    _safe_log_error(
                         f"Instagram token exchange failed: {str(ex_err)}",
                         "Instagram Integration",
                     )
@@ -1931,7 +1951,7 @@ class InstagramIntegration(SocialMediaPlatform):
                 self.last_error = str(e)
             except Exception:
                 pass
-            frappe.log_error(f"Instagram send error: {str(e)}", "Instagram Integration")
+            _safe_log_error(f"Instagram send error: {str(e)}", "Instagram Integration")
             return False
 
     def process_webhook(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -2046,7 +2066,7 @@ class InstagramIntegration(SocialMediaPlatform):
             return {"status": "success", "platform": "Instagram", "processed": processed}
 
         except Exception as e:
-            frappe.log_error(f"Instagram webhook error: {str(e)}", "Instagram Integration")
+            _safe_log_error(f"Instagram webhook error: {str(e)}", "Instagram Integration")
             return {"status": "error", "message": str(e)}
 
     def get_user_info(self, user_id: str) -> Dict[str, Any]:
@@ -2236,7 +2256,7 @@ class TwitterIntegration(SocialMediaPlatform):
         try:
             need = self._require_user_context()
             if need:
-                frappe.log_error(
+                _safe_log_error(
                     f"Twitter sending not configured - {need}",
                     "Twitter Integration"
                 )
@@ -2275,7 +2295,7 @@ class TwitterIntegration(SocialMediaPlatform):
 
             # Log error for observability
             try:
-                frappe.log_error(
+                _safe_log_error(
                     f"Twitter DM send failed: {resp.status_code} {resp.text}",
                     "Twitter Integration"
                 )
@@ -2286,7 +2306,7 @@ class TwitterIntegration(SocialMediaPlatform):
         except Exception as e:
             self.last_error = str(e)
             try:
-                frappe.log_error(f"Twitter DM send exception: {str(e)}", "Twitter Integration")
+                _safe_log_error(f"Twitter DM send exception: {str(e)}", "Twitter Integration")
             except Exception:
                 pass
             return False
@@ -2301,7 +2321,7 @@ class TwitterIntegration(SocialMediaPlatform):
         try:
             need = self._require_user_context()
             if need:
-                frappe.log_error(
+                _safe_log_error(
                     f"Twitter public reply not configured - {need}",
                     "Twitter Integration"
                 )
@@ -2333,7 +2353,7 @@ class TwitterIntegration(SocialMediaPlatform):
                 return True
 
             try:
-                frappe.log_error(
+                _safe_log_error(
                     f"Twitter public reply failed: {resp.status_code} {resp.text}",
                     "Twitter Integration"
                 )
@@ -2343,7 +2363,7 @@ class TwitterIntegration(SocialMediaPlatform):
         except Exception as e:
             self.last_error = str(e)
             try:
-                frappe.log_error(f"Twitter public reply exception: {str(e)}", "Twitter Integration")
+                _safe_log_error(f"Twitter public reply exception: {str(e)}", "Twitter Integration")
             except Exception:
                 pass
             return False
@@ -2492,13 +2512,13 @@ class TwitterIntegration(SocialMediaPlatform):
                             self.update_conversation_timestamp(conversation_name, ts_str)
                     except Exception as e2:
                         try:
-                            frappe.log_error(f"Twitter tweet processing error: {str(e2)}", "Twitter Integration")
+                            _safe_log_error(f"Twitter tweet processing error: {str(e2)}", "Twitter Integration")
                         except Exception:
                             pass
 
             return {"status": "success", "platform": "Twitter"}
         except Exception as e:
-            frappe.log_error(f"Twitter webhook error: {str(e)}", "Twitter Integration")
+            _safe_log_error(f"Twitter webhook error: {str(e)}", "Twitter Integration")
             return {"status": "error", "message": str(e)}
 
     def _fetch_user_info(self, user_id: str) -> Dict[str, Any]:
@@ -2638,7 +2658,7 @@ class LinkedInIntegration(SocialMediaPlatform):
         except Exception as e:
             self.last_error = str(e)
             try:
-                frappe.log_error(f"LinkedIn send error: {str(e)}", "LinkedIn Integration")
+                _safe_log_error(f"LinkedIn send error: {str(e)}", "LinkedIn Integration")
             except Exception:
                 pass
             return False
@@ -2790,7 +2810,7 @@ class LinkedInIntegration(SocialMediaPlatform):
 
             return {"status": "success", "conversation_id": conversation_id, "last_message_id": last_message_id}
         except Exception as e:
-            frappe.log_error(f"LinkedIn webhook error: {str(e)}", "LinkedIn Integration")
+            _safe_log_error(f"LinkedIn webhook error: {str(e)}", "LinkedIn Integration")
             return {"status": "error", "message": str(e)}
 
 
@@ -2901,7 +2921,7 @@ class YouTubeIntegration(SocialMediaPlatform):
                     return new_token
             return None
         except Exception as e:
-            frappe.log_error(f"YouTube token refresh error: {str(e)}", "YouTube Integration")
+            _safe_log_error(f"YouTube token refresh error: {str(e)}", "YouTube Integration")
             return None
 
     def send_message(self, recipient_id: str, message: str, message_type: str = "text") -> bool:
@@ -2924,7 +2944,7 @@ class YouTubeIntegration(SocialMediaPlatform):
             access_token = (self.credentials.get("access_token") or "").strip()
             if not access_token:
                 self.last_error = "Missing YouTube OAuth access token"
-                frappe.log_error("Missing YouTube access token for sending", "YouTube Integration")
+                _safe_log_error("Missing YouTube access token for sending", "YouTube Integration")
                 return False
 
             # Determine if this is a live chat or comment reply based on recipient_id format
@@ -2986,7 +3006,7 @@ class YouTubeIntegration(SocialMediaPlatform):
 
             # Log failure
             self.last_error = f"HTTP {response.status_code}: {response.text}"
-            frappe.log_error(
+            _safe_log_error(
                 f"YouTube send failed: {response.status_code} - {response.text}",
                 "YouTube Integration"
             )
@@ -2994,7 +3014,7 @@ class YouTubeIntegration(SocialMediaPlatform):
 
         except Exception as e:
             self.last_error = str(e)
-            frappe.log_error(f"YouTube send error: {str(e)}", "YouTube Integration")
+            _safe_log_error(f"YouTube send error: {str(e)}", "YouTube Integration")
             return False
 
     def process_webhook(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -3042,7 +3062,7 @@ class YouTubeIntegration(SocialMediaPlatform):
 
             # If we couldn't process, log and return
             if processed == 0:
-                frappe.log_error(
+                _safe_log_error(
                     f"Unrecognized YouTube webhook format: {json.dumps(webhook_data)[:500]}",
                     "YouTube Integration"
                 )
@@ -3051,7 +3071,7 @@ class YouTubeIntegration(SocialMediaPlatform):
             return {"status": "success", "processed": processed, "conversation_id": conversation_id}
 
         except Exception as e:
-            frappe.log_error(f"YouTube webhook error: {str(e)}", "YouTube Integration")
+            _safe_log_error(f"YouTube webhook error: {str(e)}", "YouTube Integration")
             return {"status": "error", "message": str(e)}
 
     def _process_standard_webhook(self, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -3152,7 +3172,7 @@ class YouTubeIntegration(SocialMediaPlatform):
             return {"status": "success", "conversation_id": conversation_id, "message_id": message_id}
 
         except Exception as e:
-            frappe.log_error(f"YouTube standard webhook error: {str(e)}", "YouTube Integration")
+            _safe_log_error(f"YouTube standard webhook error: {str(e)}", "YouTube Integration")
             return {"status": "error", "message": str(e)}
 
     def _process_pubsubhubbub(self, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -3176,7 +3196,7 @@ class YouTubeIntegration(SocialMediaPlatform):
 
                 if video_id:
                     # Log the new video notification
-                    frappe.log_error(
+                    _safe_log_error(
                         f"YouTube PubSubHubbub: New video {video_id} from channel {channel_id}: {title}",
                         "YouTube Integration Info"
                     )
@@ -3186,7 +3206,7 @@ class YouTubeIntegration(SocialMediaPlatform):
             return {"status": "success", "processed": processed, "type": "pubsubhubbub"}
 
         except Exception as e:
-            frappe.log_error(f"YouTube PubSubHubbub error: {str(e)}", "YouTube Integration")
+            _safe_log_error(f"YouTube PubSubHubbub error: {str(e)}", "YouTube Integration")
             return {"status": "error", "message": str(e)}
 
     def _process_comment_event(self, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -3256,7 +3276,7 @@ class YouTubeIntegration(SocialMediaPlatform):
             return {"status": "success", "processed": processed, "conversation_id": conversation_id}
 
         except Exception as e:
-            frappe.log_error(f"YouTube comment event error: {str(e)}", "YouTube Integration")
+            _safe_log_error(f"YouTube comment event error: {str(e)}", "YouTube Integration")
             return {"status": "error", "message": str(e)}
 
     def _parse_timestamp(self, ts_raw: Any) -> str:
@@ -3347,13 +3367,23 @@ def poll_youtube_comments(video_id: str = None, channel_id: str = None) -> Dict[
                     "type": "video",
                 }
                 resp = requests.get(url, params=search_params, headers=headers, timeout=15)
+                
+                # Try to refresh token if 401
+                if resp.status_code == 401 and access_token:
+                    new_token = integ._refresh_access_token()
+                    if new_token:
+                        access_token = new_token
+                        headers["Authorization"] = f"Bearer {access_token}"
+                        # Retry the request
+                        resp = requests.get(url, params=search_params, headers=headers, timeout=15)
+                
                 if resp.status_code == 200:
                     items = (resp.json() or {}).get("items") or []
                     video_ids = [item.get("id", {}).get("videoId") for item in items if item.get("id", {}).get("videoId")]
                 else:
                     video_ids = []
             except Exception as e:
-                frappe.log_error(f"YouTube video search error: {str(e)}", "YouTube Polling")
+                _safe_log_error(f"YouTube video search error: {str(e)}", "YouTube Polling")
                 video_ids = []
         else:
             return {"status": "skipped", "reason": "No video_id or channel_id provided"}
@@ -3370,6 +3400,16 @@ def poll_youtube_comments(video_id: str = None, channel_id: str = None) -> Dict[
                     "order": "time",
                 }
                 resp = requests.get(url, params=comment_params, headers=headers, timeout=15)
+                
+                # Try to refresh token if 401
+                if resp.status_code == 401 and access_token:
+                    new_token = integ._refresh_access_token()
+                    if new_token:
+                        access_token = new_token
+                        headers["Authorization"] = f"Bearer {access_token}"
+                        # Retry the request
+                        resp = requests.get(url, params=comment_params, headers=headers, timeout=15)
+                
                 if resp.status_code != 200:
                     continue
 
@@ -3418,13 +3458,38 @@ def poll_youtube_comments(video_id: str = None, channel_id: str = None) -> Dict[
                         continue
 
             except Exception as e:
-                frappe.log_error(f"YouTube comment fetch error for {vid}: {str(e)}", "YouTube Polling")
+                _safe_log_error(f"YouTube comment fetch error for {vid}: {str(e)}", "YouTube Polling")
                 continue
+
+        # Queue issue updates for all YouTube conversations to populate new messages
+        if imported["comments"] > 0:
+            try:
+                # Get all YouTube conversations with linked issues
+                youtube_conversations = frappe.get_all(
+                    "Unified Inbox Conversation",
+                    filters={"platform": "YouTube"},
+                    fields=["name", "custom_issue_id"]
+                )
+                
+                for conv in youtube_conversations:
+                    if conv.custom_issue_id:
+                        # Queue async update for each issue
+                        try:
+                            frappe.enqueue(
+                                "assistant_crm.api.unified_inbox_api.update_issue_with_conversation_history",
+                                conversation_name=conv.name,
+                                queue="default",
+                                timeout=300
+                            )
+                        except Exception as eq:
+                            _safe_log_error(f"Failed to queue issue update for {conv.name}: {str(eq)}", "YouTube Polling")
+            except Exception as e:
+                _safe_log_error(f"Failed to queue post-polling issue updates: {str(e)}", "YouTube Polling")
 
         return {"status": "success", "imported": imported}
 
     except Exception as e:
-        frappe.log_error(f"YouTube polling fatal error: {str(e)}", "YouTube Polling")
+        _safe_log_error(f"YouTube polling fatal error: {str(e)}", "YouTube Polling")
         return {"status": "error", "message": str(e)}
 
 
@@ -3514,7 +3579,7 @@ def poll_twitter_inbox() -> Dict[str, Any]:
                         continue
         except Exception as e:
             try:
-                frappe.log_error(f"Twitter mentions poll error: {str(e)}", "Twitter Polling")
+                _safe_log_error(f"Twitter mentions poll error: {str(e)}", "Twitter Polling")
             except Exception:
                 pass
 
@@ -3585,13 +3650,13 @@ def poll_twitter_inbox() -> Dict[str, Any]:
                         continue
         except Exception as e:
             try:
-                frappe.log_error(f"Twitter DM poll error: {str(e)}", "Twitter Polling")
+                _safe_log_error(f"Twitter DM poll error: {str(e)}", "Twitter Polling")
             except Exception:
                 pass
 
         return {"status": "success", "imported": imported}
     except Exception as e:
-        frappe.log_error(f"Twitter polling fatal error: {str(e)}", "Twitter Polling")
+        _safe_log_error(f"Twitter polling fatal error: {str(e)}", "Twitter Polling")
         return {"status": "error", "message": str(e)}
 
 def get_platform_integration(platform_name: str) -> Optional[SocialMediaPlatform]:
@@ -3761,13 +3826,24 @@ DEBUG: Request args: {frappe.request.args}
     except Exception as e:
         error_msg = f"Social media webhook error: {str(e)}"
         print(f"DEBUG: EXCEPTION in webhook processing: {error_msg}")
-        frappe.log_error(error_msg, "Social Media Webhook Error")
+        _safe_log_error(error_msg, "Social Media Webhook Error")
         return {"status": "error", "message": "Webhook processing failed"}
 
 
 def detect_platform_from_webhook(data: Dict[str, Any]) -> Optional[str]:
     """Detect platform from webhook data structure."""
     print(f"DEBUG: Platform detection - analyzing webhook data structure")
+
+    # YouTube webhook detection (standardized or PubSubHubbub notifications)
+    if data.get("platform") == "YouTube" or data.get("source") == "youtube":
+        print(f"DEBUG: Detected YouTube webhook via platform/source field")
+        return "YouTube"
+
+    if data.get("items") or data.get("comment") or data.get("liveChatMessage") or data.get("feed") or data.get("entry"):
+        # Additional heuristics for YouTube feed events (PubSubHubbub) or comment events
+        if isinstance(data.get("items"), list) or data.get("feed") or data.get("entry"):
+            print(f"DEBUG: Detected YouTube webhook via items/feed/entry payload")
+            return "YouTube"
 
     # WhatsApp webhook detection (enhanced)
     if "entry" in data and any("changes" in entry for entry in data.get("entry", [])):
@@ -4125,7 +4201,7 @@ def send_social_media_message(platform: str, conversation_name: str, message: st
             )
         except Exception:
             pass
-        frappe.log_error(f"Error sending {platform} message: {str(e)}", "Social Media Send Error")
+        _safe_log_error(f"Error sending {platform} message: {str(e)}", "Social Media Send Error")
         return {"status": "error", "message": "Failed to send message"}
 
 
@@ -4302,7 +4378,7 @@ def validate_instagram_integration():
                 "platform": "Instagram",
                 "creation": [">=", frappe.utils.add_days(frappe.utils.now(), -1)]
             },
-            fields=["name", "customer_name", "platform_specific_id", "creation", "status"],
+            fields=["name", "customer_name", "creation", "status"],
             order_by="creation desc",
             limit=10
         )
@@ -4425,7 +4501,7 @@ def test_whatsapp_integration():
     except Exception as e:
         error_msg = f"Error testing WhatsApp integration: {str(e)}"
         print(f"DEBUG: {error_msg}")
-        frappe.log_error(error_msg, "WhatsApp Integration Test")
+        _safe_log_error(error_msg, "WhatsApp Integration Test")
         return {"status": "error", "message": error_msg}
 
 
@@ -4509,7 +4585,7 @@ def test_facebook_instagram_timestamps():
     except Exception as e:
         error_msg = f"Error testing timestamps: {str(e)}"
         print(f"DEBUG: {error_msg}")
-        frappe.log_error(error_msg, "Timestamp Test Error")
+        _safe_log_error(error_msg, "Timestamp Test Error")
         return {"status": "error", "message": error_msg}
 
 
@@ -4612,7 +4688,7 @@ def validate_timestamp_fix():
     except Exception as e:
         error_msg = f"Error validating timestamp fix: {str(e)}"
         print(f"DEBUG: {error_msg}")
-        frappe.log_error(error_msg, "Timestamp Validation Error")
+        _safe_log_error(error_msg, "Timestamp Validation Error")
         return {"status": "error", "message": error_msg}
 
 
@@ -4668,7 +4744,7 @@ def google_oauth_callback(code=None, error=None, error_description=None, **kwarg
     try:
         # 1️⃣ Handle errors from Google
         if error:
-            frappe.log_error(f"OAuth Error: {error} - {error_description}", "Google OAuth")
+            _safe_log_error(f"OAuth Error: {error} - {error_description}", "Google OAuth")
             return f"<h3>OAuth Error: {error_description}</h3>"
 
         if not code:
@@ -4702,7 +4778,7 @@ def google_oauth_callback(code=None, error=None, error_description=None, **kwarg
 
         # 3️⃣ Handle failure
         if "access_token" not in tokens:
-            frappe.log_error(f"Token exchange failed: {tokens}", "Google OAuth")
+            _safe_log_error(f"Token exchange failed: {tokens}", "Google OAuth")
             return f"<h3>Token exchange failed: {tokens}</h3>"
 
         access_token = tokens.get("access_token")
@@ -4722,7 +4798,7 @@ def google_oauth_callback(code=None, error=None, error_description=None, **kwarg
         return "<h3>Authentication successful! Tokens have been saved. You can close this window.</h3>"
 
     except Exception as e:
-        frappe.log_error(frappe.get_traceback(), "Google OAuth Callback Error")
+        _safe_log_error(frappe.get_traceback(), "Google OAuth Callback Error")
         return f"<h3>Internal Error: {str(e)}</h3>"
 
 
@@ -4763,10 +4839,10 @@ def refresh_youtube_token():
             return data["access_token"]
 
         else:
-            frappe.log_error(f"Refresh failed: {data}", "YouTube Token Refresh")
+            _safe_log_error(f"Refresh failed: {data}", "YouTube Token Refresh")
             return None
     except Exception as e:
-        frappe.log_error(str(e), "YouTube Token Refresh Exception")
+        _safe_log_error(str(e), "YouTube Token Refresh Exception")
         return None
 
 def ensure_youtube_comment_field():
@@ -4840,15 +4916,21 @@ def get_all_videos():
 
 @frappe.whitelist()
 def sync_youtube_comments():
+    """Legacy cron entry for YouTube comments, now mapped to unified inbox polling."""
     ensure_youtube_comment_field()
+
+    # Prefer the unified inbox friendly poll path
+    result = poll_youtube_comments()
+    if result and result.get("status") == "success":
+        return result
+
+    # Fallback: legacy comment ingestion into Communication table (deprecated)
     token = get_valid_youtube_token()
-    
     if not token:
         return {"status": "error", "message": "No valid YouTube token to sync"}
 
     headers = {"Authorization": f"Bearer {token}"}
     videos = get_all_videos()
-    
     import requests
     synced_count = 0
 
@@ -4866,10 +4948,9 @@ def sync_youtube_comments():
                 params["pageToken"] = next_page_token
 
             res = requests.get(url, headers=headers, params=params).json()
-            
             if "error" in res:
                 break
-                
+
             for item in res.get("items", []):
                 snippet = item.get("snippet", {}).get("topLevelComment", {}).get("snippet", {})
                 comment_id = item.get("id")
@@ -4877,11 +4958,7 @@ def sync_youtube_comments():
                 if not comment_id or not snippet:
                     continue
 
-                # Duplicate Prevention via Custom Field
-                existing = frappe.db.exists("Communication", {
-                    "youtube_comment_id": comment_id
-                })
-
+                existing = frappe.db.exists("Communication", {"youtube_comment_id": comment_id})
                 if not existing:
                     try:
                         frappe.get_doc({
@@ -4895,31 +4972,14 @@ def sync_youtube_comments():
                             "sent_or_received": "Received",
                             "status": "Open"
                         }).insert(ignore_permissions=True)
-                        
                         synced_count += 1
-                        
-                        # --- PRO-LEVEL ARCHITECTURE MAPPER ---
-                        # Pass it natively into the CRM AI/Inbox Engine
-                        author_channel_id = (snippet.get("authorChannelId") or {}).get("value") or ""
-                        if author_channel_id:
-                            yt = YouTubeIntegration()
-                            yt.process_webhook({
-                                "platform": "YouTube",
-                                "event_type": "comment",
-                                "video_id": video_id,
-                                "comment_id": comment_id,
-                                "author_channel_id": author_channel_id,
-                                "author_name": snippet.get("authorDisplayName", "YouTube User"),
-                                "text": snippet.get("textDisplay", "")
-                            })
                     except Exception as e:
-                        frappe.log_error(f"Sync fail for {comment_id}: {str(e)}", "YouTube Auto Sync")
-            
+                        _safe_log_error(f"Error inserting YouTube comment {comment_id}: {str(e)}", "YouTube Sync")
+                        continue
+
             next_page_token = res.get("nextPageToken")
             if not next_page_token:
                 break
 
-    frappe.db.commit()
-    frappe.logger("assistant_crm.youtube").info(f"Auto-sync completed. Downloaded {synced_count} new comments.")
     return {"status": "success", "synced": synced_count}
 

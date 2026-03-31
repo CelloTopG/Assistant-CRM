@@ -201,7 +201,6 @@ class InboxManager {
             console.warn('Search reset skipped:', e);
         }
 
-
         // Initialize empty conversations and load from API
         this.conversations = [];
 
@@ -227,6 +226,28 @@ class InboxManager {
         ]).then(() => {
             console.log('DEBUG: Initial message fetch completed for all platforms');
         });
+    }
+
+    getFriendlyErrorMessage(rawError) {
+        if (!rawError || typeof rawError !== 'string') {
+            return 'Something went wrong. Please try again or contact support.';
+        }
+
+        const normalized = rawError.trim();
+
+        if (/error log/i.test(normalized) || /value too big/i.test(normalized)) {
+            return 'An internal system issue occurred while processing your request. The team has been notified.';
+        }
+
+        if (/failed to send message/i.test(normalized)) {
+            return 'Unable to send the message right now. Please retry or check channel settings.';
+        }
+
+        if (/permission denied/i.test(normalized)) {
+            return 'You do not have permission to perform this action.';
+        }
+
+        return normalized;
     }
 
     setup_events() {
@@ -1055,7 +1076,8 @@ class InboxManager {
                     }
 
                     // Use msgprint for errors to ensure the user sees them
-                    const display_msg = response.message?.message || 'Unknown error';
+                    const rawErrorMessage = response.message?.message || 'Unknown error';
+                    const display_msg = this.getFriendlyErrorMessage(rawErrorMessage);
                     frappe.msgprint({
                         title: __('Message Sending Failed'),
                         indicator: 'red',
@@ -1214,8 +1236,9 @@ class InboxManager {
                                         indicator: 'green'
                                     });
                                 } else {
+                                    const escalateRawError = response.message?.message || 'Unknown error';
                                     frappe.show_alert({
-                                        message: 'Failed to escalate: ' + (response.message?.message || 'Unknown error'),
+                                        message: 'Failed to escalate: ' + this.getFriendlyErrorMessage(escalateRawError),
                                         indicator: 'red'
                                     });
                                 }
