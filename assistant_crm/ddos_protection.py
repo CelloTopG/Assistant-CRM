@@ -9,7 +9,7 @@ import redis
 import time
 import logging
 from frappe import _, get_request_header
-from werkzeug.exceptions import TooManyRequests
+from werkzeug.exceptions import TooManyRequests, Forbidden
 import json
 from datetime import datetime
 
@@ -277,6 +277,25 @@ class DDoSProtectionMiddleware:
         if any(m in path for m in WEBHOOK_METHOD_PATTERNS):
             return
 
+        # Extract client IP early so we can check the permanent blacklist before route matching
+        early_ip = (
+            get_request_header("X-Forwarded-For")
+            or frappe.request.remote_addr
+            or "unknown"
+        )
+        if "," in early_ip:
+            early_ip = early_ip.split(",")[0].strip()
+
+        # Permanent IP blacklist — applies to all routes
+        if self.rate_limiter.redis_conn:
+            try:
+                if self.rate_limiter.redis_conn.sismember("ddos:blacklist", early_ip):
+                    frappe.db.rollback()
+                    frappe.response["http_status_code"] = 403
+                    raise Forbidden("Access denied.")
+            except redis.RedisError:
+                pass
+
         # Determine if this is a protected route
         route_category = RateLimiterConfig.get_route_category(frappe.request.path)
         if not route_category:
@@ -285,15 +304,7 @@ class DDoSProtectionMiddleware:
         # Get request identifiers
         is_authenticated = frappe.session.user != "Guest"
         user = frappe.session.user if is_authenticated else None
-        client_ip = (
-            get_request_header("X-Forwarded-For")
-            or frappe.request.remote_addr
-            or "unknown"
-        )
-
-        # Extract only the first IP if X-Forwarded-For contains multiple
-        if "," in client_ip:
-            client_ip = client_ip.split(",")[0].strip()
+        client_ip = early_ip  # already extracted and cleaned above
 
         identifier = RateLimiterConfig.get_identifier(is_authenticated, user, client_ip)
 
@@ -319,10 +330,31 @@ class DDoSProtectionMiddleware:
                 bot_violations,
             )
 
-        # Rate limiting
-        limit = RATE_LIMITS.get(route_category, {}).get(
-            "authenticated" if is_authenticated else "anonymous", 600
-        )
+        # Rate limiting — merge static defaults with any Redis overrides
+        try:
+            if self.rate_limiter.redis_conn:
+                raw = self.rate_limiter.redis_conn.get("ddos:rate_limit_overrides")
+                if raw:
+                    overrides = json.loads(raw)
+                    merged = {k: {**v} for k, v in RATE_LIMITS.items()}
+                    for cat, lims in overrides.items():
+                        if cat in merged:
+                            merged[cat].update(lims)
+                    limit = merged.get(route_category, {}).get(
+                        "authenticated" if is_authenticated else "anonymous", 600
+                    )
+                else:
+                    limit = RATE_LIMITS.get(route_category, {}).get(
+                        "authenticated" if is_authenticated else "anonymous", 600
+                    )
+            else:
+                limit = RATE_LIMITS.get(route_category, {}).get(
+                    "authenticated" if is_authenticated else "anonymous", 600
+                )
+        except Exception:
+            limit = RATE_LIMITS.get(route_category, {}).get(
+                "authenticated" if is_authenticated else "anonymous", 600
+            )
 
         is_allowed, remaining, reset_after = self.rate_limiter.is_allowed(
             identifier, limit

@@ -53,9 +53,28 @@ class UnifiedInboxMessage(Document):
 
         # Process inbound messages
         if self.direction == "Inbound":
-            # Fire Autonomous Background metadata extraction immediately (Customer ID / NRC / Classification Matching)
-            frappe.enqueue("assistant_crm.api.customer_identification.extract_customer_metadata_from_message", message_name=self.name, queue="default")
-            
+            # NRC + contact detail extraction: run synchronously (lightweight regex).
+            # Falls back to async queue only if the direct call raises an exception
+            # so that a transient error never blocks message delivery.
+            try:
+                from assistant_crm.api.customer_identification import (
+                    extract_customer_metadata_from_message,
+                    extract_contact_details_from_messages,
+                )
+                extract_customer_metadata_from_message(self.name)
+                extract_contact_details_from_messages(self.conversation)
+            except Exception:
+                frappe.enqueue(
+                    "assistant_crm.api.customer_identification.extract_customer_metadata_from_message",
+                    message_name=self.name,
+                    queue="default",
+                )
+                frappe.enqueue(
+                    "assistant_crm.api.customer_identification.extract_contact_details_from_messages",
+                    conversation_name=self.conversation,
+                    queue="default",
+                )
+
             self.process_inbound_message()
 
     def generate_message_id(self) -> str:

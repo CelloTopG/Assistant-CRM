@@ -39,6 +39,12 @@ def cleanup_ussd():
     cleanup_expired_ussd_sessions()
 
 
+def publish_scheduled_posts():
+    """Dispatch any Social Media Posts whose scheduled time has arrived."""
+    from assistant_crm.api.social_media_publisher import publish_scheduled_posts as _publish
+    _publish()
+
+
 def daily_claims():
     """Schedule daily claims status reports."""
     from assistant_crm.assistant_crm.doctype.claims_status_report.claims_status_report import (

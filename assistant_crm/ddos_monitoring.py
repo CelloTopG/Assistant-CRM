@@ -9,6 +9,19 @@ from datetime import datetime, timedelta
 from collections import Counter
 import redis
 
+
+def _get_redis():
+    """Get a live Redis connection or return None."""
+    try:
+        rc = redis.from_url(
+            frappe.conf.get("redis_cache", "redis://localhost:6379/1"),
+            decode_responses=True
+        )
+        rc.ping()
+        return rc
+    except Exception:
+        return None
+
 @frappe.whitelist()
 def get_ddos_violations(hours=24, limit=100):
     """
@@ -277,3 +290,173 @@ def export_violation_report(hours=24, format="json"):
             "status": "error",
             "message": str(e)
         }
+
+
+# ── IP Management ─────────────────────────────────────────────────────────────
+
+@frappe.whitelist()
+def get_active_rate_limited_ips():
+    """Return IPs currently tracked by the Redis sliding-window rate limiter."""
+    try:
+        rc = _get_redis()
+        if not rc:
+            return {"status": "error", "message": "Redis unavailable"}
+
+        keys = rc.keys("rl:ip:*:timestamps")
+        result = []
+        for key in keys:
+            ip = key.replace("rl:ip:", "").replace(":timestamps", "")
+            count = rc.zcard(key)
+            oldest = rc.zrange(key, 0, 0, withscores=True)
+            result.append({
+                "ip_address": ip,
+                "request_count": count,
+                "window_start": oldest[0][1] if oldest else None,
+            })
+        result.sort(key=lambda x: x["request_count"], reverse=True)
+        return {"status": "success", "data": result}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@frappe.whitelist()
+def clear_ip_rate_limit(ip_address):
+    """Delete Redis rate-limit keys for an IP, immediately lifting any active block."""
+    try:
+        rc = _get_redis()
+        if not rc:
+            return {"status": "error", "message": "Redis unavailable"}
+
+        deleted = rc.delete(
+            f"rl:ip:{ip_address}:timestamps",
+            f"rl:ip:{ip_address}:endpoints",
+        )
+        return {
+            "status": "success",
+            "message": f"Rate limit cleared for {ip_address}",
+            "keys_deleted": deleted,
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@frappe.whitelist()
+def clear_ip_violations(ip_address):
+    """Delete all DDoS log entries for a given IP address."""
+    try:
+        count = frappe.db.sql(
+            "SELECT COUNT(*) FROM `tabAssistant CRM DDoS Log` WHERE ip_address = %s",
+            ip_address
+        )[0][0]
+        frappe.db.sql(
+            "DELETE FROM `tabAssistant CRM DDoS Log` WHERE ip_address = %s",
+            ip_address
+        )
+        frappe.db.commit()
+        return {
+            "status": "success",
+            "message": f"Cleared {count} violation log(s) for {ip_address}",
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@frappe.whitelist()
+def block_ip(ip_address):
+    """Add an IP to the permanent Redis blacklist (ddos:blacklist)."""
+    try:
+        rc = _get_redis()
+        if not rc:
+            return {"status": "error", "message": "Redis unavailable"}
+
+        rc.sadd("ddos:blacklist", ip_address)
+        rc.hset("ddos:blacklist:meta", ip_address, datetime.utcnow().isoformat())
+        return {"status": "success", "message": f"IP {ip_address} has been permanently blocked"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@frappe.whitelist()
+def unblock_ip(ip_address):
+    """Remove an IP from the permanent Redis blacklist."""
+    try:
+        rc = _get_redis()
+        if not rc:
+            return {"status": "error", "message": "Redis unavailable"}
+
+        rc.srem("ddos:blacklist", ip_address)
+        rc.hdel("ddos:blacklist:meta", ip_address)
+        return {"status": "success", "message": f"IP {ip_address} has been unblocked"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@frappe.whitelist()
+def get_blocked_ips():
+    """Return all IPs currently in the permanent Redis blacklist."""
+    try:
+        rc = _get_redis()
+        if not rc:
+            return {"status": "error", "message": "Redis unavailable"}
+
+        ips = rc.smembers("ddos:blacklist")
+        meta = rc.hgetall("ddos:blacklist:meta")
+        result = [
+            {"ip_address": ip, "blocked_at": meta.get(ip, "")}
+            for ip in ips
+        ]
+        result.sort(key=lambda x: x["blocked_at"], reverse=True)
+        return {"status": "success", "data": result}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+# ── Rate Limit Configuration ───────────────────────────────────────────────────
+
+@frappe.whitelist()
+def get_rate_limit_config():
+    """Return current rate limits merged with any Redis overrides."""
+    try:
+        from assistant_crm.ddos_protection import RATE_LIMITS
+        import copy
+
+        rc = _get_redis()
+        overrides = {}
+        if rc:
+            raw = rc.get("ddos:rate_limit_overrides")
+            if raw:
+                overrides = json.loads(raw)
+
+        config = copy.deepcopy(RATE_LIMITS)
+        for category, limits in overrides.items():
+            if category in config:
+                config[category].update(limits)
+
+        return {"status": "success", "data": config, "overrides": overrides}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@frappe.whitelist()
+def update_rate_limit(category, limit_type, value):
+    """Persist a rate limit override to Redis. Applies on the next request."""
+    try:
+        value = int(value)
+        if not (1 <= value <= 100000):
+            return {"status": "error", "message": "Value must be between 1 and 100,000"}
+
+        rc = _get_redis()
+        if not rc:
+            return {"status": "error", "message": "Redis unavailable"}
+
+        raw = rc.get("ddos:rate_limit_overrides")
+        overrides = json.loads(raw) if raw else {}
+        overrides.setdefault(category, {})[limit_type] = value
+        rc.set("ddos:rate_limit_overrides", json.dumps(overrides))
+
+        return {
+            "status": "success",
+            "message": f"Rate limit updated: {category} / {limit_type} = {value} req/min",
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}

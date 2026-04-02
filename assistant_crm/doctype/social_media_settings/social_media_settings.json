@@ -92,6 +92,7 @@
         "youtube_refresh_token",
         "youtube_webhook_secret",
         "youtube_api_version",
+        "youtube_last_polled",
         "telegram_section",
         "telegram_enabled",
         "telegram_bot_token",
@@ -568,6 +569,13 @@
             "fieldname": "youtube_api_version",
             "fieldtype": "Data",
             "label": "YouTube API Version"
+        },
+        {
+            "fieldname": "youtube_last_polled",
+            "fieldtype": "Datetime",
+            "label": "YouTube Last Polled",
+            "read_only": 1,
+            "description": "Automatically updated after each poll — only comments after this time are fetched"
         },
         {
             "fieldname": "telegram_section",

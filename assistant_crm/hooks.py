@@ -212,7 +212,8 @@ scheduler_events = {
     "cron": {
         "*/5 * * * *": [
             "assistant_crm.tasks.poll_youtube",
-            "assistant_crm.api.ussd_integration.sync_ussd_feedback"
+            "assistant_crm.api.ussd_integration.sync_ussd_feedback",
+            "assistant_crm.tasks.publish_scheduled_posts"
         ],
         "*/10 * * * *": [
             "assistant_crm.tasks.poll_twitter",
@@ -360,6 +361,16 @@ api_methods = {
     "assistant_crm.ddos_monitoring.get_redis_metrics": ["GET"],
     "assistant_crm.ddos_monitoring.get_health_check": ["GET"],
     "assistant_crm.ddos_monitoring.export_violation_report": ["GET"],
+    # IP management actions
+    "assistant_crm.ddos_monitoring.get_active_rate_limited_ips": ["GET"],
+    "assistant_crm.ddos_monitoring.clear_ip_rate_limit": ["POST"],
+    "assistant_crm.ddos_monitoring.clear_ip_violations": ["POST"],
+    "assistant_crm.ddos_monitoring.block_ip": ["POST"],
+    "assistant_crm.ddos_monitoring.unblock_ip": ["POST"],
+    "assistant_crm.ddos_monitoring.get_blocked_ips": ["GET"],
+    # Rate limit configuration
+    "assistant_crm.ddos_monitoring.get_rate_limit_config": ["GET"],
+    "assistant_crm.ddos_monitoring.update_rate_limit": ["POST"],
 }
 
 # Job Events
@@ -432,7 +443,7 @@ website_route_rules = [
 	{"from_route": "/api/omnichannel/webhook/make-com", "to_route": "assistant_crm.api.make_com_webhook.make_com_webhook"},
 
 	# Legacy direct platform webhooks (maintained for backward compatibility)
-	{"from_route": "/api/omnichannel/webhook/whatsapp", "to_route": "assistant_crm.api.realtime_webhooks.whatsapp_webhook"},
+	{"from_route": "/api/omnichannel/webhook/whatsapp", "to_route": "assistant_crm.api.social_media_ports.social_media_webhook"},
 	{"from_route": "/api/omnichannel/webhook/facebook", "to_route": "assistant_crm.api.social_media_ports.social_media_webhook"},
 	{"from_route": "/api/omnichannel/webhook/telegram", "to_route": "assistant_crm.api.realtime_webhooks.telegram_webhook"},
 	# New USSD webhook (synchronous response as text/plain)

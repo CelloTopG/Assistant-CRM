@@ -13,6 +13,7 @@
   "customer_id",
   "customer_name",
   "customer_phone",
+  "customer_email",
   "customer_nrc",
   "customer_type",
   "customer_pas_number",
@@ -67,8 +68,7 @@
   "sla_status",
   "sla_column_break",
   "reminder_12h_sent",
-  "reminder_2h_sent",
-  "customer_email"
+  "reminder_2h_sent"
  ],
  "fields": [
   {

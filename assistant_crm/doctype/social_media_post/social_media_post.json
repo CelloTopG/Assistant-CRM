@@ -1,0 +1,164 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "autoname": "field:title",
+    "creation": "2026-04-01 12:00:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "post_info_section",
+        "title",
+        "status",
+        "column_break_info",
+        "send_immediately",
+        "scheduled_datetime",
+        "content_section",
+        "content",
+        "platforms_section",
+        "target_platforms",
+        "media_section",
+        "media_attachments",
+        "results_section",
+        "post_results"
+    ],
+    "fields": [
+        {
+            "fieldname": "post_info_section",
+            "fieldtype": "Section Break",
+            "label": "Post Information"
+        },
+        {
+            "fieldname": "title",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "in_standard_filter": 1,
+            "label": "Title",
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "default": "Draft",
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "in_standard_filter": 1,
+            "label": "Status",
+            "options": "Draft\nScheduled\nPublishing\nPublished\nPartially Published\nFailed",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_info",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "1",
+            "fieldname": "send_immediately",
+            "fieldtype": "Check",
+            "label": "Publish Immediately (on save)"
+        },
+        {
+            "depends_on": "eval:!doc.send_immediately",
+            "fieldname": "scheduled_datetime",
+            "fieldtype": "Datetime",
+            "label": "Scheduled Date & Time"
+        },
+        {
+            "fieldname": "content_section",
+            "fieldtype": "Section Break",
+            "label": "Content"
+        },
+        {
+            "description": "Main post content shared across all platforms unless overridden per platform",
+            "fieldname": "content",
+            "fieldtype": "Text Editor",
+            "label": "Post Content",
+            "reqd": 1
+        },
+        {
+            "fieldname": "platforms_section",
+            "fieldtype": "Section Break",
+            "label": "Target Platforms"
+        },
+        {
+            "description": "Select which platforms to publish to. Add platform-specific overrides using the expand icon on each row.",
+            "fieldname": "target_platforms",
+            "fieldtype": "Table",
+            "label": "Platforms",
+            "options": "Social Media Post Platform",
+            "reqd": 1
+        },
+        {
+            "collapsible": 1,
+            "fieldname": "media_section",
+            "fieldtype": "Section Break",
+            "label": "Media Attachments"
+        },
+        {
+            "description": "Attach images or videos to include in the post",
+            "fieldname": "media_attachments",
+            "fieldtype": "Table",
+            "label": "Attachments",
+            "options": "Social Media Post Attachment"
+        },
+        {
+            "collapsible": 1,
+            "fieldname": "results_section",
+            "fieldtype": "Section Break",
+            "label": "Publishing Results"
+        },
+        {
+            "fieldname": "post_results",
+            "fieldtype": "Table",
+            "label": "Results",
+            "options": "Social Media Post Result",
+            "read_only": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-04-01 12:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Assistant CRM",
+    "name": "Social Media Post",
+    "naming_rule": "By fieldname",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "CRM Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "CRM Agent",
+            "share": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

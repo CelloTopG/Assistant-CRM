@@ -347,7 +347,7 @@ def get_unified_inbox_conversations(filters: Dict[str, Any] = None, limit: int =
 def get_conversations():
     """Simple wrapper for get_unified_inbox_conversations for JavaScript compatibility."""
     try:
-        result = get_unified_inbox_conversations()
+        result = get_unified_inbox_conversations(limit=100)
         if result.get("status") == "success":
             return {
                 "status": "success",

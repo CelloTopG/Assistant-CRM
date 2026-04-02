@@ -4,386 +4,773 @@
 {% block title %}DDoS Protection Monitor{% endblock %}
 
 {% block page_content %}
-<div class="container-fluid" style="padding: 20px;">
-    <div class="row">
-        <div class="col-md-12">
-            <h1>🛡️ Assistant CRM DDoS Protection Monitor</h1>
-            <hr>
-        </div>
-    </div>
-
-    <!-- Status Indicator -->
-    <div class="row" id="status-section" style="margin-bottom: 20px;">
-        <div class="col-md-12">
-            <div class="alert alert-info">
-                <strong>System Status:</strong> <span id="system-status">Loading...</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Key Metrics -->
-    <div class="row" id="metrics-section" style="margin-bottom: 20px;">
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">🚨 Total Violations (24h)</h5>
-                    <p class="card-text" style="font-size: 32px; font-weight: bold;" id="total-violations">-</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">🌐 Unique IPs</h5>
-                    <p class="card-text" style="font-size: 32px; font-weight: bold;" id="unique-ips">-</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">👤 Affected Users</h5>
-                    <p class="card-text" style="font-size: 32px; font-weight: bold;" id="affected-users">-</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">⏱️ Active Limiters</h5>
-                    <p class="card-text" style="font-size: 32px; font-weight: bold;" id="active-limiters">-</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Violation Breakdown -->
-    <div class="row" style="margin-bottom: 20px;">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5>📊 Violations by Type</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-sm" id="violations-by-type">
-                        <thead>
-                            <tr>
-                                <th>Violation Type</th>
-                                <th>Count</th>
-                            </tr>
-                        </thead>
-                        <tbody id="violations-by-type-body">
-                            <tr><td colspan="2">Loading...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5>🎯 Top Targeted Endpoints</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-sm" id="top-endpoints">
-                        <thead>
-                            <tr>
-                                <th>Endpoint</th>
-                                <th>Hits</th>
-                            </tr>
-                        </thead>
-                        <tbody id="top-endpoints-body">
-                            <tr><td colspan="2">Loading...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Top Attacking IPs -->
-    <div class="row" style="margin-bottom: 20px;">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5>🚨 Top Attacking IPs (Last 24 Hours)</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-hover" id="top-ips">
-                        <thead>
-                            <tr>
-                                <th>IP Address</th>
-                                <th>Violation Count</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="top-ips-body">
-                            <tr><td colspan="3">Loading...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Violations -->
-    <div class="row" style="margin-bottom: 20px;">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5>📝 Recent Violations (Last 50)</h5>
-                    <div style="margin-top: 10px;">
-                        <button class="btn btn-sm btn-primary" onclick="exportViolations('json')">📥 Export JSON</button>
-                        <button class="btn btn-sm btn-secondary" onclick="exportViolations('csv')">📋 Export CSV</button>
-                        <button class="btn btn-sm btn-info" onclick="refreshDashboard()">🔄 Refresh Now</button>
-                    </div>
-                </div>
-                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
-                    <table class="table table-sm table-striped" id="recent-violations">
-                        <thead>
-                            <tr>
-                                <th>Timestamp</th>
-                                <th>User</th>
-                                <th>IP Address</th>
-                                <th>Endpoint</th>
-                                <th>Violation Type</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recent-violations-body">
-                            <tr><td colspan="5">Loading...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Settings -->
-    <div class="row" style="margin-bottom: 20px;">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5>⚙️ Configuration</h5>
-                </div>
-                <div class="card-body">
-                    <p><strong>Rate Limiting Enabled:</strong> <span id="ddos-enabled">Checking...</span></p>
-                    <p><strong>Redis Cache:</strong> <span id="redis-status">Checking...</span></p>
-                    <p><strong>Database:</strong> <span id="db-status">Checking...</span></p>
-                    <hr>
-                    <p>
-                        <small>
-                            Auto-refresh interval: <strong>30 seconds</strong><br>
-                            Last updated: <strong id="last-updated">Never</strong><br>
-                            Dashboard updated: <strong id="dashboard-updated">Never</strong>
-                        </small>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <style>
-    .card {
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
-    }
-    .card-header {
-        background-color: #f5f5f5;
-        padding: 12px 15px;
-        border-bottom: 1px solid #ddd;
-        font-weight: 500;
-    }
-    .card-body {
-        padding: 15px;
-    }
-    .card-title {
-        margin: 0 0 10px 0;
-    }
-    table {
-        margin-bottom: 0;
-    }
+/* ── Hide Frappe web-template chrome inside the iframe ── */
+nav.navbar, .navbar { display: none !important; }
+footer, .web-footer { display: none !important; }
+.page-header, .container > h1 { display: none !important; }
+body { background: #f0f2f5 !important; padding: 0 !important; margin: 0 !important; }
+
+/* ── Layout ── */
+.dw { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #2d3748; background: #f0f2f5; min-height: 100vh; }
+
+/* ── Header ── */
+.dw-header {
+    background: #1a1f2e;
+    color: #e2e8f0;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.dw-header-left { display: flex; align-items: center; gap: 12px; }
+.dw-header h1 { font-size: 16px; font-weight: 600; margin: 0; letter-spacing: 0.2px; color: #f7fafc; }
+.dw-header-right { display: flex; align-items: center; gap: 14px; }
+
+.status-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 11px; border-radius: 20px;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;
+}
+.status-pill.healthy  { background: rgba(56,161,105,.2); color: #68d391; }
+.status-pill.degraded { background: rgba(214,158,46,.2);  color: #f6e05e; }
+.status-pill.error    { background: rgba(229,62,62,.2);   color: #fc8181; }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; }
+.healthy  .status-dot { background: #68d391; animation: blink 2s infinite; }
+.degraded .status-dot { background: #f6e05e; animation: blink 1s infinite; }
+.error    .status-dot { background: #fc8181; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+.range-tabs { display: flex; gap: 3px; }
+.rtab {
+    padding: 4px 9px; font-size: 11px; border-radius: 4px;
+    border: 1px solid rgba(255,255,255,.15); cursor: pointer;
+    color: #a0aec0; background: transparent; font-weight: 500;
+    transition: all .15s;
+}
+.rtab:hover { background: rgba(255,255,255,.08); color: #e2e8f0; }
+.rtab.active { background: #3182ce; color: #fff; border-color: #3182ce; }
+
+.btn-hdr {
+    padding: 6px 14px; font-size: 12px; font-weight: 600;
+    background: #3182ce; color: #fff; border: none;
+    border-radius: 5px; cursor: pointer; transition: background .15s;
+}
+.btn-hdr:hover { background: #2b6cb0; }
+
+.updated-label { font-size: 11px; color: #718096; white-space: nowrap; }
+
+/* ── Body ── */
+.dw-body { padding: 20px 24px; }
+
+/* ── Stats row ── */
+.stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 20px; }
+.stat-card {
+    background: #fff; border-radius: 8px;
+    padding: 18px 20px; box-shadow: 0 1px 3px rgba(0,0,0,.07);
+    border-left: 4px solid transparent;
+}
+.stat-card.c-red    { border-left-color: #e53e3e; }
+.stat-card.c-amber  { border-left-color: #dd6b20; }
+.stat-card.c-blue   { border-left-color: #3182ce; }
+.stat-card.c-purple { border-left-color: #805ad5; }
+.stat-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: #a0aec0; margin-bottom: 6px; }
+.stat-val { font-size: 34px; font-weight: 700; line-height: 1; color: #2d3748; }
+.stat-sub { font-size: 11px; color: #a0aec0; margin-top: 5px; }
+
+/* ── Panel ── */
+.panel { background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.07); margin-bottom: 20px; overflow: hidden; }
+.panel-hdr {
+    padding: 13px 18px; border-bottom: 1px solid #edf2f7;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.panel-title { font-size: 13px; font-weight: 600; color: #2d3748; }
+.panel-hdr-actions { display: flex; align-items: center; gap: 8px; }
+
+/* ── Table ── */
+.dt { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.dt th {
+    padding: 9px 14px; text-align: left;
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px;
+    color: #718096; background: #f7fafc; border-bottom: 1px solid #edf2f7; white-space: nowrap;
+}
+.dt td { padding: 10px 14px; border-bottom: 1px solid #edf2f7; color: #4a5568; vertical-align: middle; }
+.dt tr:last-child td { border-bottom: none; }
+.dt tbody tr:hover td { background: #fafbfc; }
+.dt-scroll { max-height: 380px; overflow-y: auto; }
+
+/* ── Badges ── */
+.bdg { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.bdg-red    { background: #fff5f5; color: #c53030; }
+.bdg-amber  { background: #fffaf0; color: #c05621; }
+.bdg-green  { background: #f0fff4; color: #276749; }
+.bdg-blue   { background: #ebf8ff; color: #2b6cb0; }
+
+/* ── Action buttons ── */
+.ab {
+    padding: 3px 9px; font-size: 11px; font-weight: 600;
+    border-radius: 4px; border: 1px solid transparent; cursor: pointer;
+    transition: opacity .12s; white-space: nowrap;
+}
+.ab:hover { opacity: .8; }
+.ab + .ab { margin-left: 4px; }
+.ab-clear  { background: #ebf8ff; color: #2b6cb0; border-color: #bee3f8; }
+.ab-block  { background: #fff5f5; color: #c53030; border-color: #fed7d7; }
+.ab-unblk  { background: #f0fff4; color: #276749; border-color: #c6f6d5; }
+.ab-logs   { background: #faf5ff; color: #553c9a; border-color: #e9d8fd; }
+
+.btn-sm {
+    padding: 5px 13px; font-size: 12px; font-weight: 600;
+    border-radius: 5px; cursor: pointer; border: 1px solid #e2e8f0;
+    background: #fff; color: #4a5568; transition: background .12s;
+}
+.btn-sm:hover { background: #f7fafc; }
+.btn-sm.primary { background: #3182ce; color: #fff; border-color: #3182ce; }
+.btn-sm.primary:hover { background: #2b6cb0; }
+
+/* ── Two-col grid ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+/* ── Rate-limit editor ── */
+.rl-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+.rl-item { border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px 16px; }
+.rl-cat { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: #3182ce; margin-bottom: 10px; }
+.rl-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.rl-row:last-child { margin-bottom: 0; }
+.rl-lbl { font-size: 12px; color: #718096; font-weight: 500; }
+.rl-wrap { display: flex; flex-direction: column; align-items: flex-end; }
+.rl-input {
+    width: 88px; padding: 5px 8px; text-align: right;
+    border: 1px solid #e2e8f0; border-radius: 4px; font-size: 12.5px;
+    transition: border-color .15s;
+}
+.rl-input:focus { outline: none; border-color: #3182ce; box-shadow: 0 0 0 2px rgba(49,130,206,.18); }
+.rl-hint { font-size: 10px; color: #a0aec0; margin-top: 2px; }
+
+/* ── System checks ── */
+.sys-row { display: flex; gap: 28px; flex-wrap: wrap; }
+.sys-item { display: flex; align-items: center; gap: 7px; font-size: 13px; }
+.sys-dot { width: 9px; height: 9px; border-radius: 50%; }
+.sys-dot.ok   { background: #38a169; }
+.sys-dot.fail { background: #e53e3e; }
+
+/* ── Bar chart helper ── */
+.mini-bar { display: flex; align-items: center; gap: 8px; }
+.mini-bar-track { width: 64px; height: 5px; background: #edf2f7; border-radius: 3px; overflow: hidden; }
+.mini-bar-fill { height: 100%; background: #3182ce; border-radius: 3px; }
+
+/* ── Empty + loading states ── */
+.empty { padding: 32px; text-align: center; color: #a0aec0; font-size: 12.5px; }
+.shimmer-row td { padding: 12px 14px; }
+.shimmer { display: inline-block; background: linear-gradient(90deg,#f0f0f0 25%,#e4e4e4 50%,#f0f0f0 75%); background-size: 300% 100%; animation: sh 1.4s infinite; border-radius: 4px; height: 12px; }
+@keyframes sh { 0%{background-position:300% 0} 100%{background-position:-300% 0} }
+
+/* ── IP chip ── */
+.ip { font-family: 'Courier New',monospace; background: #f7fafc; padding: 1px 6px; border-radius: 3px; font-size: 12px; color: #2d3748; }
+
+/* ── Toast ── */
+#toast-wrap { position: fixed; top: 64px; right: 18px; z-index: 9999; display: flex; flex-direction: column; gap: 7px; }
+.toast {
+    padding: 11px 15px; border-radius: 6px; font-size: 12.5px; font-weight: 500;
+    min-width: 240px; box-shadow: 0 4px 14px rgba(0,0,0,.14);
+    display: flex; align-items: center; gap: 8px;
+    animation: tslide .2s ease;
+}
+@keyframes tslide { from{transform:translateX(110%);opacity:0} to{transform:none;opacity:1} }
+.toast.ok  { background: #f0fff4; color: #276749; border: 1px solid #c6f6d5; }
+.toast.err { background: #fff5f5; color: #c53030; border: 1px solid #fed7d7; }
+.toast.inf { background: #ebf8ff; color: #2b6cb0; border: 1px solid #bee3f8; }
+
+/* ── Confirm dialog ── */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.38); z-index: 1000; align-items: center; justify-content: center; }
+.overlay.show { display: flex; }
+.dlg { background: #fff; border-radius: 8px; padding: 24px; width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+.dlg-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; color: #2d3748; }
+.dlg-msg   { font-size: 13px; color: #718096; margin-bottom: 20px; line-height: 1.5; }
+.dlg-foot  { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ── Filter select ── */
+.flt-select { font-size: 12px; padding: 4px 8px; border: 1px solid #e2e8f0; border-radius: 4px; color: #4a5568; background: #fff; }
 </style>
 
+<div class="dw">
+  <!-- ── Header ── -->
+  <div class="dw-header">
+    <div class="dw-header-left">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#63b3ed" stroke-width="2.2">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      <h1>DDoS Protection Monitor</h1>
+    </div>
+    <div class="dw-header-right">
+      <span id="hdr-status" class="status-pill healthy">
+        <span class="status-dot"></span>
+        <span id="hdr-status-txt">Healthy</span>
+      </span>
+      <div class="range-tabs">
+        <button class="rtab" onclick="setRange(1,this)">1h</button>
+        <button class="rtab" onclick="setRange(6,this)">6h</button>
+        <button class="rtab active" onclick="setRange(24,this)">24h</button>
+        <button class="rtab" onclick="setRange(168,this)">7d</button>
+      </div>
+      <span class="updated-label">Updated: <span id="hdr-ts">—</span></span>
+      <button class="btn-hdr" onclick="refreshAll()">Refresh</button>
+    </div>
+  </div>
+
+  <div class="dw-body">
+
+    <!-- ── Stats ── -->
+    <div class="stats-row">
+      <div class="stat-card c-red">
+        <div class="stat-lbl">Total Violations</div>
+        <div class="stat-val" id="s-violations">—</div>
+        <div class="stat-sub" id="s-range-lbl">Last 24h</div>
+      </div>
+      <div class="stat-card c-amber">
+        <div class="stat-lbl">Unique Attacking IPs</div>
+        <div class="stat-val" id="s-ips">—</div>
+        <div class="stat-sub">distinct sources</div>
+      </div>
+      <div class="stat-card c-blue">
+        <div class="stat-lbl">Active Rate Limiters</div>
+        <div class="stat-val" id="s-limiters">—</div>
+        <div class="stat-sub">Redis-tracked IPs</div>
+      </div>
+      <div class="stat-card c-purple">
+        <div class="stat-lbl">Permanently Blocked</div>
+        <div class="stat-val" id="s-blocked">—</div>
+        <div class="stat-sub">in blacklist</div>
+      </div>
+    </div>
+
+    <!-- ── IP Management ── -->
+    <div class="two-col">
+
+      <!-- Active rate-limited IPs -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <span class="panel-title">Active Rate-Limited IPs</span>
+          <button class="btn-sm" onclick="loadActiveIPs()">Refresh</button>
+        </div>
+        <table class="dt">
+          <thead><tr>
+            <th>IP Address</th>
+            <th>Requests / Window</th>
+            <th style="text-align:right">Actions</th>
+          </tr></thead>
+          <tbody id="active-ips-body"><tr><td colspan="3" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+
+      <!-- Permanently blocked IPs -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <span class="panel-title">Permanently Blocked IPs</span>
+          <button class="btn-sm" onclick="loadBlockedIPs()">Refresh</button>
+        </div>
+        <table class="dt">
+          <thead><tr>
+            <th>IP Address</th>
+            <th>Blocked At</th>
+            <th style="text-align:right">Actions</th>
+          </tr></thead>
+          <tbody id="blocked-ips-body"><tr><td colspan="3" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- ── Recent Violations ── -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <span class="panel-title">Recent Violations</span>
+        <div class="panel-hdr-actions">
+          <select class="flt-select" id="type-filter" onchange="renderViolations()">
+            <option value="">All Types</option>
+            <option value="rate_limit_exceeded">Rate Limit Exceeded</option>
+            <option value="bot_detected">Bot Detected</option>
+          </select>
+          <button class="btn-sm" onclick="exportViolations('csv')">Export CSV</button>
+          <button class="btn-sm" onclick="exportViolations('json')">Export JSON</button>
+        </div>
+      </div>
+      <div class="dt-scroll">
+        <table class="dt">
+          <thead><tr>
+            <th>Timestamp</th>
+            <th>IP Address</th>
+            <th>User</th>
+            <th>Endpoint</th>
+            <th>Type</th>
+            <th style="text-align:right">Actions</th>
+          </tr></thead>
+          <tbody id="violations-body"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Analytics ── -->
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-hdr"><span class="panel-title">Violations by Type</span></div>
+        <table class="dt">
+          <thead><tr><th>Type</th><th>Count</th><th>Share</th></tr></thead>
+          <tbody id="by-type-body"><tr><td colspan="3" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><span class="panel-title">Top Targeted Endpoints</span></div>
+        <table class="dt">
+          <thead><tr><th>Endpoint</th><th>Hits</th></tr></thead>
+          <tbody id="endpoints-body"><tr><td colspan="2" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Rate Limit Config ── -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <span class="panel-title">Rate Limit Configuration</span>
+        <div class="panel-hdr-actions">
+          <span style="font-size:11px;color:#a0aec0;">Overrides stored in Redis — applied on the next request</span>
+          <button class="btn-sm primary" onclick="saveRateLimits()">Save Changes</button>
+        </div>
+      </div>
+      <div style="padding:18px 20px;">
+        <div class="rl-grid" id="rl-grid"><div class="shimmer" style="width:100%;height:80px;"></div></div>
+      </div>
+    </div>
+
+    <!-- ── System Health ── -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <span class="panel-title">System Health</span>
+        <span style="font-size:11px;color:#a0aec0;">Auto-refresh every 30 s</span>
+      </div>
+      <div style="padding:16px 20px;">
+        <div class="sys-row">
+          <div class="sys-item"><div class="sys-dot" id="dot-ddos"></div><span>DDoS Protection: <strong id="chk-ddos">—</strong></span></div>
+          <div class="sys-item"><div class="sys-dot" id="dot-redis"></div><span>Redis: <strong id="chk-redis">—</strong></span></div>
+          <div class="sys-item"><div class="sys-dot" id="dot-db"></div><span>Database: <strong id="chk-db">—</strong></span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /dw-body -->
+</div><!-- /dw -->
+
+<!-- Toast container -->
+<div id="toast-wrap"></div>
+
+<!-- Confirm dialog -->
+<div class="overlay" id="overlay">
+  <div class="dlg">
+    <div class="dlg-title" id="dlg-title">Confirm</div>
+    <div class="dlg-msg"   id="dlg-msg"></div>
+    <div class="dlg-foot">
+      <button class="btn-sm" onclick="closeDialog()">Cancel</button>
+      <button class="btn-sm" id="dlg-confirm-btn" onclick="runDialog()">Confirm</button>
+    </div>
+  </div>
+</div>
+
 <script>
-// Global auto-refresh interval
-let autoRefreshInterval;
+// ── State ──────────────────────────────────────────────────────────────────────
+let currentRange = 24;
+let allViolations = [];
+let dialogCb = null;
 
-// Initialize dashboard
-document.addEventListener('DOMContentLoaded', function() {
-    refreshDashboard();
-    // Auto-refresh every 30 seconds
-    autoRefreshInterval = setInterval(refreshDashboard, 30000);
-});
-
-// Refresh all dashboard data
-function refreshDashboard() {
-    getHealthCheck();
-    getSummary();
-    getTimeline();
-    getRedisMetrics();
-    getRecentViolations();
-    document.getElementById('dashboard-updated').innerText = new Date().toLocaleTimeString();
+// ── Toast ──────────────────────────────────────────────────────────────────────
+function toast(msg, type) {
+    const wrap = document.getElementById('toast-wrap');
+    const el = document.createElement('div');
+    el.className = 'toast ' + (type === 'success' ? 'ok' : type === 'error' ? 'err' : 'inf');
+    const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'i';
+    el.innerHTML = '<strong>' + icon + '</strong> ' + msg;
+    wrap.appendChild(el);
+    setTimeout(function() { el.remove(); }, 4500);
 }
 
-// Get health status
-function getHealthCheck() {
+// ── Confirm dialog ─────────────────────────────────────────────────────────────
+function showDialog(title, msg, btnLabel, btnCls, cb) {
+    document.getElementById('dlg-title').textContent = title;
+    document.getElementById('dlg-msg').textContent = msg;
+    var btn = document.getElementById('dlg-confirm-btn');
+    btn.textContent = btnLabel;
+    btn.className = 'btn-sm ' + btnCls;
+    dialogCb = cb;
+    document.getElementById('overlay').classList.add('show');
+}
+function closeDialog() { document.getElementById('overlay').classList.remove('show'); dialogCb = null; }
+function runDialog() { if (dialogCb) dialogCb(); closeDialog(); }
+
+// ── Range selector ─────────────────────────────────────────────────────────────
+function setRange(h, el) {
+    currentRange = h;
+    document.querySelectorAll('.rtab').forEach(function(t) { t.classList.remove('active'); });
+    el.classList.add('active');
+    var lbl = { 1: 'Last 1h', 6: 'Last 6h', 24: 'Last 24h', 168: 'Last 7d' };
+    document.getElementById('s-range-lbl').textContent = lbl[h] || ('Last ' + h + 'h');
+    loadSummary();
+    loadViolations();
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+function chip(ip) {
+    return '<span class="ip">' + ip + '</span>';
+}
+function fmtTs(ts) {
+    if (!ts) return '—';
+    try { return new Date(ts).toLocaleString(); } catch(e) { return ts; }
+}
+
+// ── Main refresh ───────────────────────────────────────────────────────────────
+function refreshAll() {
+    loadHealth();
+    loadSummary();
+    loadViolations();
+    loadActiveIPs();
+    loadBlockedIPs();
+    loadRLConfig();
+    document.getElementById('hdr-ts').textContent = new Date().toLocaleTimeString();
+}
+
+// ── Health check ───────────────────────────────────────────────────────────────
+function loadHealth() {
     frappe.call({
         method: 'assistant_crm.ddos_monitoring.get_health_check',
         callback: function(r) {
-            if (r.message) {
-                let status = r.message.status;
-                let checks = r.message.checks;
-                
-                document.getElementById('system-status').innerHTML = 
-                    `<span style="color: ${status === 'healthy' ? 'green' : 'orange'}; font-weight: bold;">
-                        ${status === 'healthy' ? '✅ Healthy' : '⚠️ Degraded'}
-                    </span>`;
-                
-                document.getElementById('ddos-enabled').innerHTML = 
-                    checks.ddos_enabled ? '✅ Yes' : '❌ No';
-                document.getElementById('redis-status').innerHTML = 
-                    checks.redis_available ? '✅ Connected' : '❌ Disconnected';
-                document.getElementById('db-status').innerHTML = 
-                    checks.database_available ? '✅ Connected' : '❌ Disconnected';
-            }
+            if (!r.message) return;
+            var s = r.message.status;
+            var c = r.message.checks || {};
+            var pill = document.getElementById('hdr-status');
+            pill.className = 'status-pill ' + (s === 'healthy' ? 'healthy' : 'degraded');
+            document.getElementById('hdr-status-txt').textContent = s === 'healthy' ? 'Healthy' : 'Degraded';
+            setChk('ddos',  c.ddos_enabled,       'Enabled',     'Disabled');
+            setChk('redis', c.redis_available,     'Connected',   'Disconnected');
+            setChk('db',    c.database_available,  'Connected',   'Disconnected');
         }
     });
 }
+function setChk(id, ok, yes, no) {
+    document.getElementById('chk-' + id).textContent = ok ? yes : no;
+    document.getElementById('dot-' + id).className = 'sys-dot ' + (ok ? 'ok' : 'fail');
+}
 
-// Get summary statistics
-function getSummary() {
+// ── Summary ────────────────────────────────────────────────────────────────────
+function loadSummary() {
     frappe.call({
         method: 'assistant_crm.ddos_monitoring.get_violations_summary',
-        args: { hours: 24 },
+        args: { hours: currentRange },
         callback: function(r) {
-            if (r.message && r.message.status === 'success') {
-                let summary = r.message.summary;
-                document.getElementById('total-violations').innerText = summary.total_violations;
-                document.getElementById('unique-ips').innerText = summary.unique_ips;
-                document.getElementById('affected-users').innerText = summary.unique_users;
-                
-                // Violations by type
-                let byType = r.message.by_type;
-                let typeHtml = '';
-                byType.forEach(function(item) {
-                    typeHtml += `<tr><td>${item.violation_type}</td><td><strong>${item.count}</strong></td></tr>`;
-                });
-                document.getElementById('violations-by-type-body').innerHTML = typeHtml;
-                
-                // Top endpoints
-                let endpoints = r.message.top_endpoints;
-                let endpointHtml = '';
-                endpoints.forEach(function(item) {
-                    endpointHtml += `<tr><td>${item.endpoint}</td><td><strong>${item.count}</strong></td></tr>`;
-                });
-                document.getElementById('top-endpoints-body').innerHTML = endpointHtml;
-                
-                // Top IPs
-                let ips = r.message.top_ips;
-                let ipHtml = '';
-                ips.forEach(function(item) {
-                    ipHtml += `<tr>
-                        <td><code>${item.ip_address}</code></td>
-                        <td><strong>${item.count}</strong></td>
-                        <td><button class="btn btn-xs btn-danger" onclick="blockIP('${item.ip_address}')">Block</button></td>
-                    </tr>`;
-                });
-                document.getElementById('top-ips-body').innerHTML = ipHtml || '<tr><td colspan="3">No violations yet</td></tr>';
-            }
+            if (!r.message || r.message.status !== 'success') return;
+            var s = r.message.summary;
+            document.getElementById('s-violations').textContent = s.total_violations || 0;
+            document.getElementById('s-ips').textContent = s.unique_ips || 0;
+
+            // Violations by type
+            var byType = r.message.by_type || [];
+            var total  = byType.reduce(function(a, b) { return a + (b.count || 0); }, 0);
+            document.getElementById('by-type-body').innerHTML = byType.length
+                ? byType.map(function(t) {
+                    var pct = total > 0 ? Math.round(t.count / total * 100) : 0;
+                    var cls = t.violation_type === 'rate_limit_exceeded' ? 'bdg-red' : 'bdg-amber';
+                    return '<tr>' +
+                        '<td><span class="bdg ' + cls + '">' + t.violation_type + '</span></td>' +
+                        '<td><strong>' + t.count + '</strong></td>' +
+                        '<td><div class="mini-bar"><div class="mini-bar-track"><div class="mini-bar-fill" style="width:' + pct + '%"></div></div><span style="font-size:11px;color:#a0aec0;">' + pct + '%</span></div></td>' +
+                        '</tr>';
+                }).join('')
+                : '<tr><td colspan="3" class="empty">No violations</td></tr>';
+
+            // Top endpoints
+            var eps = r.message.top_endpoints || [];
+            document.getElementById('endpoints-body').innerHTML = eps.length
+                ? eps.map(function(e) {
+                    return '<tr>' +
+                        '<td style="font-family:monospace;font-size:12px;color:#4a5568;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + e.endpoint + '">' + e.endpoint + '</td>' +
+                        '<td><strong>' + e.count + '</strong></td>' +
+                        '</tr>';
+                }).join('')
+                : '<tr><td colspan="2" class="empty">No data</td></tr>';
         }
     });
 }
 
-// Get timeline data
-function getTimeline() {
-    frappe.call({
-        method: 'assistant_crm.ddos_monitoring.get_violation_timeline',
-        args: { hours: 24, interval_minutes: 60 },
-        callback: function(r) {
-            if (r.message && r.message.status === 'success') {
-                // Timeline data fetched - can be used for future charting
-                console.log('Timeline data:', r.message.data);
-            }
-        }
-    });
-}
-
-// Get Redis metrics
-function getRedisMetrics() {
-    frappe.call({
-        method: 'assistant_crm.ddos_monitoring.get_redis_metrics',
-        callback: function(r) {
-            if (r.message && r.message.status === 'success') {
-                document.getElementById('active-limiters').innerText = r.message.data.active_rate_limiters;
-            }
-        }
-    });
-}
-
-// Get recent violations
-function getRecentViolations() {
+// ── Violations table ───────────────────────────────────────────────────────────
+function loadViolations() {
     frappe.call({
         method: 'assistant_crm.ddos_monitoring.get_ddos_violations',
-        args: { hours: 24, limit: 50 },
+        args: { hours: currentRange, limit: 100 },
         callback: function(r) {
-            if (r.message && r.message.status === 'success') {
-                let violations = r.message.data;
-                let html = '';
-                violations.forEach(function(v) {
-                    let timestamp = new Date(v.timestamp).toLocaleString();
-                    html += `<tr>
-                        <td>${timestamp}</td>
-                        <td>${v.user}</td>
-                        <td><code>${v.ip_address}</code></td>
-                        <td><small>${v.endpoint}</small></td>
-                        <td><span class="badge ${v.violation_type === 'rate_limit_exceeded' ? 'badge-danger' : 'badge-warning'}">${v.violation_type}</span></td>
-                    </tr>`;
-                });
-                document.getElementById('recent-violations-body').innerHTML = html || '<tr><td colspan="5">No violations in the last 24 hours</td></tr>';
-                document.getElementById('last-updated').innerText = new Date().toLocaleTimeString();
+            if (!r.message || r.message.status !== 'success') return;
+            allViolations = r.message.data || [];
+            renderViolations();
+        }
+    });
+}
+function renderViolations() {
+    var filter = document.getElementById('type-filter').value;
+    var rows = filter ? allViolations.filter(function(v) { return v.violation_type === filter; }) : allViolations;
+    document.getElementById('violations-body').innerHTML = rows.length
+        ? rows.map(function(v) {
+            var cls = v.violation_type === 'rate_limit_exceeded' ? 'bdg-red' : 'bdg-amber';
+            return '<tr>' +
+                '<td style="white-space:nowrap;color:#718096;">' + fmtTs(v.timestamp) + '</td>' +
+                '<td>' + chip(v.ip_address) + '</td>' +
+                '<td style="font-size:12px;">' + (v.user || '—') + '</td>' +
+                '<td style="font-family:monospace;font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + v.endpoint + '">' + v.endpoint + '</td>' +
+                '<td><span class="bdg ' + cls + '">' + v.violation_type + '</span></td>' +
+                '<td style="text-align:right;white-space:nowrap;">' +
+                    '<button class="ab ab-block" onclick="confirmBlock(\'' + v.ip_address + '\')">Block IP</button>' +
+                    '<button class="ab ab-logs"  onclick="confirmClearLogs(\'' + v.ip_address + '\')">Clear Logs</button>' +
+                '</td>' +
+                '</tr>';
+        }).join('')
+        : '<tr><td colspan="6" class="empty">No violations in this time range</td></tr>';
+}
+
+// ── Active rate-limited IPs ────────────────────────────────────────────────────
+function loadActiveIPs() {
+    frappe.call({
+        method: 'assistant_crm.ddos_monitoring.get_active_rate_limited_ips',
+        callback: function(r) {
+            if (!r.message || r.message.status !== 'success') {
+                document.getElementById('active-ips-body').innerHTML = '<tr><td colspan="3" class="empty">Redis unavailable</td></tr>';
+                return;
             }
+            var ips = r.message.data || [];
+            document.getElementById('s-limiters').textContent = ips.length;
+            document.getElementById('active-ips-body').innerHTML = ips.length
+                ? ips.map(function(ip) {
+                    return '<tr>' +
+                        '<td>' + chip(ip.ip_address) + '</td>' +
+                        '<td><strong>' + ip.request_count + '</strong><span style="color:#a0aec0;font-size:11px;"> req</span></td>' +
+                        '<td style="text-align:right;white-space:nowrap;">' +
+                            '<button class="ab ab-clear" onclick="confirmClearLimit(\'' + ip.ip_address + '\')">Clear Limit</button>' +
+                            '<button class="ab ab-block" onclick="confirmBlock(\'' + ip.ip_address + '\')">Block</button>' +
+                        '</td></tr>';
+                }).join('')
+                : '<tr><td colspan="3" class="empty">No IPs currently rate-limited</td></tr>';
         }
     });
 }
 
-// Block an IP (placeholder function)
-function blockIP(ip) {
-    frappe.msgprint({
-        title: 'Block IP',
-        message: `Blocking IP: ${ip}<br><br>To block this IP, add it to the DDoS protection blacklist in site_config.json:<br><code>"ddos_blacklist_ips": ["${ip}"]</code>`,
+// ── Blocked IPs ────────────────────────────────────────────────────────────────
+function loadBlockedIPs() {
+    frappe.call({
+        method: 'assistant_crm.ddos_monitoring.get_blocked_ips',
+        callback: function(r) {
+            if (!r.message || r.message.status !== 'success') {
+                document.getElementById('blocked-ips-body').innerHTML = '<tr><td colspan="3" class="empty">Redis unavailable</td></tr>';
+                document.getElementById('s-blocked').textContent = '—';
+                return;
+            }
+            var ips = r.message.data || [];
+            document.getElementById('s-blocked').textContent = ips.length;
+            document.getElementById('blocked-ips-body').innerHTML = ips.length
+                ? ips.map(function(ip) {
+                    return '<tr>' +
+                        '<td>' + chip(ip.ip_address) + '</td>' +
+                        '<td style="color:#718096;font-size:12px;">' + fmtTs(ip.blocked_at) + '</td>' +
+                        '<td style="text-align:right;">' +
+                            '<button class="ab ab-unblk" onclick="confirmUnblock(\'' + ip.ip_address + '\')">Unblock</button>' +
+                        '</td></tr>';
+                }).join('')
+                : '<tr><td colspan="3" class="empty">No permanently blocked IPs</td></tr>';
+        }
     });
 }
 
-// Export violations
-function exportViolations(format) {
+// ── Rate-limit config ──────────────────────────────────────────────────────────
+function loadRLConfig() {
+    frappe.call({
+        method: 'assistant_crm.ddos_monitoring.get_rate_limit_config',
+        callback: function(r) {
+            if (!r.message || r.message.status !== 'success') return;
+            var cfg = r.message.data;
+            var catLabels  = { crm_routes: 'CRM Routes', auth_routes: 'Auth / Login', report_routes: 'Report Routes' };
+            var typeLabels = { anonymous: 'Anonymous (req / min)', authenticated: 'Authenticated (req / min)' };
+            var html = Object.keys(cfg).map(function(cat) {
+                var limits = cfg[cat];
+                var rows = Object.keys(limits).map(function(t) {
+                    var v = limits[t];
+                    var rps = Math.round(v / 60 * 10) / 10;
+                    return '<div class="rl-row">' +
+                        '<span class="rl-lbl">' + (typeLabels[t] || t) + '</span>' +
+                        '<div class="rl-wrap">' +
+                            '<input class="rl-input" type="number" min="1" max="100000" ' +
+                                'id="rl-' + cat + '-' + t + '" value="' + v + '" ' +
+                                'data-cat="' + cat + '" data-type="' + t + '" data-orig="' + v + '" ' +
+                                'oninput="updateRPS(this)">' +
+                            '<div class="rl-hint" id="rps-' + cat + '-' + t + '">' + rps + ' req / sec</div>' +
+                        '</div>' +
+                        '</div>';
+                }).join('');
+                return '<div class="rl-item"><div class="rl-cat">' + (catLabels[cat] || cat) + '</div>' + rows + '</div>';
+            }).join('');
+            document.getElementById('rl-grid').innerHTML = html;
+        }
+    });
+}
+function updateRPS(input) {
+    var v = parseInt(input.value) || 0;
+    var id = 'rps-' + input.dataset.cat + '-' + input.dataset.type;
+    document.getElementById(id).textContent = (Math.round(v / 60 * 10) / 10) + ' req / sec';
+}
+
+// ── Action: clear rate limit ───────────────────────────────────────────────────
+function confirmClearLimit(ip) {
+    showDialog(
+        'Clear Rate Limit',
+        'Remove the active rate-limit window for ' + ip + '? The IP will be able to make requests again immediately.',
+        'Clear', 'primary',
+        function() {
+            frappe.call({
+                method: 'assistant_crm.ddos_monitoring.clear_ip_rate_limit',
+                args: { ip_address: ip },
+                callback: function(r) {
+                    if (r.message && r.message.status === 'success') {
+                        toast('Rate limit cleared for ' + ip, 'success');
+                        loadActiveIPs();
+                    } else {
+                        toast((r.message && r.message.message) || 'Failed', 'error');
+                    }
+                }
+            });
+        }
+    );
+}
+
+// ── Action: block IP ──────────────────────────────────────────────────────────
+function confirmBlock(ip) {
+    showDialog(
+        'Block IP Permanently',
+        'Block ' + ip + ' permanently? All requests from this IP will receive a 403. You can unblock it at any time.',
+        'Block', 'ab-block',
+        function() {
+            frappe.call({
+                method: 'assistant_crm.ddos_monitoring.block_ip',
+                args: { ip_address: ip },
+                callback: function(r) {
+                    if (r.message && r.message.status === 'success') {
+                        toast(ip + ' has been blocked', 'success');
+                        loadBlockedIPs();
+                        loadActiveIPs();
+                    } else {
+                        toast((r.message && r.message.message) || 'Failed', 'error');
+                    }
+                }
+            });
+        }
+    );
+}
+
+// ── Action: unblock IP ────────────────────────────────────────────────────────
+function confirmUnblock(ip) {
+    showDialog(
+        'Unblock IP',
+        'Remove ' + ip + ' from the permanent blacklist? The IP will be able to access the system again.',
+        'Unblock', 'ab-unblk',
+        function() {
+            frappe.call({
+                method: 'assistant_crm.ddos_monitoring.unblock_ip',
+                args: { ip_address: ip },
+                callback: function(r) {
+                    if (r.message && r.message.status === 'success') {
+                        toast(ip + ' has been unblocked', 'success');
+                        loadBlockedIPs();
+                    } else {
+                        toast((r.message && r.message.message) || 'Failed', 'error');
+                    }
+                }
+            });
+        }
+    );
+}
+
+// ── Action: clear logs ────────────────────────────────────────────────────────
+function confirmClearLogs(ip) {
+    showDialog(
+        'Clear Violation Logs',
+        'Delete all DDoS violation log entries for ' + ip + '? This cannot be undone.',
+        'Delete Logs', 'ab-block',
+        function() {
+            frappe.call({
+                method: 'assistant_crm.ddos_monitoring.clear_ip_violations',
+                args: { ip_address: ip },
+                callback: function(r) {
+                    if (r.message && r.message.status === 'success') {
+                        toast(r.message.message, 'success');
+                        loadViolations();
+                        loadSummary();
+                    } else {
+                        toast((r.message && r.message.message) || 'Failed', 'error');
+                    }
+                }
+            });
+        }
+    );
+}
+
+// ── Action: save rate limits ──────────────────────────────────────────────────
+function saveRateLimits() {
+    var inputs = document.querySelectorAll('.rl-input');
+    var changes = [];
+    inputs.forEach(function(inp) {
+        var orig = parseInt(inp.dataset.orig);
+        var cur  = parseInt(inp.value);
+        if (!isNaN(cur) && cur !== orig) {
+            changes.push({ category: inp.dataset.cat, limit_type: inp.dataset.type, value: cur });
+        }
+    });
+    if (!changes.length) { toast('No changes to save', 'info'); return; }
+
+    var pending = changes.length, errors = 0;
+    changes.forEach(function(ch) {
+        frappe.call({
+            method: 'assistant_crm.ddos_monitoring.update_rate_limit',
+            args: ch,
+            callback: function(r) {
+                pending--;
+                if (!r.message || r.message.status !== 'success') errors++;
+                if (pending === 0) {
+                    if (errors === 0) { toast(changes.length + ' rate limit(s) saved', 'success'); loadRLConfig(); }
+                    else { toast(errors + ' update(s) failed', 'error'); }
+                }
+            }
+        });
+    });
+}
+
+// ── Export ────────────────────────────────────────────────────────────────────
+function exportViolations(fmt) {
     frappe.call({
         method: 'assistant_crm.ddos_monitoring.export_violation_report',
-        args: { hours: 24, format: format },
+        args: { hours: currentRange, format: fmt },
         callback: function(r) {
             if (r.message && r.message.status === 'success') {
-                let data = r.message.data;
-                let filename = r.message.filename;
-                
-                // Create download link
-                let element = document.createElement('a');
-                element.setAttribute('href', 'data:' + (format === 'json' ? 'application/json' : 'text/csv') + ';charset=utf-8,' + encodeURIComponent(data));
-                element.setAttribute('download', filename);
-                element.style.display = 'none';
-                document.body.appendChild(element);
-                element.click();
-                document.body.removeChild(element);
-                
-                frappe.msgprint({
-                    title: 'Export Complete',
-                    message: `Violations exported to ${filename}`
-                });
+                var mime = fmt === 'json' ? 'application/json' : 'text/csv';
+                var data = fmt === 'json' ? JSON.stringify(r.message.data, null, 2) : r.message.data;
+                var a = document.createElement('a');
+                a.href = 'data:' + mime + ';charset=utf-8,' + encodeURIComponent(data);
+                a.download = r.message.filename;
+                a.click();
+                toast('Exported ' + r.message.filename, 'success');
             }
         }
     });
 }
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+    refreshAll();
+    setInterval(refreshAll, 30000);
+});
 </script>
 {% endblock %}
