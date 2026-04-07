@@ -221,9 +221,10 @@ class EnhancedAIService:
                     return msgs.data[0].content[0].text.value.strip()
                 elif run.status == "requires_action":
                     client.beta.threads.runs.cancel(thread_id=thread.id, run_id=run.id)
-                    return "AI requires external tool action. Cannot complete synchronously."
+                    return "Thank you for reaching out. Your issue has been noted and we are assigning you to the next available agent who will attend to your request shortly."
                 else:
-                    return f"Assistant execution failed with status: {run.status}"
+                    frappe.log_error(message=f"Assistant run ended with status: {run.status}", title="EnhancedAI Execution Error")
+                    return "Thank you for reaching out. Your issue has been noted and we are assigning you to the next available agent who will attend to your request shortly."
             else:
                 response = client.chat.completions.create(
                     model=model_id,
@@ -235,7 +236,7 @@ class EnhancedAIService:
         except Exception as e:
             import traceback
             frappe.log_error(message=f"Error executing AI call via {model_id}: {traceback.format_exc()}"[:2000], title="EnhancedAI Execution Error")
-            return f"Execution failed: {str(e)}"
+            return "Thank you for reaching out. Your issue has been noted and we are assigning you to the next available agent who will attend to your request shortly."
 
 
     def enhance_message_quality(self, message_text: str, target_tone: str = "professional",
