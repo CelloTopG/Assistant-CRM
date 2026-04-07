@@ -30,6 +30,19 @@ import hashlib
 import hmac
 
 
+def _normalize_iso(ts: str) -> str:
+    """Convert an ISO 8601 timestamp ('2019-06-28T14:03:04.646Z') to
+    Frappe's expected datetime string ('2019-06-28 14:03:04').
+    Returns now() on any failure."""
+    try:
+        if not ts:
+            return now()
+        ts_s = str(ts).replace("Z", "").split(".")[0].replace("T", " ")
+        return ts_s
+    except Exception:
+        return now()
+
+
 class SocialMediaPlatform(ABC):
     """
     Abstract base class for social media platform integrations.
@@ -1274,12 +1287,12 @@ class TawkToIntegration(SocialMediaPlatform):
         super().__init__("Tawk.to")
 
     def get_platform_credentials(self) -> Dict[str, str]:
-        """Get Tawk.to credentials from settings."""
+        """Get Tawk.to credentials from Social Media Settings."""
+        settings = frappe.get_single("Social Media Settings")
         return {
-            "property_id": "68ac3c63fda87419226520f9",  # WCFCB Property ID
-            "property_url": "https://erp.workers.com.zm",
-            "api_key": "",  # To be provided - API key needed for full integration
-            "webhook_secret": "e66329cfba799c070747679d0c1cf98d11699b5ed45ef47bc3c737759869fc5d3be7f59ba426654bf6f93394412aabf4"
+            "property_id": settings.tawk_to_property_id or "",
+            "api_key": settings.get_password("tawk_to_api_key") if settings.get("tawk_to_api_key") else "",
+            "webhook_secret": settings.get_password("tawk_to_webhook_secret") if settings.get("tawk_to_webhook_secret") else "",
         }
 
     def check_configuration(self) -> bool:
@@ -1366,53 +1379,34 @@ class TawkToIntegration(SocialMediaPlatform):
         return "\n".join(conversation_lines)
 
     def find_existing_conversation(self, chat_id: str) -> str:
-        """Find existing conversation by Tawk.to chat ID."""
+        """Find existing conversation by Tawk.to chat ID or ticket platform_specific_id."""
         try:
-            conversation_name = frappe.db.get_value(
+            return frappe.db.get_value(
                 "Unified Inbox Conversation",
                 {"platform_specific_id": chat_id, "platform": "Tawk.to"},
                 "name"
             )
-
-            if conversation_name:
-                print(f"DEBUG: Found existing Tawk.to conversation {conversation_name} for chatId {chat_id}")
-                return conversation_name
-            else:
-                print(f"DEBUG: No existing Tawk.to conversation found for chatId {chat_id}")
-                return None
-
         except Exception as e:
-            print(f"DEBUG: Error finding existing Tawk.to conversation: {str(e)}")
+            frappe.log_error(f"Error finding Tawk.to conversation: {str(e)}", "Tawk.to Integration")
             return None
 
     def process_real_tawkto_webhook(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
         """Process real Tawk.to webhook with official payload structure."""
         try:
             event_type = webhook_data.get("event")
-            print(f"DEBUG: Processing real Tawk.to webhook event: {event_type}")
 
             if event_type == "chat:start":
-                # Handle first message immediately
                 chat_id = webhook_data.get("chatId")
                 message = webhook_data.get("message", {})
                 visitor = webhook_data.get("visitor", {})
                 property_data = webhook_data.get("property", {})
 
                 if not chat_id:
-                    print(f"DEBUG: No chatId found in chat:start event")
                     return {"status": "error", "message": "No chatId in chat:start event"}
 
-                # Build customer name
                 customer_name = self.build_customer_name(visitor)
+                message_content = message.get("text", "") or "[Media message]"
 
-                # Get message content
-                message_content = message.get("text", "")
-                if not message_content:
-                    message_content = "[Media message]"
-
-                print(f"DEBUG: Processing chat:start for chatId {chat_id} with message: {message_content[:50]}...")
-
-                # Create new conversation for first message
                 platform_data = {
                     "conversation_id": chat_id,
                     "customer_name": customer_name,
@@ -1421,124 +1415,43 @@ class TawkToIntegration(SocialMediaPlatform):
                     "customer_phone": None,
                     "initial_message": message_content,
                     "tawk_property_id": property_data.get("id"),
-                    "tawk_property_name": property_data.get("name")
+                    "tawk_property_name": property_data.get("name"),
                 }
 
-                print(f"DEBUG: Creating new conversation for chat:start: {platform_data}")
                 return self.create_conversation_and_message(platform_data, webhook_data)
 
-            elif event_type == "chat:message":
-                # Handle in-chat messages (real Tawk.to format)
-                chat_id = webhook_data.get("chatId")
-                message = webhook_data.get("message", {})
-                visitor = webhook_data.get("visitor", {})
-                property_data = webhook_data.get("property", {})
+            elif event_type == "ticket:create":
+                # Official ticket:create payload (no chatId — tickets are independent of chats):
+                #   requester: {name, email}, ticket: {id, humanId, subject, message},
+                #   property: {id, name}, time: ISO string
+                ticket = webhook_data.get("ticket") or {}
+                requester = webhook_data.get("requester") or {}
+                property_data = webhook_data.get("property") or {}
 
-                if not chat_id or not message:
-                    print(f"DEBUG: Missing chatId or message in chat:message event")
-                    return {"status": "error", "message": "Missing chatId or message in chat:message"}
+                ticket_id = ticket.get("id")
+                if not ticket_id:
+                    return {"status": "error", "message": "Missing ticket.id in ticket:create event"}
 
-                # Determine direction from sender type
-                sender = message.get("sender", {}) or {}
-                sender_type = (sender.get("type") or "visitor").lower()  # visitor | agent
-                direction = "Inbound" if sender_type in ("visitor", "v") else "Outbound"
-
-                # Build customer name and message content
-                customer_name = self.build_customer_name(visitor)
-                message_content = message.get("text") or "[Message]"
-
-                # Find or create conversation
-                existing_conversation = self.find_existing_conversation(chat_id)
-                conversation_name = existing_conversation
-                timestamp_str = now()
-                try:
-                    # Convert milliseconds to timestamp string
-                    ts_ms = message.get("time")
-                    if ts_ms:
-                        import datetime
-                        dt = datetime.datetime.fromtimestamp(int(ts_ms) / 1000)
-                        timestamp_str = dt.strftime('%Y-%m-%d %H:%M:%S')
-                except Exception:
-                    pass
-
-                if not conversation_name:
-                    # No prior chat:start received; create conversation now and seed with this message
-                    platform_data = {
-                        "conversation_id": chat_id,
-                        "customer_name": customer_name,
-                        "customer_platform_id": chat_id,
-                        "customer_email": visitor.get("email"),
-                        "customer_phone": None,
-                        "initial_message": message_content,
-                        "tawk_property_id": property_data.get("id"),
-                        "tawk_property_name": property_data.get("name"),
-                    }
-                    created = self.create_conversation_and_message(platform_data, webhook_data)
-                    if (created or {}).get("status") == "success":
-                        conversation_name = created.get("conversation")
-                    else:
-                        return created or {"status": "error", "message": "Failed to create conversation for chat:message"}
-
-                # Create the unified inbox message for this chat event
-                if conversation_name:
-                    msg_id = message.get("id") or f"tawk:{chat_id}:{message.get('time') or ''}"
-                    message_data = {
-                        "message_id": msg_id,
-                        "content": message_content,
-                        "sender_name": customer_name,
-                        "sender_platform_id": chat_id,
-                        "timestamp": timestamp_str,
-                        "direction": direction,
-                        "message_type": "text",
-                        "metadata": message,
-                    }
-                    self.create_unified_inbox_message(conversation_name, message_data)
-                    self.update_conversation_timestamp(conversation_name, timestamp_str)
-
-                return {"status": "success", "platform": "Tawk.to", "conversation": conversation_name, "type": "chat_message"}
-
-            elif event_type in ["ticket:create", "chat:new_ticket"]:
-                # Handle new ticket event as the trigger to persist conversation/message
-                chat_id = webhook_data.get("chatId")
-                ticket = (webhook_data.get("ticket") or {})
-                visitor = (webhook_data.get("visitor") or {})
-                property_data = (webhook_data.get("property") or {})
-
-                if not chat_id:
-                    print(f"DEBUG: No chatId found in ticket:create event")
-                    return {"status": "error", "message": "No chatId in ticket:create event"}
-
-                # Build customer name and a meaningful message content for the ticket
-                customer_name = self.build_customer_name(visitor)
+                platform_specific_id = f"ticket:{ticket_id}"
+                requester_name = requester.get("name") or "Tawk.to Visitor"
+                requester_email = requester.get("email")
+                human_id = ticket.get("humanId")
                 subject = (ticket.get("subject") or "").strip()
-                number = (ticket.get("number") or ticket.get("id") or "")
-                summary = (ticket.get("message") or ticket.get("body") or "").strip()
-                base = f"[New Ticket{(' ' + str(number)) if number else ''}]"
-                details = " ".join(x for x in [subject, summary] if x).strip()
-                message_content = f"{base} {details}" if details else base
+                body = (ticket.get("message") or "").strip()
+                ticket_label = f"[Ticket #{human_id}]" if human_id else "[Ticket]"
+                message_content = f"{ticket_label} {subject}"
+                if body:
+                    message_content += f"\n{body}"
 
-                # Determine timestamp (prefer ticket timestamp if provided)
-                timestamp_str = now()
-                ts = ticket.get("createdAt") or ticket.get("time") or webhook_data.get("time")
-                try:
-                    if ts:
-                        ts_int = int(ts)
-                        if ts_int > 10**12:
-                            ts_int = ts_int // 1000  # ms -> s
-                        import datetime
-                        dt = datetime.datetime.fromtimestamp(ts_int)
-                        timestamp_str = dt.strftime('%Y-%m-%d %H:%M:%S')
-                except Exception:
-                    pass
+                timestamp_str = _normalize_iso(webhook_data.get("time"))
 
-                # Find or create conversation
-                conversation_name = self.find_existing_conversation(chat_id)
+                conversation_name = self.find_existing_conversation(platform_specific_id)
                 if not conversation_name:
                     platform_data = {
-                        "conversation_id": chat_id,
-                        "customer_name": customer_name,
-                        "customer_platform_id": chat_id,
-                        "customer_email": visitor.get("email"),
+                        "conversation_id": platform_specific_id,
+                        "customer_name": requester_name,
+                        "customer_platform_id": ticket_id,
+                        "customer_email": requester_email,
                         "customer_phone": None,
                         "initial_message": message_content,
                         "tawk_property_id": property_data.get("id"),
@@ -1546,16 +1459,15 @@ class TawkToIntegration(SocialMediaPlatform):
                     }
                     conversation_name = self.create_unified_inbox_conversation(platform_data)
 
-                # Create the inbox message and update conversation timestamp
                 if conversation_name:
-                    msg_id = ticket.get("id") or f"tawk:ticket:{chat_id}:{ts or ''}"
+                    msg_id = f"ticket:{ticket_id}"
                     message_data = {
                         "message_id": msg_id,
                         "content": message_content,
-                        "sender_name": customer_name,
-                        "sender_platform_id": chat_id,
+                        "sender_name": requester_name,
+                        "sender_platform_id": ticket_id,
                         "timestamp": timestamp_str,
-                        "direction": "Inbound",  # from visitor context
+                        "direction": "Inbound",
                         "message_type": "text",
                         "metadata": ticket,
                     }
@@ -1565,56 +1477,37 @@ class TawkToIntegration(SocialMediaPlatform):
                 return {"status": "success", "platform": "Tawk.to", "conversation": conversation_name, "type": "ticket_create"}
 
             elif event_type == "chat:end":
-                # Extract data using official Tawk.to chat:end structure
                 chat_id = webhook_data.get("chatId")
                 visitor = webhook_data.get("visitor", {})
                 property_data = webhook_data.get("property", {})
 
                 if not chat_id:
-                    print(f"DEBUG: No chatId found in chat:end event")
                     return {"status": "error", "message": "No chatId in chat:end event"}
 
-                # Build customer name
-                customer_name = self.build_customer_name(visitor)
-
-                print(f"DEBUG: Processing chat:end for chatId {chat_id} - marking conversation as completed")
-
-                # Check if conversation already exists
                 existing_conversation = self.find_existing_conversation(chat_id)
 
                 if existing_conversation:
-                    print(f"DEBUG: Found existing conversation {existing_conversation} for chatId {chat_id} - marking as completed")
-
-                    # Mark conversation as completed
-                    try:
-                        frappe.db.set_value(
-                            "Unified Inbox Conversation",
-                            existing_conversation,
-                            "status",
-                            "Resolved"
-                        )
-                        print(f"DEBUG: Marked conversation {existing_conversation} as Resolved")
-                    except Exception as e:
-                        print(f"DEBUG: Error updating conversation status: {str(e)}")
-
+                    frappe.db.set_value(
+                        "Unified Inbox Conversation",
+                        existing_conversation,
+                        "status",
+                        "Resolved",
+                    )
                     return {"status": "success", "platform": "Tawk.to", "conversation": existing_conversation, "type": "chat_ended"}
 
                 else:
-                    print(f"DEBUG: No existing conversation found for chatId {chat_id} - creating new conversation")
-
-                    # Build platform data for new conversation
+                    # chat:end arrived without a prior chat:start — create a minimal record
+                    customer_name = self.build_customer_name(visitor)
                     platform_data = {
                         "conversation_id": chat_id,
                         "customer_name": customer_name,
-                        "customer_platform_id": chat_id,  # Use chatId as unique identifier
+                        "customer_platform_id": chat_id,
                         "customer_email": visitor.get("email"),
-                        "customer_phone": None,  # Not provided in chat:start
+                        "customer_phone": None,
                         "initial_message": "Chat ended",
                         "tawk_property_id": property_data.get("id"),
-                        "tawk_property_name": property_data.get("name")
+                        "tawk_property_name": property_data.get("name"),
                     }
-
-                    print(f"DEBUG: Real Tawk.to platform data for new conversation: {platform_data}")
                     return self.create_conversation_and_message(platform_data, webhook_data)
 
 
@@ -1628,10 +1521,7 @@ class TawkToIntegration(SocialMediaPlatform):
                     messages = list(chat_obj.get("messages") or [])
 
 
-                    print(f"DEBUG: Transcript webhook received for chat_id={chat_id}; messages_count={len(messages)}; visitor={(visitor or {}).get('name')}")
-
                     if not chat_id:
-                        print("DEBUG: transcript_created event missing chat.id/chatId")
                         return {"status": "error", "message": "Missing chat id in transcript"}
 
                     # Find or create conversation
@@ -1651,24 +1541,8 @@ class TawkToIntegration(SocialMediaPlatform):
                         }
                         conversation_name = self.create_unified_inbox_conversation(platform_data)
 
-                    print(f"DEBUG: Transcript conversation resolved: {conversation_name}; ingesting {len(messages)} messages")
-
-
                     if not conversation_name:
                         return {"status": "error", "message": "Failed to resolve conversation for transcript"}
-
-                    # Helper: normalize ISO timestamps like 2024-07-03T01:02:37.780Z -> 'YYYY-MM-DD HH:MM:SS'
-                    def _normalize_iso(ts: str) -> str:
-                        try:
-                            if not ts:
-                                return now()
-                            # Keep UTC without timezone label for consistent sorting
-                            ts_s = str(ts)
-                            if "T" in ts_s:
-                                ts_s = ts_s.replace("Z", "").split(".")[0].replace("T", " ")
-                            return ts_s
-                        except Exception:
-                            return now()
 
                     # Ingest messages in chronological order
                     last_ts = None
@@ -1719,10 +1593,9 @@ class TawkToIntegration(SocialMediaPlatform):
                         }
 
                         try:
-                            created_name = self.create_unified_inbox_message(conversation_name, message_data)
-                            print(f"DEBUG: Transcript message inserted idx={idx} id={message_id} -> {created_name}")
+                            self.create_unified_inbox_message(conversation_name, message_data)
                         except Exception as ins_err:
-                            print(f"DEBUG: Transcript message insert failed idx={idx} id={message_id}: {ins_err}")
+                            frappe.log_error(f"Transcript message insert failed idx={idx} id={message_id}: {ins_err}", "Tawk.to Integration")
 
                         last_ts = timestamp_str
                         last_sender = sender_name
@@ -1743,7 +1616,7 @@ class TawkToIntegration(SocialMediaPlatform):
                             last_direction,
                         )
                     except Exception as issue_err:
-                        print(f"DEBUG: Issue update after transcript failed: {issue_err}")
+                        frappe.log_error(f"Issue update after transcript failed: {issue_err}", "Tawk.to Integration")
 
                     return {
                         "status": "success",
@@ -1754,20 +1627,15 @@ class TawkToIntegration(SocialMediaPlatform):
                     }
 
             else:
-                print(f"DEBUG: Unknown real Tawk.to event type: {event_type}")
-                return {"status": "error", "message": f"Unknown event type: {event_type}"}
+                return {"status": "info", "message": f"Event type '{event_type}' not handled"}
 
         except Exception as e:
-            print(f"DEBUG: Error processing real Tawk.to webhook: {str(e)}")
             frappe.log_error(f"Real Tawk.to webhook error: {str(e)}", "Tawk.to Integration")
             return {"status": "error", "message": str(e)}
 
     def process_legacy_test_webhook(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
         """Process legacy test webhook format for backward compatibility."""
         try:
-            print(f"DEBUG: Processing legacy Tawk.to test webhook")
-
-            # Extract message data from legacy test format
             event_type = webhook_data.get("event")
 
             if event_type == "chat:message":
@@ -1806,14 +1674,12 @@ class TawkToIntegration(SocialMediaPlatform):
                     # Get timestamp from Tawk.to message
                     timestamp_ms = message.get("time", 0)
 
-                    # Convert milliseconds to proper datetime format for Frappe
+                    # Legacy test format sends millisecond timestamps
                     if timestamp_ms:
-                        dt = datetime.datetime.fromtimestamp(timestamp_ms / 1000)  # Tawk.to uses milliseconds
+                        dt = datetime.datetime.fromtimestamp(timestamp_ms / 1000)
                         timestamp = dt.strftime('%Y-%m-%d %H:%M:%S')
-                        print(f"DEBUG: Tawk.to message timestamp: {timestamp} (from ms: {timestamp_ms})")
                     else:
                         timestamp = now()
-                        print(f"DEBUG: Using current time as fallback: {timestamp}")
 
                     message_data = {
                         "message_id": message.get("id"),
@@ -1828,39 +1694,22 @@ class TawkToIntegration(SocialMediaPlatform):
 
                     self.create_unified_inbox_message(conversation_name, message_data)
 
-                    # Note: Issue update is now handled in create_issue_for_conversation()
-                    # No need for redundant update here
-
-                    print(f"DEBUG: Processed legacy Tawk.to message from {customer_name}: {message_content[:50]}...")
-
             return {"status": "success", "platform": "Tawk.to", "format": "legacy"}
 
         except Exception as e:
-            print(f"DEBUG: Error processing legacy Tawk.to webhook: {str(e)}")
             frappe.log_error(f"Legacy Tawk.to webhook error: {str(e)}", "Tawk.to Integration")
             return {"status": "error", "message": str(e)}
 
     def create_conversation_and_message(self, platform_data: Dict[str, Any], webhook_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Create conversation and message for Tawk.to webhook."""
+        """Create conversation and first message for a Tawk.to chat:start event."""
         try:
             conversation_name = self.create_unified_inbox_conversation(platform_data)
 
             if conversation_name:
-                # Get proper timestamp from Tawk.to message
-                message = webhook_data.get("message", {})
-                timestamp_ms = message.get("time", 0)
+                # Tawk.to timestamps are ISO 8601 strings ("2019-06-28T14:03:04.646Z"),
+                # not milliseconds. Use the root-level time field from the webhook payload.
+                timestamp = _normalize_iso(webhook_data.get("time"))
 
-                # Convert milliseconds to proper datetime format for Frappe
-                if timestamp_ms:
-                    import datetime
-                    dt = datetime.datetime.fromtimestamp(timestamp_ms / 1000)  # Tawk.to uses milliseconds
-                    timestamp = dt.strftime('%Y-%m-%d %H:%M:%S')
-                    print(f"DEBUG: Tawk.to new conversation timestamp: {timestamp} (from ms: {timestamp_ms})")
-                else:
-                    timestamp = now()
-                    print(f"DEBUG: Using current time as fallback: {timestamp}")
-
-                # Create message data
                 message_data = {
                     "message_id": webhook_data.get("chatId", "unknown"),
                     "content": platform_data.get("initial_message", ""),
@@ -1869,51 +1718,51 @@ class TawkToIntegration(SocialMediaPlatform):
                     "timestamp": timestamp,
                     "direction": "Inbound",
                     "message_type": "text",
-                    "metadata": webhook_data
+                    "metadata": webhook_data,
                 }
 
                 self.create_unified_inbox_message(conversation_name, message_data)
-
-                # CRITICAL: Update conversation timestamp for proper inbox sorting
                 self.update_conversation_timestamp(conversation_name, timestamp)
-
-                print(f"DEBUG: Created conversation {conversation_name} and message for Tawk.to")
-
-                # Note: Issue update is now handled in create_issue_for_conversation()
-                # No need for redundant update here
 
                 return {"status": "success", "platform": "Tawk.to", "conversation": conversation_name}
             else:
                 return {"status": "error", "message": "Failed to create conversation"}
 
         except Exception as e:
-            print(f"DEBUG: Error creating conversation and message: {str(e)}")
             frappe.log_error(f"Tawk.to conversation creation error: {str(e)}", "Tawk.to Integration")
             return {"status": "error", "message": str(e)}
 
     def process_webhook(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Process Tawk.to webhook with automatic format detection."""
+        """Route a Tawk.to webhook payload to the correct handler.
+
+        Real Tawk.to format detection covers all four official events:
+          - chat:start / chat:end  → have chatId + visitor at root
+          - chat:transcript_created → has a 'chat' object at root
+          - ticket:create           → has 'ticket' + 'requester' at root (no chatId)
+
+        Payloads wrapped in a 'data' key are the legacy test format.
+        """
         try:
             event_type = webhook_data.get("event")
-            print(f"DEBUG: Processing Tawk.to webhook with event: {event_type}")
 
-            # Detect payload format
-            if ("chatId" in webhook_data and "visitor" in webhook_data) \
-               or (webhook_data.get("event") == "chat:transcript_created" and "chat" in webhook_data):
-                # Real Tawk.to format (includes transcript_created which uses 'chat' object)
-                print(f"DEBUG: Detected real Tawk.to webhook format")
+            is_real_format = (
+                ("chatId" in webhook_data and "visitor" in webhook_data)
+                or (event_type == "chat:transcript_created" and "chat" in webhook_data)
+                or (event_type == "ticket:create" and "ticket" in webhook_data)
+            )
+
+            if is_real_format:
                 return self.process_real_tawkto_webhook(webhook_data)
             elif "data" in webhook_data:
-                # Legacy test format
-                print(f"DEBUG: Detected legacy test webhook format")
                 return self.process_legacy_test_webhook(webhook_data)
             else:
-                # Unknown format
-                print(f"DEBUG: Unknown Tawk.to payload format: {list(webhook_data.keys())}")
+                frappe.log_error(
+                    f"Unknown Tawk.to payload format. Keys: {list(webhook_data.keys())}",
+                    "Tawk.to Integration"
+                )
                 return {"status": "error", "message": "Unknown payload format"}
 
         except Exception as e:
-            print(f"DEBUG: Error in Tawk.to webhook processing: {str(e)}")
             frappe.log_error(f"Tawk.to webhook error: {str(e)}", "Tawk.to Integration")
             return {"status": "error", "message": str(e)}
 
@@ -4290,229 +4139,105 @@ def social_media_webhook():
             return Response("Verification failed", content_type='text/plain', status=403)
 
         # Handle POST request for webhook events
-        # Get webhook data
         webhook_data = frappe.request.get_data(as_text=True)
 
-        # COMPREHENSIVE WEBHOOK LOGGING FOR DIAGNOSTICS
-        webhook_log = f"""
-DEBUG: ===== WEBHOOK EVENT RECEIVED =====
-DEBUG: Timestamp: {now()}
-DEBUG: Request method: {frappe.request.method}
-DEBUG: Request headers: {dict(frappe.request.headers)}
-DEBUG: Raw webhook data: {webhook_data}
-DEBUG: Request URL: {frappe.request.url}
-DEBUG: Request args: {frappe.request.args}
-"""
-        print(webhook_log)
-
-        # Also log to file for easier monitoring
-        try:
-            log = frappe.logger("assistant_crm.webhook")
-            log.info(webhook_log)
-        except Exception as e:
-            pass
-
         if not webhook_data:
-            print(f"DEBUG: No webhook data received - returning error")
             return {"status": "error", "message": "No webhook data received"}
 
         try:
             data = json.loads(webhook_data)
-            parsed_log = f"DEBUG: Parsed webhook data: {json.dumps(data, indent=2)}"
-            print(parsed_log)
-
-            # Log parsed data to file
-            try:
-                log = frappe.logger("assistant_crm.webhook")
-                log.info(parsed_log)
-            except:
-                pass
-
         except json.JSONDecodeError as e:
-            error_log = f"DEBUG: JSON parsing error: {str(e)}"
-            print(error_log)
+            frappe.log_error(f"Webhook JSON parse error: {str(e)}", "Social Media Webhook")
             return {"status": "error", "message": "Invalid JSON data"}
 
-        # Determine platform from webhook data or headers
         platform = frappe.request.headers.get("X-Platform") or detect_platform_from_webhook(data)
-        platform_log = f"DEBUG: Detected platform: {platform}"
-        print(platform_log)
 
-        # Log platform detection to file
-        try:
-            log = frappe.logger("assistant_crm.webhook")
-            log.info(platform_log)
-        except:
-            pass
-
-        print(f"DEBUG: Platform detection complete, continuing with processing...")
-
-        print(f"DEBUG: Platform detection complete, continuing with processing...")
-
-        print(f"DEBUG: About to validate platform and signatures...")
-
-        # Instagram: Temporarily skip signature validation (compatibility restore)
-        if platform == "Instagram":
-            print("DEBUG: Skipping Instagram signature validation (compat mode)")
-            # is_valid = validate_instagram_webhook_signature(webhook_data, frappe.request.headers)
-            # if not is_valid:
-            #     print("DEBUG: Instagram webhook signature validation failed (ignored)")
-            #     pass
-
-        # Validate Tawk.to webhook signature if it's a Tawk.to webhook
+        # Validate Tawk.to webhook signature when present.
+        # Instagram signature validation is currently in compatibility mode (disabled).
         if platform == "Tawk.to":
-            print(f"DEBUG: Validating Tawk.to webhook signature...")
-            # Use raw bytes from request for accurate signature validation
             raw_body = frappe.request.get_data()
             sig_valid = validate_tawkto_webhook_signature(raw_body, frappe.request.headers)
             if not sig_valid:
-                print(f"DEBUG: Tawk.to webhook signature validation failed - allowing webhook through (will investigate)")
-                # Allow webhook through despite signature mismatch (same as Instagram compat mode)
-                # This ensures messages are processed while we debug the signature issue
+                # Signature mismatch — allow through for now while secret is being configured.
+                # Once tawk_to_webhook_secret is set in Social Media Settings this will enforce.
+                frappe.logger("assistant_crm.webhooks").warning(
+                    "Tawk.to webhook signature validation failed — allowing through (configure "
+                    "tawk_to_webhook_secret in Social Media Settings to enforce)"
+                )
 
         if not platform:
-            print(f"DEBUG: Could not determine platform from webhook data")
             return {"status": "error", "message": "Could not determine platform"}
 
-        print(f"DEBUG: Platform validation complete, platform: {platform}")
-
-        # Get platform integration
-        print(f"DEBUG: About to get platform integration for: {platform}")
-        try:
-            platform_integration = get_platform_integration(platform)
-            print(f"DEBUG: Platform integration for {platform}: {platform_integration}")
-        except Exception as e:
-            print(f"DEBUG: Error getting platform integration: {str(e)}")
-            return {"status": "error", "message": f"Error getting platform integration: {str(e)}"}
+        platform_integration = get_platform_integration(platform)
 
         if not platform_integration:
-            print(f"DEBUG: Platform {platform} not supported")
             return {"status": "error", "message": f"Platform {platform} not supported"}
 
-        # Process webhook
-        print(f"DEBUG: Processing webhook with {platform} integration")
         try:
-            result = platform_integration.process_webhook(data)
-            print(f"DEBUG: Webhook processing result: {result}")
+            return platform_integration.process_webhook(data)
         except Exception as e:
-            print(f"DEBUG: Error in webhook processing: {str(e)}")
+            frappe.log_error(f"Webhook processing error ({platform}): {str(e)}", "Social Media Webhook")
             return {"status": "error", "message": f"Webhook processing error: {str(e)}"}
 
-        print(f"DEBUG: ===== WEBHOOK PROCESSING COMPLETE =====")
-        return result
-
     except Exception as e:
-        error_msg = f"Social media webhook error: {str(e)}"
-        print(f"DEBUG: EXCEPTION in webhook processing: {error_msg}")
-        frappe.log_error(error_msg, "Social Media Webhook Error")
+        frappe.log_error(f"Social media webhook error: {str(e)}", "Social Media Webhook Error")
         return {"status": "error", "message": "Webhook processing failed"}
 
 
 def detect_platform_from_webhook(data: Dict[str, Any]) -> Optional[str]:
-    """Detect platform from webhook data structure."""
-    print(f"DEBUG: Platform detection - analyzing webhook data structure")
+    """Detect the originating platform from a webhook payload structure."""
 
-    # WhatsApp webhook detection (enhanced)
+    # WhatsApp: entry.changes with whatsapp_business_account field, messages+contacts, or phone_number_id
     if "entry" in data and any("changes" in entry for entry in data.get("entry", [])):
         changes = data["entry"][0].get("changes", [])
-
-        # Check for WhatsApp-specific field indicators
         for change in changes:
             field = change.get("field", "")
             value = change.get("value", {})
-
-            # WhatsApp Business Account field
             if "whatsapp_business_account" in field:
-                print(f"DEBUG: Detected WhatsApp webhook via whatsapp_business_account field")
                 return "WhatsApp"
-
-            # WhatsApp messages structure
             if "messages" in value and "contacts" in value:
-                # WhatsApp webhooks typically have both messages and contacts arrays
-                print(f"DEBUG: Detected WhatsApp webhook via messages+contacts structure")
                 return "WhatsApp"
-
-            # WhatsApp metadata structure
             if "metadata" in value and value.get("metadata", {}).get("phone_number_id"):
-                print(f"DEBUG: Detected WhatsApp webhook via phone_number_id in metadata")
                 return "WhatsApp"
 
-    # Instagram webhook detection (primary method - most reliable)
+    # Instagram: object == "instagram"
     if data.get("object") == "instagram":
-        print(f"DEBUG: Detected Instagram webhook via object type")
         return "Instagram"
 
-    # Facebook/Instagram webhook detection (both use "messaging" structure)
+    # Facebook / Instagram: entry.messaging structure
     if "entry" in data and any("messaging" in entry for entry in data.get("entry", [])):
-        print(f"DEBUG: Detected Facebook/Instagram webhook structure")
-
-        # Check object type first (most reliable for Facebook)
         if data.get("object") == "page":
-            print(f"DEBUG: Object type 'page' - this is Facebook")
             return "Facebook"
 
-        # Analyze the messaging structure to differentiate Instagram from Facebook
         entry = data["entry"][0]
         messaging = entry.get("messaging", [])
-
         if messaging:
             message_event = messaging[0]
-            print(f"DEBUG: Message event structure: {json.dumps(message_event, indent=2)}")
-
-            # Check for Instagram-specific indicators
-            # Instagram messages often have different recipient/sender ID patterns
-            # Instagram Business accounts typically have longer numeric IDs
             sender_id = message_event.get("sender", {}).get("id", "")
             recipient_id = message_event.get("recipient", {}).get("id", "")
-
-            print(f"DEBUG: Sender ID: {sender_id}, Recipient ID: {recipient_id}")
-
-            # More reliable Instagram detection:
             # Instagram Business account IDs are typically 17+ digits
-            # Facebook page IDs are usually 15-16 digits
             if len(str(sender_id)) >= 17 and len(str(recipient_id)) >= 17:
-                print(f"DEBUG: Very long IDs (17+ digits) detected - likely Instagram")
                 return "Instagram"
-
-            # Check for Instagram-specific fields in the message structure
             message = message_event.get("message", {})
             if message:
-                # Instagram messages may have specific attachment types or metadata
-                attachments = message.get("attachments", [])
-                if attachments:
-                    for attachment in attachments:
-                        if attachment.get("type") in ["image", "video", "audio"]:
-                            # Instagram commonly uses these attachment types
-                            print(f"DEBUG: Instagram-style attachment detected")
-                            return "Instagram"
+                for attachment in message.get("attachments", []):
+                    if attachment.get("type") in ["image", "video", "audio"]:
+                        return "Instagram"
+        return "Facebook"
 
-            # Default to Facebook for messaging structure
-            print(f"DEBUG: Defaulting to Facebook for messaging structure")
-            return "Facebook"
-
-    # Telegram webhook detection
+    # Telegram: message.chat present
     if "message" in data and "chat" in data.get("message", {}):
-        print(f"DEBUG: Detected Telegram webhook")
         return "Telegram"
 
-    # Twitter webhook detection
+    # Twitter
     if any(k in data for k in ("direct_message_events", "dm_events", "for_user_id")):
-        print(f"DEBUG: Detected Twitter webhook")
         return "Twitter"
 
-    # Tawk.to webhook detection (official events + legacy test support)
-    if "event" in data:
-        event_type = data.get("event")
-        # Official Tawk.to events
-        if event_type in ["chat:start", "chat:end", "chat:transcript_created", "ticket:create"]:
-            print(f"DEBUG: Detected Tawk.to webhook (official event: {event_type})")
-            return "Tawk.to"
-        # Legacy test event support (backward compatibility)
-        elif event_type == "chat:message":
-            print(f"DEBUG: Detected Tawk.to webhook (legacy test event: {event_type})")
-            return "Tawk.to"
+    # Tawk.to: official events and legacy test event
+    event_type = data.get("event")
+    if event_type in ("chat:start", "chat:end", "chat:transcript_created", "ticket:create", "chat:message"):
+        return "Tawk.to"
 
-    print(f"DEBUG: Could not detect platform from webhook structure")
     return None
 
 
@@ -4561,42 +4286,43 @@ def validate_instagram_webhook_signature(webhook_data: str, headers: Dict[str, s
 
 
 def validate_tawkto_webhook_signature(raw_body: bytes, headers: Dict[str, str]) -> bool:
-    """Validate Tawk.to webhook signature using the secret key and raw request bytes."""
+    """Validate Tawk.to webhook signature using the secret key and raw request bytes.
+
+    Per Tawk.to docs: signature is HMAC-SHA1 of the raw request body using the
+    webhook secret, delivered in the X-Tawk-Signature header.
+    """
     try:
-        # Get the signature from headers
         signature = headers.get("X-Tawk-Signature") or headers.get("x-tawk-signature")
 
         if not signature:
-            print(f"DEBUG: No Tawk.to signature found in headers")
-            return True  # Allow webhooks without signature for now
+            # Tawk.to only sends the header when a secret is configured on their dashboard.
+            # Allow through if no signature is present (secret not yet configured).
+            return True
 
-        # Get the webhook secret
-        tawkto_secret = "e66329cfba799c070747679d0c1cf98d11699b5ed45ef47bc3c737759869fc5d3be7f59ba426654bf6f93394412aabf4"
+        # Load webhook secret from Social Media Settings (Password field, stored encrypted)
+        settings = frappe.get_single("Social Media Settings")
+        tawkto_secret = settings.get_password("tawk_to_webhook_secret") if settings.get("tawk_to_webhook_secret") else None
 
-        # Calculate expected signature using SHA1 on RAW BYTES (Tawk.to official algorithm)
-        # Per Tawk.to docs: signature is HMAC-SHA1 of the raw request body using the webhook secret
-        import hmac
-        # Ensure we're working with raw bytes (not a decoded string)
-        body_bytes = raw_body if isinstance(raw_body, bytes) else raw_body.encode('utf-8')
-        expected_signature = hmac.new(
-            tawkto_secret.encode('utf-8'),
+        if not tawkto_secret:
+            frappe.logger("assistant_crm.webhooks").warning(
+                "Tawk.to webhook signature received but tawk_to_webhook_secret is not configured "
+                "in Social Media Settings — allowing through"
+            )
+            return True
+
+        import hmac as _hmac
+        body_bytes = raw_body if isinstance(raw_body, bytes) else raw_body.encode("utf-8")
+        expected_signature = _hmac.new(
+            tawkto_secret.encode("utf-8"),
             body_bytes,
-            hashlib.sha1
+            hashlib.sha1,
         ).hexdigest()
 
-        # Compare signatures
-        is_valid = hmac.compare_digest(signature, expected_signature)
-        print(f"DEBUG: Tawk.to signature validation: {'PASSED' if is_valid else 'FAILED'}")
-        print(f"DEBUG: Received signature: {signature}")
-        print(f"DEBUG: Expected signature: {expected_signature}")
-        print(f"DEBUG: Raw body length: {len(body_bytes)} bytes")
-        print(f"DEBUG: Raw body first 200 bytes repr: {repr(body_bytes[:200])}")
-
-        return is_valid
+        return _hmac.compare_digest(signature, expected_signature)
 
     except Exception as e:
-        print(f"DEBUG: Error validating Tawk.to signature: {str(e)}")
-        return True  # Allow on error for now
+        frappe.log_error(f"Error validating Tawk.to signature: {str(e)}", "Tawk.to Webhook")
+        return True  # Fail open to avoid dropping legitimate webhooks during transient errors
 
 
 @frappe.whitelist()
@@ -5328,11 +5054,19 @@ def google_oauth_callback(code=None, error=None, error_description=None, **kwarg
         except Exception:
             client_secret = settings.get("youtube_client_secret")
 
+        oauth_callback_path = "/api/method/assistant_crm.api.social_media_ports.google_oauth_callback"
+        stored_redirect_uri = (settings.get("youtube_redirect_uri") or "").strip()
+        if stored_redirect_uri:
+            redirect_uri = stored_redirect_uri
+        else:
+            from assistant_crm.utils import get_public_url
+            redirect_uri = get_public_url() + oauth_callback_path
+
         payload = {
             "code": code,
             "client_id": client_id,
             "client_secret": client_secret,
-            "redirect_uri": "https://clone.exn1.uk/api/method/assistant_crm.api.social_media_ports.google_oauth_callback",
+            "redirect_uri": redirect_uri,
             "grant_type": "authorization_code"
         }
 

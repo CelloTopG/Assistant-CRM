@@ -92,6 +92,7 @@
         "youtube_refresh_token",
         "youtube_webhook_secret",
         "youtube_api_version",
+        "youtube_redirect_uri",
         "youtube_last_polled",
         "telegram_section",
         "telegram_enabled",
@@ -102,6 +103,7 @@
         "tawk_to_enabled",
         "tawk_to_api_key",
         "tawk_to_property_id",
+        "tawk_to_webhook_secret",
         "column_break_tawk_to",
         "tawk_to_sync_interval_minutes",
         "tawk_to_webhook_url",
@@ -571,6 +573,12 @@
             "label": "YouTube API Version"
         },
         {
+            "fieldname": "youtube_redirect_uri",
+            "fieldtype": "Data",
+            "label": "YouTube OAuth Redirect URI",
+            "description": "The redirect URI registered in Google Cloud Console. Defaults to your site origin + the OAuth callback path. Edit this only if you need to override it (e.g. behind a proxy or custom domain)."
+        },
+        {
             "fieldname": "youtube_last_polled",
             "fieldtype": "Datetime",
             "label": "YouTube Last Polled",
@@ -622,6 +630,12 @@
             "fieldname": "tawk_to_property_id",
             "fieldtype": "Data",
             "label": "Tawk.to Property ID"
+        },
+        {
+            "fieldname": "tawk_to_webhook_secret",
+            "fieldtype": "Password",
+            "label": "Tawk.to Webhook Secret",
+            "description": "Secret key used to verify incoming Tawk.to webhook signatures (HMAC-SHA1)"
         },
         {
             "fieldname": "column_break_tawk_to",

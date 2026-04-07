@@ -1,5 +1,11 @@
 frappe.ui.form.on('Social Media Settings', {
   refresh: function(frm) {
+    // Auto-populate the redirect URI with a sensible default if it's empty
+    if (!frm.doc.youtube_redirect_uri) {
+      const defaultUri = window.location.origin + '/api/method/assistant_crm.api.social_media_ports.google_oauth_callback';
+      frm.set_value('youtube_redirect_uri', defaultUri);
+    }
+
     if (frm.doc.facebook_enabled) {
       frm.add_custom_button('Exchange FB Long-Lived Token', function() {
         frappe.prompt([
@@ -61,17 +67,19 @@ frappe.ui.form.on('Social Media Settings', {
     }
     if (frm.doc.youtube_enabled || frm.doc.youtube_client_id) {
       frm.add_custom_button('Authorize YouTube API', function() {
-        // Build the correct OAuth URL seamlessly!
-        const clientId = frm.doc.youtube_client_id ? frm.doc.youtube_client_id.trim() : '1000464698506-h645ofko1odvni48meu7lqoueh476sd5.apps.googleusercontent.com';
-        
-        // Use the exact origin of the Frappe site 
-        // e.g., https://clone.exn1.uk
-        const redirectUri = window.location.origin + '/api/method/assistant_crm.api.social_media_ports.google_oauth_callback';
+        const clientId = frm.doc.youtube_client_id ? frm.doc.youtube_client_id.trim() : '';
+        if (!clientId) {
+          frappe.msgprint({ title: 'Missing Client ID', message: 'Please enter the YouTube OAuth Client ID before authorizing.', indicator: 'orange' });
+          return;
+        }
+
+        // Use the saved redirect URI field, falling back to the current origin
+        const redirectUri = (frm.doc.youtube_redirect_uri || '').trim() ||
+          (window.location.origin + '/api/method/assistant_crm.api.social_media_ports.google_oauth_callback');
+
         const scope = 'https://www.googleapis.com/auth/youtube.force-ssl';
-        
         const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent`;
-        
-        // Open authorization flow in a new tab
+
         window.open(authUrl, '_blank');
       }, __('YouTube'));
     }

@@ -62,7 +62,8 @@ class SocialMediaSettings(Document):
         elif platform == "Tawk.to" and self.tawk_to_enabled:
             credentials = {
                 "api_key": self.get_password("tawk_to_api_key"),
-                "property_id": self.tawk_to_property_id
+                "property_id": self.tawk_to_property_id,
+                "webhook_secret": self.get_password("tawk_to_webhook_secret") if self.get("tawk_to_webhook_secret") else None,
             }
         
         return credentials

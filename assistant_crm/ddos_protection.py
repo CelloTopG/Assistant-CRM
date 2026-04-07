@@ -8,24 +8,25 @@ import frappe
 import redis
 import time
 import logging
-from frappe import _, get_request_header
+from frappe import _
 from werkzeug.exceptions import TooManyRequests, Forbidden
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 logger = logging.getLogger("assistant_crm.ddos_protection")
 
 # Configuration - Rate limits per route category
+# Only covers assistant_crm integration routes (Tawk.to, Facebook, Instagram, Telegram, WhatsApp).
+# System-wide Frappe auth and report endpoints are intentionally excluded — protecting those
+# here causes false-positive bot_detected noise from API clients and internal tooling.
 RATE_LIMITS = {
     "crm_routes": {
         "anonymous": 600,        # 10 req/sec per IP (600 per minute)
         "authenticated": 1800,   # 30 req/sec per user (1800 per minute)
     },
-    "auth_routes": {
-        "anonymous": 60,         # 1 req/sec per IP for login (60 per minute)
-    },
-    "report_routes": {
-        "authenticated": 120,    # 2 req/sec per user for reports (120 per minute)
+    "integration_routes": {
+        "anonymous": 120,        # 2 req/sec per IP for integration API endpoints
+        "authenticated": 300,    # 5 req/sec per user for integration API endpoints
     },
 }
 
@@ -34,8 +35,12 @@ WEBHOOK_PATH_PREFIXES = [
     "/api/omnichannel/webhook/",
 ]
 
-# Direct API method paths for webhook handlers (matched as substrings)
+# Direct API method paths for webhook handlers (matched as substrings).
+# These endpoints receive inbound POST calls from external platforms (Meta, Tawk.to, Telegram).
+# Rate-limiting them causes platforms to retry, burn through their retry budgets, and eventually
+# disable the webhook subscription. They authenticate via HMAC signatures instead.
 WEBHOOK_METHOD_PATTERNS = [
+    "assistant_crm.api.tawk_to_integration.tawk_to_webhook",
     "assistant_crm.api.social_media_ports.social_media_webhook",
     "assistant_crm.api.realtime_webhooks.whatsapp_webhook",
     "assistant_crm.api.realtime_webhooks.facebook_webhook",
@@ -43,21 +48,35 @@ WEBHOOK_METHOD_PATTERNS = [
     "assistant_crm.api.realtime_webhooks.youtube_webhook",
 ]
 
-# CRM endpoints to protect
+# Protected routes — scoped strictly to the assistant_crm app and its five integrations:
+# Tawk.to, Facebook, Instagram, Telegram, WhatsApp.
+#
+# System-wide Frappe routes (frappe.auth.*, frappe.client.*, frappe.report) are deliberately
+# NOT included. Protecting them here generates false-positive bot_detected noise because
+# API clients, health checks, and internal services don't send browser headers.
+# Frappe already rate-limits auth endpoints natively via its own mechanisms.
 PROTECTED_ROUTES = {
+    # Integration-specific API endpoints for the five connected platforms.
+    # MUST be checked before crm_routes: these paths all begin with
+    # /api/method/assistant_crm.api.*, which is a superset of the shorter
+    # /api/method/assistant_crm prefix in crm_routes. Checking the more-specific
+    # entries first ensures the tighter integration limits (120/300) apply.
+    "integration_routes": [
+        "/api/method/assistant_crm.api.tawk_to_integration",
+        "/api/method/assistant_crm.api.social_media_ports",
+        "/api/method/assistant_crm.api.realtime_webhooks",
+        "/api/method/assistant_crm.api.make_com_webhook",
+        "/api/resource/Omnichannel Conversation",
+        "/api/resource/Omnichannel Message",
+        "/api/resource/Unified Inbox",
+    ],
+    # Core CRM resource & method APIs — checked after integration_routes so the
+    # shorter /api/method/assistant_crm prefix does not shadow the entries above.
     "crm_routes": [
         "/api/resource/assistant_crm",
         "/api/method/assistant_crm",
         "/api/resource/conversation",
         "/api/method/conversation",
-    ],
-    "auth_routes": [
-        "/api/method/frappe.auth.login",
-        "/api/method/frappe.auth.signup",
-    ],
-    "report_routes": [
-        "/api/method/frappe.client.get_list",
-        "/api/method/frappe.report",
     ],
 }
 
@@ -277,14 +296,10 @@ class DDoSProtectionMiddleware:
         if any(m in path for m in WEBHOOK_METHOD_PATTERNS):
             return
 
-        # Extract client IP early so we can check the permanent blacklist before route matching
-        early_ip = (
-            get_request_header("X-Forwarded-For")
-            or frappe.request.remote_addr
-            or "unknown"
-        )
-        if "," in early_ip:
-            early_ip = early_ip.split(",")[0].strip()
+        # Use remote_addr, which Werkzeug's ProxyFix(x_for=1) has already resolved
+        # correctly from X-Forwarded-For. Never read the raw X-Forwarded-For header
+        # here — its leftmost entry is attacker-controlled and trivially spoofable.
+        early_ip = frappe.request.remote_addr or "unknown"
 
         # Permanent IP blacklist — applies to all routes
         if self.rate_limiter.redis_conn:
@@ -356,7 +371,7 @@ class DDoSProtectionMiddleware:
                 "authenticated" if is_authenticated else "anonymous", 600
             )
 
-        is_allowed, remaining, reset_after = self.rate_limiter.is_allowed(
+        is_allowed, _, reset_after = self.rate_limiter.is_allowed(
             identifier, limit
         )
 
@@ -387,10 +402,19 @@ class DDoSProtectionMiddleware:
                 logger.debug(f"Behavior tracking error: {str(e)}")
 
     def _log_violation(self, identifier, user, ip, path, violation_type, details):
-        """Log DDoS protection violations to Frappe error log and optional database"""
+        """Log DDoS protection violations.
+
+        bot_detected violations are written only to the application logger (log file).
+        They are informational — the request is not blocked — and writing them to
+        frappe.log_error() floods the UI Error Log with noise that buries real errors.
+
+        rate_limit_exceeded violations are written to both the application logger AND
+        frappe.log_error() because they represent an active block that an operator
+        may need to investigate or clear.
+        """
         try:
             log_entry = {
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "identifier": identifier,
                 "user": user or "anonymous",
                 "ip": ip,
@@ -399,17 +423,20 @@ class DDoSProtectionMiddleware:
                 "details": details,
             }
 
-            # Log to Frappe's error logger in JSON format (easy to parse)
+            # Always write to the application log file (not visible in UI Error Log)
             logger.warning(f"DDOS_VIOLATION {json.dumps(log_entry)}")
 
-            # Also log to Frappe's error log for UI visibility
-            try:
-                frappe.log_error(
-                    title=f"DDoS: {violation_type}",
-                    message=json.dumps(log_entry, indent=2),
-                )
-            except Exception as e:
-                logger.debug(f"Could not log to error log: {str(e)}")
+            # Only write to the UI Error Log for actual blocks (rate_limit_exceeded).
+            # bot_detected is a passive signal — it never blocks the request — so
+            # surfacing it in the Error Log creates thousands of redundant entries.
+            if violation_type == "rate_limit_exceeded":
+                try:
+                    frappe.log_error(
+                        title=f"DDoS: {violation_type}",
+                        message=json.dumps(log_entry, indent=2),
+                    )
+                except Exception as e:
+                    logger.debug(f"Could not log to error log: {str(e)}")
 
         except Exception as e:
             logger.error(f"Violation logging failed: {str(e)}")

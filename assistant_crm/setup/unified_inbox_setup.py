@@ -90,8 +90,8 @@ def create_default_settings():
         settings.ai_model_preference = "WorkCom"
         
         # Tawk.to Settings in Social Media Settings
-        sm_settings.tawk_to_api_key = "47585bce62f84437dace4a6ed63ee14b1ce2a6dd"
-        sm_settings.tawk_to_property_id = "68ac3c63fda87419226520f9"
+        # Credentials (api_key, property_id, webhook_secret) must be configured manually
+        # in Social Media Settings after installation — never hardcode them here.
         sm_settings.tawk_to_enabled = 1
         sm_settings.tawk_to_sync_interval_minutes = 5
         sm_settings.bypass_ai_for_tawk_to = 1
