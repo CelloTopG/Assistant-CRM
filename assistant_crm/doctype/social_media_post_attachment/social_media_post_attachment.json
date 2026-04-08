@@ -13,7 +13,7 @@
     "fields": [
         {
             "fieldname": "attachment",
-            "fieldtype": "Attach Image",
+            "fieldtype": "Attach",
             "in_list_view": 1,
             "label": "Image / Video",
             "reqd": 1

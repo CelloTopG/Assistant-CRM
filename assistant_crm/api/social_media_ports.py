@@ -3365,6 +3365,187 @@ class YouTubeIntegration(SocialMediaPlatform):
             frappe.log_error(f"YouTube send error: {str(e)}", "YouTube Integration")
             return False
 
+    def publish_post(self, content: str, media_urls: Optional[List[str]] = None) -> Dict[str, Any]:
+        """Upload a video to the configured YouTube channel.
+
+        YouTube does not support text-only posts via the public Data API.
+        A video file must be included in media_urls (MP4, MOV, AVI, MKV, WEBM, FLV, WMV, M4V).
+
+        The first line of ``content`` becomes the video title (max 100 chars).
+        The full ``content`` is used as the video description (max 5000 chars).
+        All uploaded videos are set to public visibility by default.
+
+        Requires an OAuth 2.0 access token with the ``youtube.upload`` scope.
+        The token is auto-refreshed if the initial request returns 401/403.
+
+        Returns dict with keys: success, post_id, post_url, error.
+        """
+        VIDEO_EXTENSIONS = {".mp4", ".mov", ".avi", ".mkv", ".webm", ".flv", ".wmv", ".m4v"}
+
+        # Resolve access token (refresh if needed)
+        access_token = (self.credentials.get("access_token") or "").strip()
+        if not access_token:
+            access_token = self._refresh_access_token() or ""
+        if not access_token:
+            msg = (
+                "YouTube OAuth access token is not configured. "
+                "Set youtube_access_token (with youtube.upload scope) in Social Media Settings."
+            )
+            frappe.log_error(title="YouTube publish_post: missing access token", message=msg)
+            return {"success": False, "error": msg}
+
+        # Locate the first video URL from the provided media attachments
+        video_url = None
+        for url in (media_urls or []):
+            clean = url.split("?")[0].lower()
+            if any(clean.endswith(ext) for ext in VIDEO_EXTENSIONS):
+                video_url = url
+                break
+
+        if not video_url:
+            msg = (
+                "YouTube requires a video file to publish. "
+                "Attach a video (MP4, MOV, AVI, etc.) to this post and try again. "
+                f"Received media_urls: {media_urls or []}"
+            )
+            frappe.log_error(title="YouTube publish_post: no video attachment", message=msg)
+            return {"success": False, "error": "YouTube requires a video file to publish. Attach a video (MP4, MOV, AVI, etc.) to this post and try again."}
+
+        # Derive title (first non-blank line) and description from content
+        lines = [ln for ln in (content or "").split("\n") if ln.strip()]
+        title = (lines[0].strip()[:100]) if lines else "New Post"
+        description = (content or "")[:5000]
+
+        # Map video extension → MIME type
+        MIME_TYPES = {
+            ".mp4": "video/mp4", ".mov": "video/quicktime", ".avi": "video/x-msvideo",
+            ".mkv": "video/x-matroska", ".webm": "video/webm", ".flv": "video/x-flv",
+            ".wmv": "video/x-ms-wmv", ".m4v": "video/x-m4v",
+        }
+
+        import os
+        from urllib.parse import urlparse, unquote
+
+        parsed_path = unquote(urlparse(video_url).path)
+        ext = os.path.splitext(parsed_path)[1].lower()
+        content_type = MIME_TYPES.get(ext, "video/mp4")
+
+        # Prefer reading directly from the local filesystem to avoid making an
+        # HTTPS request back to a server that may only speak plain HTTP on its
+        # internal port (which causes SSL: WRONG_VERSION_NUMBER errors).
+        video_bytes = None
+        try:
+            site_path = frappe.get_site_path()
+            if parsed_path.startswith("/private/files/"):
+                local_path = os.path.join(site_path, "private", "files", parsed_path[len("/private/files/"):])
+            elif parsed_path.startswith("/files/"):
+                local_path = os.path.join(site_path, "public", "files", parsed_path[len("/files/"):])
+            else:
+                local_path = None
+
+            if local_path and os.path.isfile(local_path):
+                with open(local_path, "rb") as fh:
+                    video_bytes = fh.read()
+        except Exception:
+            pass  # Fall through to HTTP download
+
+        # HTTP fallback (for externally hosted files)
+        if video_bytes is None:
+            try:
+                dl_resp = requests.get(video_url, timeout=120, stream=False)
+                if dl_resp.status_code != 200:
+                    return {
+                        "success": False,
+                        "error": f"Could not download video (HTTP {dl_resp.status_code}): {video_url}"
+                    }
+                video_bytes = dl_resp.content
+                ct = dl_resp.headers.get("Content-Type", "").split(";")[0].strip()
+                if ct.startswith("video/"):
+                    content_type = ct
+            except Exception as e:
+                frappe.log_error(title="YouTube publish_post: video download error", message=frappe.get_traceback())
+                return {"success": False, "error": f"Failed to read video file: {str(e)}"}
+
+        if not video_bytes:
+            return {"success": False, "error": f"Video file is empty or could not be read: {video_url}"}
+
+        video_metadata = {
+            "snippet": {
+                "title": title,
+                "description": description,
+                "categoryId": "22",  # People & Blogs
+            },
+            "status": {
+                "privacyStatus": "public",
+            },
+        }
+
+        upload_endpoint = "https://www.googleapis.com/upload/youtube/v3/videos"
+        upload_params = {"uploadType": "resumable", "part": "snippet,status"}
+
+        def _initiate_upload(token: str):
+            """Send the resumable upload initiation request and return (resp, location_url)."""
+            init_headers = {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json; charset=UTF-8",
+                "X-Upload-Content-Type": content_type,
+                "X-Upload-Content-Length": str(len(video_bytes)),
+            }
+            resp = requests.post(
+                upload_endpoint,
+                headers=init_headers,
+                params=upload_params,
+                json=video_metadata,
+                timeout=30,
+            )
+            return resp, resp.headers.get("Location")
+
+        try:
+            init_resp, upload_url = _initiate_upload(access_token)
+
+            # Auto-refresh on auth failure and retry once
+            if init_resp.status_code in (401, 403):
+                new_token = self._refresh_access_token()
+                if new_token:
+                    access_token = new_token
+                    init_resp, upload_url = _initiate_upload(new_token)
+
+            if init_resp.status_code not in (200, 201) or not upload_url:
+                error_msg = (init_resp.json() or {}).get("error", {}).get("message") or init_resp.text[:300]
+                frappe.log_error(
+                    title="YouTube publish_post: resumable upload initiation failed",
+                    message=f"status={init_resp.status_code} error={error_msg}"
+                )
+                return {"success": False, "error": f"YouTube upload initiation failed: {error_msg}"}
+
+            # Upload the video bytes to the session URI
+            upload_headers = {
+                "Content-Type": content_type,
+                "Content-Length": str(len(video_bytes)),
+            }
+            upload_resp = requests.put(
+                upload_url,
+                headers=upload_headers,
+                data=video_bytes,
+                timeout=300,
+            )
+
+            if upload_resp.status_code in (200, 201):
+                video_id = (upload_resp.json() or {}).get("id", "")
+                post_url = f"https://www.youtube.com/watch?v={video_id}" if video_id else ""
+                return {"success": True, "post_id": video_id, "post_url": post_url}
+            else:
+                error_msg = (upload_resp.json() or {}).get("error", {}).get("message") or upload_resp.text[:300]
+                frappe.log_error(
+                    title="YouTube publish_post: video upload failed",
+                    message=f"status={upload_resp.status_code} error={error_msg}"
+                )
+                return {"success": False, "error": f"YouTube video upload failed: {error_msg}"}
+
+        except Exception:
+            frappe.log_error(title="YouTube publish_post: exception", message=frappe.get_traceback())
+            return {"success": False, "error": "Unhandled exception during YouTube upload. See error log."}
+
     def process_webhook(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
         """Process YouTube webhook notifications.
 

@@ -21,7 +21,7 @@
             "fieldtype": "Select",
             "in_list_view": 1,
             "label": "Platform",
-            "options": "Facebook\nInstagram\nTwitter\nLinkedIn",
+            "options": "Facebook\nInstagram\nYouTube",
             "reqd": 1
         },
         {

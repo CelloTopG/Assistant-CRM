@@ -280,15 +280,13 @@ def _get_adapter(platform_name: str) -> Optional[object]:
     from assistant_crm.api.social_media_ports import (
         FacebookIntegration,
         InstagramIntegration,
-        TwitterIntegration,
-        LinkedInIntegration,
+        YouTubeIntegration,
     )
 
     registry = {
         "Facebook": FacebookIntegration,
         "Instagram": InstagramIntegration,
-        "Twitter": TwitterIntegration,
-        "LinkedIn": LinkedInIntegration,
+        "YouTube": YouTubeIntegration,
     }
 
     cls = registry.get(platform_name)
