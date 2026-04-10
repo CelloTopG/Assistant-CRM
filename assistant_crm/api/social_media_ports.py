@@ -1027,48 +1027,158 @@ class FacebookIntegration(SocialMediaPlatform):
             return {"success": False, "error": "Facebook page_id is not configured."}
 
         base = f"https://graph.facebook.com/{api_ver}"
-        params_base = {"access_token": token}
-        # Optional: compute appsecret_proof for additional request validation
-        try:
-            app_secret = (self.credentials.get("app_secret") or "").strip()
-            if app_secret and token:
-                import hmac as _hmac
-                appsecret_proof = _hmac.new(
-                    app_secret.encode("utf-8"), token.encode("utf-8"), hashlib.sha256
-                ).hexdigest()
-                params_base["appsecret_proof"] = appsecret_proof
-        except Exception:
-            pass  # appsecret_proof is optional — proceed without it
+
+        def _make_params(tok: str) -> dict:
+            """Build params_base with access_token and optional appsecret_proof."""
+            p = {"access_token": tok}
+            try:
+                app_secret = (self.credentials.get("app_secret") or "").strip()
+                if app_secret and tok:
+                    import hmac as _hmac
+                    p["appsecret_proof"] = _hmac.new(
+                        app_secret.encode("utf-8"), tok.encode("utf-8"), hashlib.sha256
+                    ).hexdigest()
+            except Exception:
+                pass
+            return p
+
+        def _exchange_for_page_token(user_token: str) -> Optional[str]:
+            """Exchange a User Access Token for a Page Access Token using page_id."""
+            try:
+                ex_resp = requests.get(
+                    f"{base}/{page_id}",
+                    params={"fields": "access_token", "access_token": user_token},
+                    timeout=15,
+                )
+                if ex_resp.status_code == 200:
+                    page_token = (ex_resp.json() or {}).get("access_token", "").strip()
+                    if page_token:
+                        # Persist so future calls use the Page token directly
+                        try:
+                            frappe.get_single("Social Media Settings").db_set(
+                                "facebook_page_access_token", page_token
+                            )
+                        except Exception:
+                            pass
+                        return page_token
+            except Exception:
+                pass
+            return None
+
+        params_base = _make_params(token)
+
+        _video_exts = (".mp4", ".mov", ".avi", ".mkv", ".wmv", ".m4v")
+
+        def _is_video(url: str) -> bool:
+            return any(url.lower().split("?")[0].endswith(ext) for ext in _video_exts)
 
         try:
-            # --- Upload each image as an unpublished photo ---
-            attached_media = []
-            if media_urls:
-                for url in media_urls:
-                    if not url:
-                        continue
+            valid_urls = [u for u in (media_urls or []) if u]
+            video_urls = [u for u in valid_urls if _is_video(u)]
+            image_urls = [u for u in valid_urls if not _is_video(u)]
 
-                    photo_id = self._upload_photo_to_facebook(
-                        base, page_id, params_base, url
+            # --- Video post: Facebook requires /{page_id}/videos, not /photos ---
+            if video_urls:
+                # Publish the first video as a native video post.
+                # Facebook does not support multi-video carousels in a single post.
+                video_url = video_urls[0]
+                video_params = dict(params_base)
+                video_params["description"] = content
+                video_params["published"] = "true"
+
+                local_path = None
+                try:
+                    from assistant_crm.api.social_media_publisher import _resolve_file_path
+                    local_path = _resolve_file_path(video_url)
+                except Exception:
+                    pass
+
+                import os as _os
+                import mimetypes as _mimetypes
+                if local_path and _os.path.isfile(local_path):
+                    mime = _mimetypes.guess_type(local_path)[0] or "video/mp4"
+                    try:
+                        with open(local_path, "rb") as fh:
+                            resp = requests.post(
+                                f"{base}/{page_id}/videos",
+                                params=video_params,
+                                files={"source": (_os.path.basename(local_path), fh, mime)},
+                                timeout=300,
+                            )
+                    except Exception as e:
+                        frappe.log_error(title="Facebook publish_post: video upload exception", message=str(e))
+                        return {"success": False, "error": str(e)}
+                else:
+                    video_params["file_url"] = video_url
+                    resp = requests.post(f"{base}/{page_id}/videos", params=video_params, timeout=120)
+
+                # If 403, try exchanging User token → Page token and retry
+                if resp.status_code == 403:
+                    page_token = _exchange_for_page_token(token)
+                    if page_token:
+                        video_params = dict(_make_params(page_token))
+                        video_params["description"] = content
+                        video_params["published"] = "true"
+                        if local_path and _os.path.isfile(local_path):
+                            try:
+                                with open(local_path, "rb") as fh:
+                                    resp = requests.post(
+                                        f"{base}/{page_id}/videos",
+                                        params=video_params,
+                                        files={"source": (_os.path.basename(local_path), fh, mime)},
+                                        timeout=300,
+                                    )
+                            except Exception as e:
+                                return {"success": False, "error": str(e)}
+                        else:
+                            video_params["file_url"] = video_url
+                            resp = requests.post(f"{base}/{page_id}/videos", params=video_params, timeout=120)
+
+                if resp.status_code == 200:
+                    post_id = (resp.json() or {}).get("id", "")
+                    post_url = f"https://www.facebook.com/{page_id}/videos/{post_id}/" if post_id else ""
+                    return {"success": True, "post_id": post_id, "post_url": post_url}
+                else:
+                    error_data = resp.json() if resp.content else {}
+                    error_msg = (error_data.get("error") or {}).get("message", resp.text[:300])
+                    frappe.log_error(
+                        title="Facebook publish_post: video upload failed",
+                        message=f"URL={video_url} status={resp.status_code} error={error_msg}"
                     )
+                    return {"success": False, "error": error_msg}
+
+            # --- Image post: upload each image as an unpublished photo then attach ---
+            def _do_image_post(pb: dict) -> dict:
+                """Upload photos and create the feed post using the given params_base."""
+                media = []
+                for url in image_urls:
+                    photo_id = self._upload_photo_to_facebook(base, page_id, pb, url)
                     if photo_id:
-                        attached_media.append({"media_fbid": photo_id})
+                        media.append({"media_fbid": photo_id})
 
-            # --- Create the feed post ---
-            # Use form-encoded data (not JSON) so that `attached_media[0]` bracket
-            # notation is interpreted correctly by the Graph API.
-            feed_params = dict(params_base)
-            feed_payload: Dict[str, Any] = {"message": content}
-            if attached_media:
-                for i, media_item in enumerate(attached_media):
-                    feed_payload[f"attached_media[{i}]"] = json.dumps(media_item)
+                fp = dict(pb)
+                payload: Dict[str, Any] = {"message": content}
+                if media:
+                    for i, item in enumerate(media):
+                        payload[f"attached_media[{i}]"] = json.dumps(item)
 
-            resp = requests.post(
-                f"{base}/{page_id}/feed",
-                params=feed_params,
-                data=feed_payload,
-                timeout=30
-            )
+                r = requests.post(
+                    f"{base}/{page_id}/feed",
+                    params=fp,
+                    data=payload,
+                    timeout=30,
+                )
+                return r
+
+            resp = _do_image_post(params_base)
+
+            # If we get a 403 the stored token is likely a User token — try exchanging
+            # it for a Page Access Token and retry once.
+            if resp.status_code == 403:
+                page_token = _exchange_for_page_token(token)
+                if page_token:
+                    params_base = _make_params(page_token)
+                    resp = _do_image_post(params_base)
 
             if resp.status_code == 200:
                 post_id = (resp.json() or {}).get("id", "")
@@ -2208,19 +2318,37 @@ class InstagramIntegration(SocialMediaPlatform):
                 )
             }
 
+        # Instagram only accepts direct image/video file URLs — not links to external
+        # platforms (YouTube, Vimeo, etc.) or web pages. Detect and reject early.
+        _supported_image_exts = (".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".tiff")
+        _supported_video_exts = (".mp4", ".mov", ".avi", ".mkv", ".wmv", ".m4v")
+        _all_media_exts = _supported_image_exts + _supported_video_exts
+        non_media_urls = [
+            u for u in valid_media
+            if not any(u.lower().split("?")[0].endswith(ext) for ext in _all_media_exts)
+        ]
+        if non_media_urls:
+            return {
+                "success": False,
+                "error": (
+                    "Instagram only supports direct image or video file URLs (.jpg, .png, .mp4, etc.). "
+                    "Links to external platforms (YouTube, Vimeo, web pages) cannot be posted to Instagram. "
+                    f"Unsupported URL(s): {', '.join(non_media_urls)}"
+                )
+            }
+
         # Instagram's API fetches media from the URL directly — private/internal
         # files and localhost URLs are not reachable by Instagram's servers. Detect early.
         private_urls = [u for u in valid_media if "/private/files/" in u]
         if private_urls:
-            return {
-                "success": False,
-                "error": (
-                    "Instagram cannot access private Frappe files. "
-                    "Please re-upload the image/video as a Public file "
-                    "(uncheck 'Private' when uploading in Frappe) so Instagram "
-                    "can fetch it from a public URL."
-                )
-            }
+            err = (
+                "Instagram cannot access private Frappe files. "
+                "Please re-upload the image/video as a Public file "
+                "(uncheck 'Private' when uploading in Frappe) so Instagram "
+                "can fetch it from a public URL."
+            )
+            frappe.log_error(title="Instagram publish_post: private file URL", message=f"urls={private_urls} | {err}")
+            return {"success": False, "error": err}
 
         import re as _re
         local_urls = [
@@ -2228,15 +2356,14 @@ class InstagramIntegration(SocialMediaPlatform):
             if _re.search(r"https?://(localhost|127\.0\.0\.1|0\.0\.0\.0|172\.\d+\.\d+\.\d+|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+)", u)
         ]
         if local_urls:
-            return {
-                "success": False,
-                "error": (
-                    "Instagram requires a publicly accessible image URL. "
-                    "This site is configured with a local/private hostname (localhost or internal IP). "
-                    "Set 'host_name' in site_config.json to your public domain (e.g. https://yoursite.com) "
-                    "and re-publish."
-                )
-            }
+            err = (
+                "Instagram requires a publicly accessible image URL. "
+                "This site is configured with a local/private hostname (localhost or internal IP). "
+                "Set 'host_name' in site_config.json to your public domain (e.g. https://yoursite.com) "
+                "and re-publish."
+            )
+            frappe.log_error(title="Instagram publish_post: local image URL", message=f"urls={local_urls} | {err}")
+            return {"success": False, "error": err}
 
         base = f"https://graph.facebook.com/{api_ver}/{ig_user_id}"
         params_base = {"access_token": token}
@@ -2247,16 +2374,24 @@ class InstagramIntegration(SocialMediaPlatform):
                 media_url = valid_media[0]
                 container_params = dict(params_base)
                 container_params["caption"] = content
-                # Heuristic: treat URLs with video extensions as videos
-                if any(media_url.lower().endswith(ext) for ext in (".mp4", ".mov", ".avi")):
-                    container_params["media_type"] = "VIDEO"
+                # Instagram API v19+: feed videos must use media_type=REELS.
+                # media_type=VIDEO is IGTV only and requires special eligibility.
+                _video_exts_ig = (".mp4", ".mov", ".avi", ".mkv", ".wmv", ".m4v")
+                if any(media_url.lower().split("?")[0].endswith(ext) for ext in _video_exts_ig):
+                    container_params["media_type"] = "REELS"
                     container_params["video_url"] = media_url
+                    container_params["share_to_feed"] = "true"
                 else:
                     container_params["image_url"] = media_url
 
                 resp = requests.post(f"{base}/media", params=container_params, timeout=30)
                 if resp.status_code != 200:
                     error_msg = ((resp.json() or {}).get("error") or {}).get("message", resp.text[:300])
+                    media_param = "video_url" if any(media_url.lower().split("?")[0].endswith(ext) for ext in (".mp4", ".mov", ".avi", ".mkv", ".wmv", ".m4v")) else "image_url"
+                    frappe.log_error(
+                        title="Instagram publish_post: media container creation failed",
+                        message=f"{media_param}={media_url} status={resp.status_code} error={error_msg}"
+                    )
                     return {"success": False, "error": f"Instagram media container creation failed: {error_msg}"}
 
                 creation_id = (resp.json() or {}).get("id")
@@ -2297,7 +2432,35 @@ class InstagramIntegration(SocialMediaPlatform):
                 if not creation_id:
                     return {"success": False, "error": "Instagram did not return a carousel container ID."}
 
-            # --- Step 2: Publish the container ---
+            # --- Step 2: Wait for container to finish processing ---
+            # Videos (REELS) are processed asynchronously. Polling is required before
+            # calling media_publish — publishing immediately returns "Media ID is not available".
+            import time as _time
+            max_wait_secs = 120
+            poll_interval = 5
+            elapsed = 0
+            while elapsed < max_wait_secs:
+                status_resp = requests.get(
+                    f"https://graph.facebook.com/{api_ver}/{creation_id}",
+                    params={"fields": "status_code", "access_token": token},
+                    timeout=15,
+                )
+                if status_resp.status_code == 200:
+                    status_code = (status_resp.json() or {}).get("status_code", "")
+                    if status_code == "FINISHED":
+                        break
+                    elif status_code == "ERROR":
+                        error_detail = (status_resp.json() or {}).get("status_code", "unknown")
+                        frappe.log_error(
+                            title="Instagram publish_post: container processing error",
+                            message=f"creation_id={creation_id} status_code={error_detail}"
+                        )
+                        return {"success": False, "error": f"Instagram rejected the media during processing: {error_detail}"}
+                    # IN_PROGRESS or PUBLISHED — keep waiting
+                _time.sleep(poll_interval)
+                elapsed += poll_interval
+
+            # --- Step 3: Publish the container ---
             publish_params = dict(params_base)
             publish_params["creation_id"] = creation_id
             resp = requests.post(f"{base}/media_publish", params=publish_params, timeout=30)
