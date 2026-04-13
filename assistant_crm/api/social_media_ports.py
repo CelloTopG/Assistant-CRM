@@ -4150,7 +4150,22 @@ def social_media_webhook():
             frappe.log_error(f"Webhook JSON parse error: {str(e)}", "Social Media Webhook")
             return {"status": "error", "message": "Invalid JSON data"}
 
-        platform = frappe.request.headers.get("X-Platform") or detect_platform_from_webhook(data)
+        # Use the incoming request path as the most reliable platform signal.
+        # Meta delivers both Instagram (Messenger API for Instagram) and Facebook Messenger
+        # webhooks with "object": "page", so payload-only detection is ambiguous when a
+        # Page Access Token is in use. Registering separate webhook URLs in the Meta App
+        # Dashboard (/webhook/instagram vs /webhook/facebook) makes the path trustworthy.
+        _req_path = (frappe.request.path or "").lower()
+        if "/webhook/instagram" in _req_path:
+            _path_hint = "Instagram"
+        elif "/webhook/facebook" in _req_path:
+            _path_hint = "Facebook"
+        elif "/webhook/whatsapp" in _req_path:
+            _path_hint = "WhatsApp"
+        else:
+            _path_hint = None
+
+        platform = frappe.request.headers.get("X-Platform") or _path_hint or detect_platform_from_webhook(data)
 
         # Validate Tawk.to webhook signature when present.
         # Instagram signature validation is currently in compatibility mode (disabled).
@@ -4204,18 +4219,19 @@ def detect_platform_from_webhook(data: Dict[str, Any]) -> Optional[str]:
     if data.get("object") == "instagram":
         return "Instagram"
 
-    # Facebook / Instagram: entry.messaging structure
+    # Facebook / Instagram: entry.messaging structure.
+    # IMPORTANT: when a Page Access Token is used, Meta delivers Instagram DMs via the
+    # "Messenger API for Instagram" with "object": "page" — identical to Facebook Messenger.
+    # We must inspect sender/recipient IDs before deciding which platform this belongs to.
     if "entry" in data and any("messaging" in entry for entry in data.get("entry", [])):
-        if data.get("object") == "page":
-            return "Facebook"
-
         entry = data["entry"][0]
         messaging = entry.get("messaging", [])
         if messaging:
             message_event = messaging[0]
             sender_id = message_event.get("sender", {}).get("id", "")
             recipient_id = message_event.get("recipient", {}).get("id", "")
-            # Instagram Business account IDs are typically 17+ digits
+            # Instagram-scoped User IDs (IGSIDs) and Instagram Business Account IDs
+            # are typically 17+ digits; Facebook PSIDs are generally shorter.
             if len(str(sender_id)) >= 17 and len(str(recipient_id)) >= 17:
                 return "Instagram"
             message = message_event.get("message", {})
