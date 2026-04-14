@@ -98,11 +98,6 @@ class WorkersNotifyGateway:
 
         if self.api_key:
             headers["X-API-Key"] = self.api_key
-        else:
-            frappe.log_error(
-                title="Workers SMS Gateway Warning",
-                message="No API key configured for Workers Gateway"
-            )
 
         try:
             if self.debug:

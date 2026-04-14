@@ -299,9 +299,6 @@ class SMSService:
                 }
                 diagnostics["configuration"]["gateway"] = gateway_settings
 
-                if not self.workers_gateway.api_key:
-                    diagnostics["recommendations"].append("API key is missing for Workers Gateway.")
-
                 # Test connectivity
                 try:
                     # Simple connectivity test
