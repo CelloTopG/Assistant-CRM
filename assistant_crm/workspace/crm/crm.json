@@ -8,113 +8,7 @@
   "icon": "users",
   "indicator_color": "Blue",
   "sequence_id": 1.0,
-  "content": [
-    {
-      "type": "header",
-      "data": {
-        "text": "<span class=\"h4\"><b>Conversations</b></span>",
-        "col": 12
-      }
-    },
-    {
-      "type": "card",
-      "data": {
-        "card_name": "Inbox & Messaging",
-        "col": 4
-      }
-    },
-    {
-      "type": "card",
-      "data": {
-        "card_name": "Conversations",
-        "col": 4
-      }
-    },
-    {
-      "type": "card",
-      "data": {
-        "card_name": "Social Channels",
-        "col": 4
-      }
-    },
-    {
-      "type": "header",
-      "data": {
-        "text": "<span class=\"h4\"><b>Business Operations</b></span>",
-        "col": 12
-      }
-    },
-    {
-      "type": "card",
-      "data": {
-        "card_name": "Claims",
-        "col": 4
-      }
-    },
-    {
-      "type": "card",
-      "data": {
-        "card_name": "Surveys & Campaigns",
-        "col": 4
-      }
-    },
-    {
-      "type": "card",
-      "data": {
-        "card_name": "Compliance",
-        "col": 4
-      }
-    },
-    {
-      "type": "header",
-      "data": {
-        "text": "<span class=\"h4\"><b>Analytics</b></span>",
-        "col": 12
-      }
-    },
-    {
-      "type": "card",
-      "data": {
-        "card_name": "Reports",
-        "col": 4
-      }
-    },
-    {
-      "type": "card",
-      "data": {
-        "card_name": "Dashboards",
-        "col": 4
-      }
-    },
-    {
-      "type": "header",
-      "data": {
-        "text": "<span class=\"h4\"><b>Configuration</b></span>",
-        "col": 12
-      }
-    },
-    {
-      "type": "card",
-      "data": {
-        "card_name": "Settings",
-        "col": 4
-      }
-    },
-    {
-      "type": "card",
-      "data": {
-        "card_name": "Security & Monitoring",
-        "col": 4
-      }
-    },
-    {
-      "type": "card",
-      "data": {
-        "card_name": "Setup",
-        "col": 4
-      }
-    }
-  ],
+  "content": "[{\"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Conversations</b></span>\", \"col\": 12}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Inbox & Messaging\", \"col\": 4}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Conversations\", \"col\": 4}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Social Channels\", \"col\": 4}}, {\"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Business Operations</b></span>\", \"col\": 12}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Claims\", \"col\": 4}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Surveys & Campaigns\", \"col\": 4}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Compliance\", \"col\": 4}}, {\"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Analytics</b></span>\", \"col\": 12}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Reports\", \"col\": 4}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Dashboards\", \"col\": 4}}, {\"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Configuration</b></span>\", \"col\": 12}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Settings\", \"col\": 4}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Security & Monitoring\", \"col\": 4}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Setup\", \"col\": 4}}]",
   "shortcuts": [
     {
       "label": "Inbox",
@@ -153,7 +47,10 @@
     }
   ],
   "links": [
-    { "type": "Card Break", "label": "Inbox & Messaging" },
+    {
+      "type": "Card Break",
+      "label": "Inbox & Messaging"
+    },
     {
       "type": "Link",
       "label": "Inbox",
@@ -182,8 +79,10 @@
       "link_type": "DocType",
       "description": "Configure the unified inbox"
     },
-
-    { "type": "Card Break", "label": "Conversations" },
+    {
+      "type": "Card Break",
+      "label": "Conversations"
+    },
     {
       "type": "Link",
       "label": "Conversation Turn",
@@ -205,8 +104,10 @@
       "link_type": "DocType",
       "description": "USSD interactive session records"
     },
-
-    { "type": "Card Break", "label": "Social Channels" },
+    {
+      "type": "Card Break",
+      "label": "Social Channels"
+    },
     {
       "type": "Link",
       "label": "Social Media Post",
@@ -228,8 +129,10 @@
       "link_type": "DocType",
       "description": "Template-based message personalization rules"
     },
-
-    { "type": "Card Break", "label": "Claims" },
+    {
+      "type": "Card Break",
+      "label": "Claims"
+    },
     {
       "type": "Link",
       "label": "Claims Tracking",
@@ -251,8 +154,10 @@
       "link_type": "DocType",
       "description": "Employer contribution and payment records"
     },
-
-    { "type": "Card Break", "label": "Surveys & Campaigns" },
+    {
+      "type": "Card Break",
+      "label": "Surveys & Campaigns"
+    },
     {
       "type": "Link",
       "label": "Survey Campaign",
@@ -274,8 +179,10 @@
       "link_type": "DocType",
       "description": "Reusable survey campaign templates"
     },
-
-    { "type": "Card Break", "label": "Compliance" },
+    {
+      "type": "Card Break",
+      "label": "Compliance"
+    },
     {
       "type": "Link",
       "label": "Compliance Report",
@@ -297,8 +204,10 @@
       "link_type": "DocType",
       "description": "Document validation rules"
     },
-
-    { "type": "Card Break", "label": "Reports" },
+    {
+      "type": "Card Break",
+      "label": "Reports"
+    },
     {
       "type": "Link",
       "label": "Claims Status Analysis",
@@ -411,8 +320,10 @@
       "link_type": "Report",
       "is_query_report": 1
     },
-
-    { "type": "Card Break", "label": "Dashboards" },
+    {
+      "type": "Card Break",
+      "label": "Dashboards"
+    },
     {
       "type": "Link",
       "label": "Agent Performance Dashboard",
@@ -434,8 +345,10 @@
       "link_type": "DocType",
       "description": "Agent performance metric records"
     },
-
-    { "type": "Card Break", "label": "Settings" },
+    {
+      "type": "Card Break",
+      "label": "Settings"
+    },
     {
       "type": "Link",
       "label": "Assistant CRM Settings",
@@ -499,8 +412,10 @@
       "link_type": "DocType",
       "description": "Conversation escalation rules and routing"
     },
-
-    { "type": "Card Break", "label": "Security & Monitoring" },
+    {
+      "type": "Card Break",
+      "label": "Security & Monitoring"
+    },
     {
       "type": "Link",
       "label": "DDoS Monitor",
@@ -529,8 +444,10 @@
       "link_type": "DocType",
       "description": "SMS send/receive audit log"
     },
-
-    { "type": "Card Break", "label": "Setup" },
+    {
+      "type": "Card Break",
+      "label": "Setup"
+    },
     {
       "type": "Link",
       "label": "Assistant CRM Setup",
