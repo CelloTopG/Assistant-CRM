@@ -452,7 +452,8 @@ class SurveyService:
                         continue  # Conversational channel handled; move to next channel
 
                     if ch_name == 'SMS':
-                        # Production-ready: Use async queue for SMS distribution
+                        # Async queue is primary; synchronous send is the fallback only
+                        enqueued = False
                         try:
                             frappe.enqueue(
                                 "assistant_crm.services.sms_service.send_survey_sms_async",
@@ -461,31 +462,28 @@ class SurveyService:
                                 response_id=survey_response.name,
                                 queue="long"
                             )
-                            channel_stats[ch_name]['queued'] += 1
+                            enqueued = True
+                            channel_stats[ch_name]['success'] += 1
+                            recipient_delivered = True
                         except Exception as enqueue_exc:
-                            channel_stats[ch_name]['failures'] += 1
-                            channel_stats[ch_name]['reasons']['enqueue_error'] = channel_stats[ch_name]['reasons'].get('enqueue_error', 0) + 1
                             frappe.log_error(
                                 title="Survey SMS Enqueue Failed",
                                 message=f"Campaign: {campaign.name}, recipient: {recipient.get('mobile_no')}, error: {str(enqueue_exc)}\n{frappe.get_traceback()}"
                             )
-                        invitation_result = self.send_survey_invitation(recipient, campaign, ch_name, survey_response.name)
-                        if invitation_result.get('success'):
-                            channel_stats[ch_name]['success'] += 1
-                            recipient_delivered = True
-                        else:
-                            # Extract precise failure reason
-                            reason = invitation_result.get('error', 'not_supported')
-                            
-                            # Fallback classification if error is generic
-                            if reason in ('not_supported', 'channel_not_supported_or_missing_data'):
-                                if ch_name == 'Email' and not recipient.get('email_id'):
-                                    reason = 'no_email'
-                                elif ch_name in ('WhatsApp', 'SMS') and not recipient.get('mobile_no'):
-                                    reason = 'no_mobile'
-                            
-                            channel_stats[ch_name]['failures'] += 1
-                            channel_stats[ch_name]['reasons'][reason] = channel_stats[ch_name]['reasons'].get(reason, 0) + 1
+
+                        if not enqueued:
+                            # Fallback: send synchronously when enqueueing failed
+                            invitation_result = self.send_survey_invitation(recipient, campaign, ch_name, survey_response.name)
+                            if invitation_result.get('success'):
+                                channel_stats[ch_name]['success'] += 1
+                                recipient_delivered = True
+                            else:
+                                reason = invitation_result.get('error', 'not_supported')
+                                if reason in ('not_supported', 'channel_not_supported_or_missing_data'):
+                                    if not recipient.get('mobile_no'):
+                                        reason = 'no_mobile'
+                                channel_stats[ch_name]['failures'] += 1
+                                channel_stats[ch_name]['reasons'][reason] = channel_stats[ch_name]['reasons'].get(reason, 0) + 1
 
                 if recipient_delivered:
                     delivered_count += 1

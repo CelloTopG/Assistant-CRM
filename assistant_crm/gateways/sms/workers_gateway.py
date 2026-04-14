@@ -1,3 +1,4 @@
+import os
 import requests
 import frappe
 from requests.adapters import HTTPAdapter
@@ -21,19 +22,31 @@ class WorkersNotifyGateway:
 
         prod_url = settings.get("production_base_url") or "https://notify.workers.com.zm"
         dev_url = settings.get("development_base_url") or "https://notify.workers.com.zm"
-        
-        self.base_url = (
-            prod_url if settings.get("environment") == "Production" else dev_url
-        ).rstrip("/")
+
+        # WORKERS_NOTIFY_URL env var overrides the database setting (useful when DNS
+        # for the public hostname is not resolvable from this server, e.g. use the
+        # internal IP: WORKERS_NOTIFY_URL=http://192.168.1.32:9002)
+        env_url = os.environ.get("WORKERS_NOTIFY_URL")
+        if env_url:
+            self.base_url = env_url.rstrip("/")
+        else:
+            self.base_url = (
+                prod_url if settings.get("environment") == "Production" else dev_url
+            ).rstrip("/")
 
         self.timeout = settings.get("timeout") or 30
         self.debug = settings.get("enable_debug_logging")
-        
+
         # Proper Password retrieval for Frappe DocTypes
         try:
             self.api_key = settings.get_password("api_key")
         except Exception:
             self.api_key = settings.get("api_key")
+
+        # Fallback: allow API key to be supplied via environment variable
+        # (WORKERS_NOTIFY_API_KEY) when the database field is not yet populated
+        if not self.api_key:
+            self.api_key = os.environ.get("WORKERS_NOTIFY_API_KEY")
 
         self.session = self._build_session()
 

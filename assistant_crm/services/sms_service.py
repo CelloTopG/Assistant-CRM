@@ -346,26 +346,25 @@ def diagnose_sms_configuration():
     except Exception as e:
         frappe.log_error(title="SMS Diagnostics Error", message=frappe.get_traceback())
         return {"success": False, "error": str(e)}
+
+
+def send_survey_sms_async(recipient, campaign_name, response_id):
     """
     Asynchronous task to send a single survey invitation via SMS.
-    Called by SurveyService.distribute_survey to avoid blocking the request.
+    Called by SurveyService.distribute_survey via frappe.enqueue to avoid blocking the request.
     """
     try:
         from assistant_crm.services.survey_service import SurveyService
         service = SurveyService()
-        
-        # Load the campaign document
+
         campaign = frappe.get_doc("Survey Campaign", campaign_name)
-        
-        # Check if campaign is still active or submitted
+
         if campaign.status not in ["Active", "In Progress", "Submitted"]:
             return
-            
-        # Re-send the invitation specifically for SMS
+
         result = service.send_survey_invitation(recipient, campaign, "SMS", response_id)
-        
+
         if not result.get("success"):
-            # Explicit log for async failure path
             frappe.log_error(
                 title="Async SMS Survey Invitation Failed",
                 message=(
@@ -377,7 +376,6 @@ def diagnose_sms_configuration():
                 )
             )
             try:
-                # Mark survey response as failed (best-effort)
                 frappe.db.set_value("Survey Response", response_id, "status", "Failed")
             except Exception:
                 pass
@@ -388,4 +386,7 @@ def diagnose_sms_configuration():
                 pass
 
     except Exception as e:
-        frappe.log_error(title="Async SMS Survey Invitation Failed", message=f"Campaign: {campaign_name}\nError: {str(e)}\n\n{frappe.get_traceback()}")
+        frappe.log_error(
+            title="Async SMS Survey Invitation Failed",
+            message=f"Campaign: {campaign_name}\nError: {str(e)}\n\n{frappe.get_traceback()}"
+        )
