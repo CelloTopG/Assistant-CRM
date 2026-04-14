@@ -4,7 +4,7 @@ WCFCB Assistant CRM - Social Media Publisher
 =============================================
 
 Orchestrates publishing a Social Media Post document to one or more
-platforms (Facebook, Instagram, Twitter, LinkedIn) in a single operation.
+platforms (Facebook, Instagram, YouTube) in a single operation.
 
 Responsibilities:
 - Scheduled-post dispatch (called by cron every 5 min)
@@ -134,7 +134,7 @@ def publish_post_to_platforms(post_name: str):
     }
 
     # Collect media URLs — convert Frappe relative paths to absolute public URLs
-    # so external platforms (Instagram, LinkedIn, etc.) can fetch them.
+    # so external platforms (Instagram, YouTube, etc.) can fetch them.
     site_url = frappe.utils.get_url().rstrip("/")
     media_urls = []
     for att in (post.media_attachments or []):
@@ -280,15 +280,13 @@ def _get_adapter(platform_name: str) -> Optional[object]:
     from assistant_crm.api.social_media_ports import (
         FacebookIntegration,
         InstagramIntegration,
-        TwitterIntegration,
-        LinkedInIntegration,
+        YouTubeIntegration,
     )
 
     registry = {
         "Facebook": FacebookIntegration,
         "Instagram": InstagramIntegration,
-        "Twitter": TwitterIntegration,
-        "LinkedIn": LinkedInIntegration,
+        "YouTube": YouTubeIntegration,
     }
 
     cls = registry.get(platform_name)
