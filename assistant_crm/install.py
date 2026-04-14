@@ -86,6 +86,13 @@ def after_install():
 		except Exception as e:
 			frappe.log_error(f"Error seeding Social Media Settings: {str(e)}", "Assistant CRM Install")
 
+		# Setup CRM workspace
+		try:
+			from assistant_crm.install_workspace import create_crm_workspace
+			create_crm_workspace()
+		except Exception as e:
+			frappe.log_error(f"Error setting up CRM workspace: {str(e)}", "Assistant CRM Install")
+
 		# Print success message
 		print("✅ WCFCB Assistant CRM installed successfully!")
 		print("🤖 Omnichannel AI assistant is now available")
@@ -1094,6 +1101,13 @@ def after_migrate():
             ensure_conversation_export_print_format()
         except Exception as e:
             frappe.log_error(f"after_migrate print format error: {str(e)}", "Assistant CRM Install")
+
+        # Ensure CRM workspace is up to date after every migration
+        try:
+            from assistant_crm.install_workspace import create_crm_workspace
+            create_crm_workspace()
+        except Exception as e:
+            frappe.log_error(f"after_migrate CRM workspace setup error: {str(e)}", "Assistant CRM Install")
 
     finally:
         try:

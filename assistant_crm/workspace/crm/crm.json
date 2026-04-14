@@ -1,0 +1,549 @@
+{
+  "doctype": "Workspace",
+  "name": "CRM",
+  "title": "CRM",
+  "module": "Assistant CRM",
+  "public": 1,
+  "is_hidden": 0,
+  "icon": "users",
+  "indicator_color": "Blue",
+  "sequence_id": 1.0,
+  "content": [
+    {
+      "type": "header",
+      "data": {
+        "text": "<span class=\"h4\"><b>Conversations</b></span>",
+        "col": 12
+      }
+    },
+    {
+      "type": "card",
+      "data": {
+        "card_name": "Inbox & Messaging",
+        "col": 4
+      }
+    },
+    {
+      "type": "card",
+      "data": {
+        "card_name": "Conversations",
+        "col": 4
+      }
+    },
+    {
+      "type": "card",
+      "data": {
+        "card_name": "Social Channels",
+        "col": 4
+      }
+    },
+    {
+      "type": "header",
+      "data": {
+        "text": "<span class=\"h4\"><b>Business Operations</b></span>",
+        "col": 12
+      }
+    },
+    {
+      "type": "card",
+      "data": {
+        "card_name": "Claims",
+        "col": 4
+      }
+    },
+    {
+      "type": "card",
+      "data": {
+        "card_name": "Surveys & Campaigns",
+        "col": 4
+      }
+    },
+    {
+      "type": "card",
+      "data": {
+        "card_name": "Compliance",
+        "col": 4
+      }
+    },
+    {
+      "type": "header",
+      "data": {
+        "text": "<span class=\"h4\"><b>Analytics</b></span>",
+        "col": 12
+      }
+    },
+    {
+      "type": "card",
+      "data": {
+        "card_name": "Reports",
+        "col": 4
+      }
+    },
+    {
+      "type": "card",
+      "data": {
+        "card_name": "Dashboards",
+        "col": 4
+      }
+    },
+    {
+      "type": "header",
+      "data": {
+        "text": "<span class=\"h4\"><b>Configuration</b></span>",
+        "col": 12
+      }
+    },
+    {
+      "type": "card",
+      "data": {
+        "card_name": "Settings",
+        "col": 4
+      }
+    },
+    {
+      "type": "card",
+      "data": {
+        "card_name": "Security & Monitoring",
+        "col": 4
+      }
+    },
+    {
+      "type": "card",
+      "data": {
+        "card_name": "Setup",
+        "col": 4
+      }
+    }
+  ],
+  "shortcuts": [
+    {
+      "label": "Inbox",
+      "link_to": "inbox",
+      "type": "Page",
+      "color": "#4BCB97",
+      "icon": "mail"
+    },
+    {
+      "label": "Omnichannel Conversation",
+      "link_to": "Omnichannel Conversation",
+      "type": "DocType",
+      "color": "#5FB3D4",
+      "icon": "chat"
+    },
+    {
+      "label": "Claims Tracking",
+      "link_to": "Claims Tracking",
+      "type": "DocType",
+      "color": "#F5A623",
+      "icon": "shield"
+    },
+    {
+      "label": "CRM Settings",
+      "link_to": "Assistant CRM Settings",
+      "type": "DocType",
+      "color": "#718096",
+      "icon": "settings"
+    },
+    {
+      "label": "Agent Dashboard",
+      "link_to": "agent-performance-dashboard",
+      "type": "Page",
+      "color": "#9B59B6",
+      "icon": "bar-chart"
+    }
+  ],
+  "links": [
+    { "type": "Card Break", "label": "Inbox & Messaging" },
+    {
+      "type": "Link",
+      "label": "Inbox",
+      "link_to": "inbox",
+      "link_type": "Page",
+      "description": "Unified omnichannel inbox for all conversations"
+    },
+    {
+      "type": "Link",
+      "label": "Omnichannel Conversation",
+      "link_to": "Omnichannel Conversation",
+      "link_type": "DocType",
+      "description": "View and manage all omnichannel conversations"
+    },
+    {
+      "type": "Link",
+      "label": "Chat History",
+      "link_to": "Chat History",
+      "link_type": "DocType",
+      "description": "Archived conversation history"
+    },
+    {
+      "type": "Link",
+      "label": "Unified Inbox Settings",
+      "link_to": "Unified Inbox Settings",
+      "link_type": "DocType",
+      "description": "Configure the unified inbox"
+    },
+
+    { "type": "Card Break", "label": "Conversations" },
+    {
+      "type": "Link",
+      "label": "Conversation Turn",
+      "link_to": "Conversation Turn",
+      "link_type": "DocType",
+      "description": "Individual message turns within conversations"
+    },
+    {
+      "type": "Link",
+      "label": "Call Log",
+      "link_to": "Call Log",
+      "link_type": "DocType",
+      "description": "Voice call records"
+    },
+    {
+      "type": "Link",
+      "label": "USSD Session",
+      "link_to": "USSD Session",
+      "link_type": "DocType",
+      "description": "USSD interactive session records"
+    },
+
+    { "type": "Card Break", "label": "Social Channels" },
+    {
+      "type": "Link",
+      "label": "Social Media Post",
+      "link_to": "Social Media Post",
+      "link_type": "DocType",
+      "description": "Manage social media posts and broadcasts"
+    },
+    {
+      "type": "Link",
+      "label": "Bulk Message Campaign",
+      "link_to": "Bulk Message Campaign",
+      "link_type": "DocType",
+      "description": "Run bulk messaging campaigns across channels"
+    },
+    {
+      "type": "Link",
+      "label": "Message Personalization",
+      "link_to": "Message Personalization",
+      "link_type": "DocType",
+      "description": "Template-based message personalization rules"
+    },
+
+    { "type": "Card Break", "label": "Claims" },
+    {
+      "type": "Link",
+      "label": "Claims Tracking",
+      "link_to": "Claims Tracking",
+      "link_type": "DocType",
+      "description": "Track and manage WCFCB claims"
+    },
+    {
+      "type": "Link",
+      "label": "Claim",
+      "link_to": "Claim",
+      "link_type": "DocType",
+      "description": "Individual claim records"
+    },
+    {
+      "type": "Link",
+      "label": "Employer Contributions",
+      "link_to": "Employer Contributions",
+      "link_type": "DocType",
+      "description": "Employer contribution and payment records"
+    },
+
+    { "type": "Card Break", "label": "Surveys & Campaigns" },
+    {
+      "type": "Link",
+      "label": "Survey Campaign",
+      "link_to": "Survey Campaign",
+      "link_type": "DocType",
+      "description": "Create and manage survey campaigns"
+    },
+    {
+      "type": "Link",
+      "label": "Survey Response",
+      "link_to": "Survey Response",
+      "link_type": "DocType",
+      "description": "Collected survey responses"
+    },
+    {
+      "type": "Link",
+      "label": "Survey Campaign Template",
+      "link_to": "Survey Campaign Template",
+      "link_type": "DocType",
+      "description": "Reusable survey campaign templates"
+    },
+
+    { "type": "Card Break", "label": "Compliance" },
+    {
+      "type": "Link",
+      "label": "Compliance Report",
+      "link_to": "Compliance Report",
+      "link_type": "DocType",
+      "description": "Regulatory compliance records"
+    },
+    {
+      "type": "Link",
+      "label": "SLA Configuration",
+      "link_to": "SLA Configuration",
+      "link_type": "DocType",
+      "description": "Service level agreement rules and thresholds"
+    },
+    {
+      "type": "Link",
+      "label": "Document Validation",
+      "link_to": "Document Validation",
+      "link_type": "DocType",
+      "description": "Document validation rules"
+    },
+
+    { "type": "Card Break", "label": "Reports" },
+    {
+      "type": "Link",
+      "label": "Claims Status Analysis",
+      "link_to": "Claims Status Analysis",
+      "link_type": "Report",
+      "is_query_report": 1
+    },
+    {
+      "type": "Link",
+      "label": "Complaints Status Analysis",
+      "link_to": "Complaints Status Analysis",
+      "link_type": "Report",
+      "is_query_report": 1
+    },
+    {
+      "type": "Link",
+      "label": "Agent Performance Analysis",
+      "link_to": "Agent Performance Analysis",
+      "link_type": "Report",
+      "is_query_report": 1
+    },
+    {
+      "type": "Link",
+      "label": "Payout Summary Analysis",
+      "link_to": "Payout Summary Analysis",
+      "link_type": "Report",
+      "is_query_report": 1
+    },
+    {
+      "type": "Link",
+      "label": "Survey Feedback Analysis",
+      "link_to": "Survey Feedback Analysis",
+      "link_type": "Report",
+      "is_query_report": 1
+    },
+    {
+      "type": "Link",
+      "label": "Employer Status Analysis",
+      "link_to": "Employer Status Analysis",
+      "link_type": "Report",
+      "is_query_report": 1
+    },
+    {
+      "type": "Link",
+      "label": "Employer Compliance Analysis",
+      "link_to": "Employer Compliance Analysis",
+      "link_type": "Report",
+      "is_query_report": 1
+    },
+    {
+      "type": "Link",
+      "label": "SLA Compliance Analysis",
+      "link_to": "SLA Compliance Analysis",
+      "link_type": "Report",
+      "is_query_report": 1
+    },
+    {
+      "type": "Link",
+      "label": "Inbox Status Analysis",
+      "link_to": "Inbox Status Analysis",
+      "link_type": "Report",
+      "is_query_report": 1
+    },
+    {
+      "type": "Link",
+      "label": "Omnichannel Interaction Analysis",
+      "link_to": "Omnichannel Interaction Analysis",
+      "link_type": "Report",
+      "is_query_report": 1
+    },
+    {
+      "type": "Link",
+      "label": "AI Automation Analysis",
+      "link_to": "AI Automation Analysis",
+      "link_type": "Report",
+      "is_query_report": 1
+    },
+    {
+      "type": "Link",
+      "label": "Issue Turnaround Analysis",
+      "link_to": "Issue Turnaround Analysis",
+      "link_type": "Report",
+      "is_query_report": 1
+    },
+    {
+      "type": "Link",
+      "label": "Branch Performance Analysis",
+      "link_to": "Branch Performance Analysis",
+      "link_type": "Report",
+      "is_query_report": 1
+    },
+    {
+      "type": "Link",
+      "label": "Beneficiary Status Analysis",
+      "link_to": "Beneficiary Status Analysis",
+      "link_type": "Report",
+      "is_query_report": 1
+    },
+    {
+      "type": "Link",
+      "label": "Employee Status Analysis",
+      "link_to": "Employee Status Analysis",
+      "link_type": "Report",
+      "is_query_report": 1
+    },
+    {
+      "type": "Link",
+      "label": "Conversation Export",
+      "link_to": "Conversation Export",
+      "link_type": "Report",
+      "is_query_report": 1
+    },
+
+    { "type": "Card Break", "label": "Dashboards" },
+    {
+      "type": "Link",
+      "label": "Agent Performance Dashboard",
+      "link_to": "agent-performance-dashboard",
+      "link_type": "Page",
+      "description": "Live agent performance analytics"
+    },
+    {
+      "type": "Link",
+      "label": "Assistant CRM",
+      "link_to": "assistant-crm",
+      "link_type": "Page",
+      "description": "Main CRM dashboard"
+    },
+    {
+      "type": "Link",
+      "label": "Agent Performance",
+      "link_to": "Agent Performance",
+      "link_type": "DocType",
+      "description": "Agent performance metric records"
+    },
+
+    { "type": "Card Break", "label": "Settings" },
+    {
+      "type": "Link",
+      "label": "Assistant CRM Settings",
+      "link_to": "Assistant CRM Settings",
+      "link_type": "DocType",
+      "description": "Core AI and API configuration"
+    },
+    {
+      "type": "Link",
+      "label": "Enhanced AI Settings",
+      "link_to": "Enhanced AI Settings",
+      "link_type": "DocType",
+      "description": "OpenAI / advanced AI model configuration"
+    },
+    {
+      "type": "Link",
+      "label": "Social Media Settings",
+      "link_to": "Social Media Settings",
+      "link_type": "DocType",
+      "description": "Platform credentials for social channels"
+    },
+    {
+      "type": "Link",
+      "label": "Assistant CRM SMS Settings",
+      "link_to": "Assistant CRM SMS Settings",
+      "link_type": "DocType",
+      "description": "SMS gateway configuration"
+    },
+    {
+      "type": "Link",
+      "label": "Channel Configuration",
+      "link_to": "Channel Configuration",
+      "link_type": "DocType",
+      "description": "Per-channel routing and feature settings"
+    },
+    {
+      "type": "Link",
+      "label": "VoIP Settings",
+      "link_to": "VoIP Settings",
+      "link_type": "DocType",
+      "description": "Voice over IP integration settings"
+    },
+    {
+      "type": "Link",
+      "label": "Cross Platform Broadcasting Settings",
+      "link_to": "Cross Platform Broadcasting Settings",
+      "link_type": "DocType",
+      "description": "Multi-channel broadcast configuration"
+    },
+    {
+      "type": "Link",
+      "label": "External System Integration",
+      "link_to": "External System Integration",
+      "link_type": "DocType",
+      "description": "Third-party system connector profiles"
+    },
+    {
+      "type": "Link",
+      "label": "Escalation Workflow",
+      "link_to": "Escalation Workflow",
+      "link_type": "DocType",
+      "description": "Conversation escalation rules and routing"
+    },
+
+    { "type": "Card Break", "label": "Security & Monitoring" },
+    {
+      "type": "Link",
+      "label": "DDoS Monitor",
+      "link_to": "assistant-crm-ddos-monitor",
+      "link_type": "Page",
+      "description": "Real-time DDoS protection monitoring"
+    },
+    {
+      "type": "Link",
+      "label": "Assistant CRM DDoS Log",
+      "link_to": "Assistant CRM DDoS Log",
+      "link_type": "DocType",
+      "description": "DDoS violation and rate-limit logs"
+    },
+    {
+      "type": "Link",
+      "label": "Failed Query Log",
+      "link_to": "Failed Query Log",
+      "link_type": "DocType",
+      "description": "Failed database query audit log"
+    },
+    {
+      "type": "Link",
+      "label": "Assistant CRM SMS Log",
+      "link_to": "Assistant CRM SMS Log",
+      "link_type": "DocType",
+      "description": "SMS send/receive audit log"
+    },
+
+    { "type": "Card Break", "label": "Setup" },
+    {
+      "type": "Link",
+      "label": "Assistant CRM Setup",
+      "link_to": "assistant_crm_setup",
+      "link_type": "Page",
+      "description": "Initial setup wizard for the CRM"
+    },
+    {
+      "type": "Link",
+      "label": "USSD Menu",
+      "link_to": "USSD Menu",
+      "link_type": "DocType",
+      "description": "Configure USSD interactive menu trees"
+    }
+  ]
+}
