@@ -1837,8 +1837,18 @@ class InstagramIntegration(SocialMediaPlatform):
 
     def send_message(self, recipient_id: str, message: str, message_type: str = "text") -> bool:
         """Send Instagram direct message via Graph API.
-        Uses the configured token and, if needed, auto-derives a Page Access Token
-        from the existing user/system token using the configured Facebook Page ID.
+
+        Supports both send-endpoint styles automatically:
+        - Instagram Graph API:        POST /{ig-business-account-id}/messages
+          (used with a User Access Token that has instagram_manage_messages)
+        - Messenger API for Instagram: POST /{facebook-page-id}/messages
+          (used with a Page Access Token — the common case after generating a
+          new page token in the Meta App Dashboard)
+
+        Attempts are made in order:
+        1. Configured instagram_business_account_id  (Instagram Graph API)
+        2. Configured facebook_page_id               (Messenger API for Instagram)
+        Both use the configured access token as-is.
         """
         try:
             # Reset diagnostics for this send
@@ -1847,14 +1857,10 @@ class InstagramIntegration(SocialMediaPlatform):
             self.last_response_text = None
             self.last_error = None
 
-            # Instagram Graph API endpoint for sending messages
             api_ver = self.credentials.get("api_version", "v23.0")
             ig_account_id = (self.credentials.get("instagram_business_account_id") or "").strip()
-            # Use IG Business Account ID if available; fall back to "me" only as a last resort
-            ig_sender = ig_account_id or "me"
-            url = f"https://graph.facebook.com/{api_ver}/{ig_sender}/messages"
 
-            # Sanitize token similar to Facebook sender
+            # Sanitize token
             raw_token = (self.credentials.get("access_token") or "")
             token = raw_token.strip().strip('"').strip("'")
             token = token.replace(" ", "").replace("\n", "").replace("\r", "")
@@ -1863,23 +1869,32 @@ class InstagramIntegration(SocialMediaPlatform):
                 frappe.log_error("Missing Instagram Access Token", "Instagram Integration")
                 return False
 
-            def do_send(current_token: str) -> requests.Response:
+            # Retrieve Page ID for Messenger API for Instagram fallback
+            try:
+                settings = frappe.get_single("Social Media Settings")
+                page_id = (settings.get("facebook_page_id") or "").strip()
+            except Exception:
+                settings = None
+                page_id = ""
+
+            def do_send(sender_id: str, current_token: str) -> requests.Response:
+                """POST to /{sender_id}/messages with current_token."""
+                send_url = f"https://graph.facebook.com/{api_ver}/{sender_id}/messages"
                 params = {"access_token": current_token}
                 payload = {
                     "recipient": {"id": recipient_id},
                     "message": {"text": message},
                     "messaging_type": "RESPONSE",
                 }
-                # Track request/response diagnostics but mask the token
                 try:
                     self.last_request_payload = {
-                        "url": url,
+                        "url": send_url,
                         "params": {"access_token": "***"},
                         "json": payload,
                     }
                 except Exception:
                     pass
-                resp = requests.post(url, params=params, json=payload, timeout=30)
+                resp = requests.post(send_url, params=params, json=payload, timeout=30)
                 try:
                     self.last_response_status = resp.status_code
                     self.last_response_text = resp.text
@@ -1887,80 +1902,54 @@ class InstagramIntegration(SocialMediaPlatform):
                     pass
                 return resp
 
-            # First attempt with the configured token
-            response = do_send(token)
-            if response.status_code == 200:
-                self.last_error = None
-                return True
+            response = None
 
-            # If the token is a user/system token, try to derive a Page Access Token
-            page_token_used = False
-            try:
-                settings = frappe.get_single("Social Media Settings")
-                page_id = (settings.get("facebook_page_id") or "").strip()
-            except Exception:
-                page_id = ""
-
-            if page_id and token:
-                try:
-                    exchange_url = f"https://graph.facebook.com/{api_ver}/{page_id}"
-                    exchange_params = {
-                        "fields": "access_token",
-                        "access_token": token,
-                    }
-                    exchange_resp = requests.get(exchange_url, params=exchange_params, timeout=15)
-                    if exchange_resp.status_code == 200:
-                        data = exchange_resp.json() or {}
-                        page_token = (data.get("access_token") or "").strip()
-                        if page_token:
-                            # Try send again with the derived Page token
-                            response2 = do_send(page_token)
-                            if response2.status_code == 200:
-                                page_token_used = True
-                                self.last_error = None
-                                # Persist the derived token to instagram_access_token so future
-                                # sends use it directly without re-exchanging.
-                                # Do NOT overwrite facebook_page_access_token — that token is
-                                # managed by the Facebook integration independently.
-                                try:
-                                    settings.db_set("instagram_access_token", page_token)
-                                except Exception:
-                                    # Non-fatal if we cannot persist; sending succeeded
-                                    pass
-                                return True
-                            else:
-                                # Log failure after token exchange attempt
-                                try:
-                                    frappe.log_error(
-                                        "Instagram Integration",
-                                        f"Instagram send failed after token exchange: HTTP {response2.status_code} - {response2.text}",
-                                    )
-                                except Exception:
-                                    pass
-                    else:
-                        # Log token exchange diagnostics
-                        try:
-                            ex_txt = exchange_resp.text
-                        except Exception:
-                            ex_txt = "<no response text>"
-                        frappe.log_error(
-                            "Instagram Integration",
-                            f"Instagram token exchange failed: HTTP {exchange_resp.status_code} - {ex_txt}",
-                        )
-                except Exception as ex_err:
-                    frappe.log_error(
-                        "Instagram Integration",
-                        f"Instagram token exchange failed: {str(ex_err)}",
-                    )
-
-            # Log detailed error and return False
-            try:
-                frappe.logger("assistant_crm.unified_send").error(
-                    f"[IG_SEND] status={response.status_code} body={response.text}"
+            # --- Attempt 1: Instagram Graph API (/{ig-business-account-id}/messages) ---
+            if ig_account_id:
+                response = do_send(ig_account_id, token)
+                if response.status_code == 200:
+                    self.last_error = None
+                    return True
+                frappe.logger("assistant_crm.unified_send").warning(
+                    f"[IG_SEND] ig_account_id attempt failed: "
+                    f"status={response.status_code} body={response.text[:200]}"
                 )
-            except Exception:
-                pass
-            self.last_error = f"HTTP {response.status_code}: {response.text}"
+
+            # --- Attempt 2: Messenger API for Instagram (/{page-id}/messages) ---
+            # When a Page Access Token is used, Meta requires the Facebook Page ID as the
+            # sender, NOT the Instagram Business Account ID. Error code 100 / subcode 33
+            # ("Object does not exist") on the IG Account ID endpoint is the tell-tale sign.
+            if page_id and page_id != ig_account_id:
+                response = do_send(page_id, token)
+                if response.status_code == 200:
+                    self.last_error = None
+                    return True
+                frappe.logger("assistant_crm.unified_send").warning(
+                    f"[IG_SEND] page_id attempt failed: "
+                    f"status={response.status_code} body={response.text[:200]}"
+                )
+
+            # --- Attempt 3: last resort "me" (only if neither ID is configured) ---
+            if not ig_account_id and not page_id:
+                response = do_send("me", token)
+                if response.status_code == 200:
+                    self.last_error = None
+                    return True
+
+            # All attempts failed — log and surface the last response
+            if response is not None:
+                try:
+                    frappe.logger("assistant_crm.unified_send").error(
+                        f"[IG_SEND] all attempts failed: "
+                        f"status={response.status_code} body={response.text}"
+                    )
+                except Exception:
+                    pass
+                self.last_error = f"HTTP {response.status_code}: {response.text}"
+            else:
+                self.last_error = "No sender ID configured (set instagram_business_account_id or facebook_page_id)"
+                frappe.log_error("Instagram Integration", self.last_error)
+
             return False
 
         except Exception as e:
