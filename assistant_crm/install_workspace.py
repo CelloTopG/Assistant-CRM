@@ -78,7 +78,8 @@ def _drop_workspace(name: str) -> None:
 
 def _insert_workspace(definition: dict) -> None:
     """Insert the main workspace record followed by all child-table rows."""
-    content_str = json.dumps(definition.get("content", []))
+    content_val = definition.get("content", [])
+    content_str = content_val if isinstance(content_val, str) else json.dumps(content_val)
 
     frappe.db.sql(
         """
