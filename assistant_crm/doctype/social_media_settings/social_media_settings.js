@@ -77,7 +77,7 @@ frappe.ui.form.on('Social Media Settings', {
         const redirectUri = (frm.doc.youtube_redirect_uri || '').trim() ||
           (window.location.origin + '/api/method/assistant_crm.api.social_media_ports.google_oauth_callback');
 
-        const scope = 'https://www.googleapis.com/auth/youtube.force-ssl';
+        const scope = 'https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.force-ssl';
         const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent`;
 
         window.open(authUrl, '_blank');

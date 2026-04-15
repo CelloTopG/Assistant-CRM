@@ -4,7 +4,7 @@ WCFCB Assistant CRM - Social Media Publisher
 =============================================
 
 Orchestrates publishing a Social Media Post document to one or more
-platforms (Facebook, Instagram, YouTube) in a single operation.
+platforms (Facebook, Instagram, Twitter, LinkedIn) in a single operation.
 
 Responsibilities:
 - Scheduled-post dispatch (called by cron every 5 min)
@@ -65,8 +65,9 @@ def _resolve_file_path(frappe_url: str) -> Optional[str]:
         url_no_qs = frappe_url.split("?")[0]
 
         # If it's an absolute URL, extract just the path component
+        from urllib.parse import unquote as _url_unquote
         parsed = urlparse(url_no_qs)
-        path = parsed.path if parsed.scheme else url_no_qs
+        path = _url_unquote(parsed.path if parsed.scheme else url_no_qs)
 
         if path.startswith("/private/files/"):
             return os.path.join(site_path, "private", "files", path[len("/private/files/"):])
@@ -134,8 +135,18 @@ def publish_post_to_platforms(post_name: str):
     }
 
     # Collect media URLs — convert Frappe relative paths to absolute public URLs
-    # so external platforms (Instagram, YouTube, etc.) can fetch them.
-    site_url = frappe.utils.get_url().rstrip("/")
+    # so external platforms (Instagram, LinkedIn, etc.) can fetch them.
+    #
+    # frappe.utils.get_url() returns the internal server address (e.g. :8000) in
+    # background-worker context, which external platforms cannot reach.
+    # Use assistant_crm_public_base_url from site_config if set, then host_name,
+    # then fall back to get_url() as a last resort.
+    site_url = (
+        frappe.conf.get("assistant_crm_public_base_url")
+        or frappe.conf.get("host_name")
+        or frappe.utils.get_url()
+    ).rstrip("/")
+
     media_urls = []
     for att in (post.media_attachments or []):
         url = (att.attachment or "").strip()
@@ -143,6 +154,11 @@ def publish_post_to_platforms(post_name: str):
             continue
         if not url.startswith("http://") and not url.startswith("https://"):
             url = f"{site_url}{url}"
+        # Encode spaces and other invalid URL characters in the path portion
+        # (e.g. filenames like "My Video 2.mp4" → "My%20Video%202.mp4")
+        from urllib.parse import urlsplit, urlunsplit, quote as _url_quote
+        _parts = urlsplit(url)
+        url = urlunsplit(_parts._replace(path=_url_quote(_parts.path, safe="/:@!$&'()*+,;=")))
         media_urls.append(url)
 
     success_count = 0
