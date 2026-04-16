@@ -2003,7 +2003,33 @@ class InstagramIntegration(SocialMediaPlatform):
                 self.last_error = None
                 return True
 
+            # Check if the failure is because the IG account ID doesn't exist or the
+            # token lacks permissions for it (GraphMethodException code=100, subcode=33).
+            # In that case the configured instagram_business_account_id is wrong — skip
+            # the token-exchange round-trip and fall straight through to the page_id
+            # fallback (/{page_id}/messages) which is the correct endpoint for
+            # Instagram accounts that are linked to a Facebook Page.
+            _ig_obj_missing = False
+            try:
+                _err_body = response.json() or {}
+                _err_obj = _err_body.get("error") or {}
+                if _err_obj.get("code") == 100 and _err_obj.get("error_subcode") == 33:
+                    _ig_obj_missing = True
+                    frappe.log_error(
+                        "Instagram Integration",
+                        (
+                            f"Instagram DM send failed: the configured instagram_business_account_id "
+                            f"('{ig_account_id}') returned 'Object does not exist / no permissions' "
+                            f"(error_subcode 33). Skipping token exchange and trying the Facebook "
+                            f"Page endpoint directly. Check 'instagram_business_account_id' in "
+                            f"Social Media Settings."
+                        )
+                    )
+            except Exception:
+                pass
+
             # If the token is a user/system token, try to derive a Page Access Token
+            # (skip this expensive step if the account ID itself is wrong)
             page_token_used = False
             try:
                 settings = frappe.get_single("Social Media Settings")
@@ -2011,7 +2037,7 @@ class InstagramIntegration(SocialMediaPlatform):
             except Exception:
                 page_id = ""
 
-            if page_id and token:
+            if page_id and token and not _ig_obj_missing:
                 try:
                     exchange_url = f"https://graph.facebook.com/{api_ver}/{page_id}"
                     exchange_params = {
@@ -2063,10 +2089,52 @@ class InstagramIntegration(SocialMediaPlatform):
                         f"Instagram token exchange failed: {str(ex_err)}",
                     )
 
+            # Fallback: Page-connected Instagram. When Instagram is linked to a Facebook
+            # Page, DM replies must use /{page_id}/messages (same as Facebook Messenger),
+            # not /{ig_account_id}/messages. Try this before giving up.
+            if page_id:
+                try:
+                    try:
+                        fb_token = (settings.get_password("facebook_page_access_token") or "").strip()
+                    except Exception:
+                        fb_token = (settings.get("facebook_page_access_token") or "").strip()
+                    if not fb_token:
+                        fb_token = token  # also try the configured IG token
+                    if fb_token:
+                        fb_url = f"https://graph.facebook.com/{api_ver}/{page_id}/messages"
+                        fb_resp = requests.post(
+                            fb_url,
+                            params={"access_token": fb_token},
+                            json={
+                                "recipient": {"id": recipient_id},
+                                "message": {"text": message},
+                                "messaging_type": "RESPONSE",
+                            },
+                            timeout=30,
+                        )
+                        self.last_response_status = fb_resp.status_code
+                        self.last_response_text = fb_resp.text
+                        if fb_resp.status_code == 200:
+                            self.last_error = None
+                            return True
+                        try:
+                            frappe.logger("assistant_crm.unified_send").warning(
+                                f"[IG_SEND] page_id attempt failed: status={fb_resp.status_code} body={fb_resp.text}"
+                            )
+                        except Exception:
+                            pass
+                except Exception as fb_err:
+                    try:
+                        frappe.logger("assistant_crm.unified_send").warning(
+                            f"[IG_SEND] page_id attempt error: {str(fb_err)}"
+                        )
+                    except Exception:
+                        pass
+
             # Log detailed error and return False
             try:
                 frappe.logger("assistant_crm.unified_send").error(
-                    f"[IG_SEND] status={response.status_code} body={response.text}"
+                    f"[IG_SEND] all attempts failed: status={response.status_code} body={response.text}"
                 )
             except Exception:
                 pass
@@ -2281,6 +2349,70 @@ class InstagramIntegration(SocialMediaPlatform):
             "username": f"user_{short_id}"
         }
 
+    def _discover_ig_account_id(self, token: str, api_ver: str) -> Optional[str]:
+        """
+        Query the linked Facebook Page to discover the correct Instagram Business
+        Account ID (different from the Facebook Page ID, even when linked).
+
+        Persists the discovered ID to instagram_business_account_id in Social Media
+        Settings so future calls use it without re-querying.
+
+        Returns the discovered ID string, or None if unavailable.
+        """
+        try:
+            settings = frappe.get_single("Social Media Settings")
+            page_id = (settings.get("facebook_page_id") or "").strip()
+            if not page_id:
+                frappe.log_error(
+                    title="Instagram: cannot auto-discover IG account ID",
+                    message="facebook_page_id is not set in Social Media Settings."
+                )
+                return None
+
+            resp = requests.get(
+                f"https://graph.facebook.com/{api_ver}/{page_id}",
+                params={"fields": "instagram_business_account", "access_token": token},
+                timeout=15,
+            )
+            if resp.status_code != 200:
+                frappe.log_error(
+                    title="Instagram: IG account ID discovery failed",
+                    message=f"GET /{page_id}?fields=instagram_business_account → {resp.status_code} {resp.text[:300]}"
+                )
+                return None
+
+            ig_acct = (resp.json() or {}).get("instagram_business_account") or {}
+            ig_id = (ig_acct.get("id") or "").strip()
+            if not ig_id:
+                frappe.log_error(
+                    title="Instagram: IG account ID discovery — no account linked",
+                    message=(
+                        f"Page {page_id} has no instagram_business_account. "
+                        "Make sure the Instagram account is connected to this Facebook Page "
+                        "in Facebook Business Settings."
+                    )
+                )
+                return None
+
+            # Persist so future calls skip this lookup
+            try:
+                settings.db_set("instagram_business_account_id", ig_id)
+            except Exception:
+                pass
+
+            frappe.logger("assistant_crm").info(
+                f"Instagram: IG account ID auto-corrected — "
+                f"instagram_business_account_id='{ig_id}' discovered from "
+                f"Facebook Page '{page_id}'. Setting updated automatically."
+            )
+            return ig_id
+        except Exception:
+            frappe.log_error(
+                title="Instagram: IG account ID discovery exception",
+                message=frappe.get_traceback()
+            )
+            return None
+
     def publish_post(self, content: str, media_urls: Optional[List[str]] = None) -> Dict[str, Any]:
         """
         Publish a post to the configured Instagram Business Account.
@@ -2337,38 +2469,70 @@ class InstagramIntegration(SocialMediaPlatform):
                 )
             }
 
-        # Instagram's API fetches media from the URL directly — private/internal
-        # files and localhost URLs are not reachable by Instagram's servers. Detect early.
+        # Instagram's API fetches media from the URL directly — private Frappe files
+        # are behind authentication and cannot be reached by Instagram's servers.
+        # Workaround: temporarily copy private files to the public/files directory
+        # under an unguessable UUID name, use those public URLs for posting, then
+        # delete the copies in a finally block regardless of success or failure.
+        import os as _os, shutil as _shutil, uuid as _uuid
+        from assistant_crm.api.social_media_publisher import _resolve_file_path
+
+        _temp_public_files = []  # cleaned up in finally below
+        _site_url = (
+            frappe.conf.get("assistant_crm_public_base_url")
+            or frappe.conf.get("host_name")
+            or frappe.utils.get_url()
+        ).rstrip("/")
+        if not _site_url.startswith(("http://", "https://")):
+            _site_url = f"https://{_site_url}"
+        _site_path = frappe.get_site_path()
+
         private_urls = [u for u in valid_media if "/private/files/" in u]
         if private_urls:
-            err = (
-                "Instagram cannot access private Frappe files. "
-                "Please re-upload the image/video as a Public file "
-                "(uncheck 'Private' when uploading in Frappe) so Instagram "
-                "can fetch it from a public URL."
-            )
-            frappe.log_error(title="Instagram publish_post: private file URL", message=f"urls={private_urls} | {err}")
-            return {"success": False, "error": err}
+            _promoted = {}
+            for _priv_url in private_urls:
+                _local = _resolve_file_path(_priv_url)
+                if _local and _os.path.isfile(_local):
+                    _ext = _os.path.splitext(_local)[1]
+                    _tmp_name = f"_ig_tmp_{_uuid.uuid4().hex}{_ext}"
+                    _tmp_path = _os.path.join(_site_path, "public", "files", _tmp_name)
+                    _shutil.copy2(_local, _tmp_path)
+                    _temp_public_files.append(_tmp_path)
+                    _promoted[_priv_url] = f"{_site_url}/files/{_tmp_name}"
+
+            if _promoted:
+                # Swap private URLs with their temporary public counterparts
+                valid_media = [_promoted.get(u, u) for u in valid_media]
+            else:
+                err = (
+                    "Instagram cannot access private Frappe files and the local file "
+                    "path could not be resolved. Please re-upload the image/video as a "
+                    "Public file (uncheck 'Private' when uploading in Frappe) so "
+                    "Instagram can fetch it from a public URL."
+                )
+                frappe.log_error(title="Instagram publish_post: private file URL", message=f"urls={private_urls} | {err}")
+                return {"success": False, "error": err}
 
         import re as _re
-        local_urls = [
-            u for u in valid_media
-            if _re.search(r"https?://(localhost|127\.0\.0\.1|0\.0\.0\.0|172\.\d+\.\d+\.\d+|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+)", u)
-        ]
-        if local_urls:
-            err = (
-                "Instagram requires a publicly accessible image URL. "
-                "This site is configured with a local/private hostname (localhost or internal IP). "
-                "Set 'host_name' in site_config.json to your public domain (e.g. https://yoursite.com) "
-                "and re-publish."
-            )
-            frappe.log_error(title="Instagram publish_post: local image URL", message=f"urls={local_urls} | {err}")
-            return {"success": False, "error": err}
-
         base = f"https://graph.facebook.com/{api_ver}/{ig_user_id}"
         params_base = {"access_token": token}
 
+        # Wrap everything from here in try/finally so temp public files are always cleaned up,
+        # including on early returns from the local_urls check below.
         try:
+            local_urls = [
+                u for u in valid_media
+                if _re.search(r"https?://(localhost|127\.0\.0\.1|0\.0\.0\.0|172\.\d+\.\d+\.\d+|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+)", u)
+            ]
+            if local_urls:
+                err = (
+                    "Instagram requires a publicly accessible image URL. "
+                    "This site is configured with a local/private hostname (localhost or internal IP). "
+                    "Set 'host_name' in site_config.json to your public domain (e.g. https://yoursite.com) "
+                    "and re-publish."
+                )
+                frappe.log_error(title="Instagram publish_post: local image URL", message=f"urls={local_urls} | {err}")
+                return {"success": False, "error": err}
             if len(valid_media) == 1:
                 # --- Single image / video ---
                 media_url = valid_media[0]
@@ -2386,13 +2550,35 @@ class InstagramIntegration(SocialMediaPlatform):
 
                 resp = requests.post(f"{base}/media", params=container_params, timeout=30)
                 if resp.status_code != 200:
+                    # If the IG account ID is wrong (subcode 33 = "Object does not exist"),
+                    # auto-discover the correct ID from the linked Facebook Page and retry once.
+                    try:
+                        _err_obj = (resp.json() or {}).get("error") or {}
+                        if _err_obj.get("code") == 100 and _err_obj.get("error_subcode") == 33:
+                            _new_id = self._discover_ig_account_id(token, api_ver)
+                            if _new_id and _new_id != ig_user_id:
+                                ig_user_id = _new_id
+                                base = f"https://graph.facebook.com/{api_ver}/{ig_user_id}"
+                                resp = requests.post(f"{base}/media", params=container_params, timeout=30)
+                    except Exception:
+                        pass
+
+                if resp.status_code != 200:
                     error_msg = ((resp.json() or {}).get("error") or {}).get("message", resp.text[:300])
                     media_param = "video_url" if any(media_url.lower().split("?")[0].endswith(ext) for ext in (".mp4", ".mov", ".avi", ".mkv", ".wmv", ".m4v")) else "image_url"
+                    hint = ""
+                    if "only photo or video" in error_msg.lower():
+                        hint = (
+                            " Instagram fetched the URL but received a non-image Content-Type. "
+                            "Check that your web server (Nginx) serves the file with the correct "
+                            "Content-Type header (image/jpeg, image/png, etc.) and that the URL is "
+                            "publicly accessible without authentication."
+                        )
                     frappe.log_error(
                         title="Instagram publish_post: media container creation failed",
-                        message=f"{media_param}={media_url} status={resp.status_code} error={error_msg}"
+                        message=f"{media_param}={media_url} status={resp.status_code} error={error_msg}{hint}"
                     )
-                    return {"success": False, "error": f"Instagram media container creation failed: {error_msg}"}
+                    return {"success": False, "error": f"Instagram media container creation failed: {error_msg}{hint}"}
 
                 creation_id = (resp.json() or {}).get("id")
                 if not creation_id:
@@ -2400,12 +2586,26 @@ class InstagramIntegration(SocialMediaPlatform):
 
             else:
                 # --- Carousel (multiple images) ---
+                # Auto-discover correct IG account ID before looping if first item fails with subcode 33
+                _carousel_id_checked = False
                 item_ids = []
                 for media_url in valid_media:
                     item_params = dict(params_base)
                     item_params["is_carousel_item"] = "true"
                     item_params["image_url"] = media_url
                     resp = requests.post(f"{base}/media", params=item_params, timeout=30)
+                    if resp.status_code != 200 and not _carousel_id_checked:
+                        try:
+                            _err_obj = (resp.json() or {}).get("error") or {}
+                            if _err_obj.get("code") == 100 and _err_obj.get("error_subcode") == 33:
+                                _new_id = self._discover_ig_account_id(token, api_ver)
+                                if _new_id and _new_id != ig_user_id:
+                                    ig_user_id = _new_id
+                                    base = f"https://graph.facebook.com/{api_ver}/{ig_user_id}"
+                                    resp = requests.post(f"{base}/media", params=item_params, timeout=30)
+                        except Exception:
+                            pass
+                        _carousel_id_checked = True
                     if resp.status_code == 200:
                         item_id = (resp.json() or {}).get("id")
                         if item_id:
@@ -2480,6 +2680,13 @@ class InstagramIntegration(SocialMediaPlatform):
         except Exception as e:
             frappe.log_error(title="Instagram publish_post: exception", message=frappe.get_traceback())
             return {"success": False, "error": str(e)}
+        finally:
+            # Always remove temporary public copies of private files
+            for _tf in _temp_public_files:
+                try:
+                    _os.remove(_tf)
+                except Exception:
+                    pass
 
 
 class TwitterIntegration(SocialMediaPlatform):
@@ -3565,6 +3772,12 @@ class YouTubeIntegration(SocialMediaPlatform):
                 video_url = url
                 break
 
+        # Ensure the video URL has a scheme — frappe.conf.host_name is sometimes
+        # stored without one (e.g. "erpdev.example.com"), which causes urlparse to
+        # treat the entire string as a path and requests.get() to raise MissingSchema.
+        if video_url and not video_url.startswith(("http://", "https://")):
+            video_url = f"https://{video_url}"
+
         if not video_url:
             msg = (
                 "YouTube requires a video file to publish. "
@@ -4496,8 +4709,7 @@ def social_media_webhook():
 
         platform = frappe.request.headers.get("X-Platform") or detect_platform_from_webhook(data)
 
-        # Validate Tawk.to webhook signature when present.
-        # Instagram signature validation is currently in compatibility mode (disabled).
+        # Validate webhook signatures where configured.
         if platform == "Tawk.to":
             raw_body = frappe.request.get_data()
             sig_valid = validate_tawkto_webhook_signature(raw_body, frappe.request.headers)
@@ -4507,6 +4719,14 @@ def social_media_webhook():
                 frappe.logger("assistant_crm.webhooks").warning(
                     "Tawk.to webhook signature validation failed — allowing through (configure "
                     "tawk_to_webhook_secret in Social Media Settings to enforce)"
+                )
+
+        elif platform == "Instagram":
+            sig_valid = validate_instagram_webhook_signature(webhook_data, dict(frappe.request.headers))
+            if not sig_valid:
+                frappe.logger("assistant_crm.webhooks").warning(
+                    "Instagram webhook signature validation failed — allowing through (configure "
+                    "webhook_secret in Social Media Settings to enforce)"
                 )
 
         if not platform:
@@ -4551,6 +4771,27 @@ def detect_platform_from_webhook(data: Dict[str, Any]) -> Optional[str]:
     # Facebook / Instagram: entry.messaging structure
     if "entry" in data and any("messaging" in entry for entry in data.get("entry", [])):
         if data.get("object") == "page":
+            # Instagram DMs sent to a Page-connected Instagram Business Account also
+            # arrive as object=="page" when a Page Access Token is in use. Distinguish
+            # by matching the recipient ID against the configured Instagram Business
+            # Account ID, then fall back to the 17+ digit heuristic.
+            try:
+                _settings = frappe.get_single("Social Media Settings")
+                _ig_id = (_settings.get("instagram_business_account_id") or "").strip()
+            except Exception:
+                _ig_id = ""
+
+            for _entry in data.get("entry", []):
+                for _evt in (_entry.get("messaging") or []):
+                    _recipient = str(_evt.get("recipient", {}).get("id", "") or "")
+                    _sender = str(_evt.get("sender", {}).get("id", "") or "")
+                    # Explicit match: recipient is the configured IG Business Account
+                    if _ig_id and _recipient == _ig_id:
+                        return "Instagram"
+                    # Heuristic fallback: both IDs are 17+ digits → Instagram
+                    if len(_sender) >= 17 and len(_recipient) >= 17:
+                        return "Instagram"
+
             return "Facebook"
 
         entry = data["entry"][0]

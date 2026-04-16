@@ -64,9 +64,15 @@ def _resolve_file_path(frappe_url: str) -> Optional[str]:
         # Strip query string
         url_no_qs = frappe_url.split("?")[0]
 
-        # If it's an absolute URL, extract just the path component
+        # If it's an absolute URL, extract just the path component.
+        # When host_name is stored without a scheme (e.g. "erpdev.example.com"),
+        # urlparse treats the whole string as a path and parsed.scheme is "".
+        # Temporarily add a scheme so urlparse can split the host from the path.
         from urllib.parse import unquote as _url_unquote
-        parsed = urlparse(url_no_qs)
+        _url_to_parse = url_no_qs
+        if _url_to_parse and not _url_to_parse.startswith(("http://", "https://", "/")):
+            _url_to_parse = f"https://{_url_to_parse}"
+        parsed = urlparse(_url_to_parse)
         path = _url_unquote(parsed.path if parsed.scheme else url_no_qs)
 
         if path.startswith("/private/files/"):
@@ -114,12 +120,21 @@ def publish_post_to_platforms(post_name: str):
     Updates the post_results child table and sets the final status.
     Designed to be idempotent: skips platforms that already have a Published result.
     """
-    post = frappe.get_doc("Social Media Post", post_name)
+    try:
+        post = frappe.get_doc("Social Media Post", post_name)
+    except frappe.exceptions.DoesNotExistError:
+        frappe.log_error(
+            title="Social Media Publisher: Post Not Found",
+            message=(
+                f"Social Media Post '{post_name}' no longer exists — "
+                "it was likely deleted before this background job ran. Skipping."
+            )
+        )
+        return
 
     if post.status not in ("Draft", "Scheduled"):
-        frappe.log_error(
-            title="Social Media Publisher: Skipped",
-            message=f"Post '{post_name}' has status '{post.status}' — skipping."
+        frappe.logger("assistant_crm").warning(
+            f"Social Media Publisher: Post '{post_name}' has status '{post.status}' — skipping."
         )
         return
 
@@ -146,6 +161,11 @@ def publish_post_to_platforms(post_name: str):
         or frappe.conf.get("host_name")
         or frappe.utils.get_url()
     ).rstrip("/")
+
+    # frappe.conf.host_name is often stored without a scheme (e.g. "erpdev.example.com").
+    # Ensure the URL is always absolute so media_urls built below are valid for requests.
+    if not site_url.startswith(("http://", "https://")):
+        site_url = f"https://{site_url}"
 
     media_urls = []
     for att in (post.media_attachments or []):
