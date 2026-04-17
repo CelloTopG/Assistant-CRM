@@ -411,6 +411,7 @@ class SurveyService:
                     'sent_time': frappe.utils.now()
                 })
                 survey_response.insert()
+                frappe.db.commit()
 
                 # Try ALL active channels for this recipient (skip failures, continue to next)
                 recipient_delivered = False

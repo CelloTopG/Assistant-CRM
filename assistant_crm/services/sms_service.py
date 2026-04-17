@@ -356,7 +356,11 @@ def send_survey_sms_async(recipient, campaign_name, response_id):
 
         campaign = frappe.get_doc("Survey Campaign", campaign_name)
 
-        if campaign.status not in ["Active", "In Progress", "Submitted"]:
+        if campaign.docstatus == 2:
+            frappe.log_error(
+                title="Async SMS Skipped — Campaign Cancelled",
+                message=f"Campaign: {campaign_name} is cancelled (docstatus=2). SMS not sent to {recipient.get('mobile_no')}."
+            )
             return
 
         result = service.send_survey_invitation(recipient, campaign, "SMS", response_id)
