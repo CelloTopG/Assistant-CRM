@@ -167,6 +167,7 @@ def publish_post_to_platforms(post_name: str):
     if not site_url.startswith(("http://", "https://")):
         site_url = f"https://{site_url}"
 
+
     media_urls = []
     for att in (post.media_attachments or []):
         url = (att.attachment or "").strip()

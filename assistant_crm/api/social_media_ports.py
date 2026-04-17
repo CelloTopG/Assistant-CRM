@@ -3778,6 +3778,7 @@ class YouTubeIntegration(SocialMediaPlatform):
         if video_url and not video_url.startswith(("http://", "https://")):
             video_url = f"https://{video_url}"
 
+
         if not video_url:
             msg = (
                 "YouTube requires a video file to publish. "

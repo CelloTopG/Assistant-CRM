@@ -9,8 +9,20 @@ from frappe.utils import now_datetime
 class SocialMediaPost(Document):
 
     def validate(self):
+        self._protect_status()
         self._validate_platforms_unique()
         self._validate_schedule()
+
+    def _protect_status(self):
+        """Prevent form saves from overwriting a status that was set by the background job.
+        Without this, saving the form while the job is running (or after it finishes)
+        would write the stale in-memory 'Draft' value back to the DB, causing re-publishes.
+        """
+        if self.is_new():
+            return
+        db_status = frappe.db.get_value("Social Media Post", self.name, "status")
+        if db_status in ("Publishing", "Published", "Partially Published", "Scheduled"):
+            self.status = db_status
 
     def _validate_platforms_unique(self):
         """Each platform should appear at most once in the target list."""
@@ -49,5 +61,6 @@ class SocialMediaPost(Document):
             post_name=self.name,
             queue="long",
             timeout=300,
-            job_name=f"social_post_{self.name}"
+            job_name=f"social_post_{self.name}",
+            enqueue_after_commit=True,
         )
